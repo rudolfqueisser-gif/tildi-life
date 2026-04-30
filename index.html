@@ -1178,21 +1178,52 @@ async function saveTermin(){
   document.getElementById('t-bez').value='';
   document.getElementById('t-ort').value='';
   closeM('m-termin');
+  updateDashboard();
   showToast('"'+bez+'" gespeichert ✓');
 
 
 }
 
 async function saveRezept(){
-  var titel=document.getElementById('rez-titel').value||'Rezept';
-  await fbSave('tildi_rezepte',{titel:titel,arzt:document.getElementById('rez-arzt').value,datum:document.getElementById('rez-datum').value,bis:document.getElementById('rez-bis').value,foto:_lastFoto?'ja':'nein'});
-  resetRezeptForm();closeM('m-rezept');var rl=document.getElementById('rez-therapie-leer');if(rl)rl.style.display='none';showToast('"'+titel+'" gespeichert ✓');
+  var titel=document.getElementById('rez-titel').value.trim()||'Rezept';
+  var typEl=document.querySelector('#m-rezept .tbtn.sel');
+  var entry={
+    titel:titel,
+    typ:typEl?typEl.textContent.trim():'Therapie',
+    arzt:document.getElementById('rez-arzt').value,
+    datum:document.getElementById('rez-datum').value,
+    bis:document.getElementById('rez-bis').value,
+    erin:document.getElementById('rez-erin').value,
+    foto:_lastFoto?'ja':'nein'
+  };
+  addLocalEntry('rezepte', entry);
+  renderRezepte();
+  resetRezeptForm();
+  closeM('m-rezept');
+  updateDashboard();
+  showToast('"'+titel+'" gespeichert ✓');
 }
 
 async function saveHM(){
-  var bez=document.getElementById('hm-bez').value||'Hilfsmittel';
-  await fbSave('tildi_hm',{bez:bez,arzt:document.getElementById('hm-arzt').value,lief:document.getElementById('hm-lief').value,tel:document.getElementById('hm-tel').value,kk:document.getElementById('hm-kk').value});
-  closeM('m-hm');var hl=document.getElementById('hm-leer');if(hl)hl.style.display='none';showToast('"'+bez+'" gespeichert ✓');
+  var bez=document.getElementById('hm-bez').value.trim()||'Hilfsmittel';
+  var entry={
+    bez:bez,
+    kat:document.getElementById('hm-kat')?document.getElementById('hm-kat').value:'Mobilität',
+    arzt:document.getElementById('hm-arzt').value,
+    lief:document.getElementById('hm-lief').value,
+    tel:document.getElementById('hm-tel').value,
+    kk:document.getElementById('hm-kk').value,
+    kv:document.getElementById('hm-kv')?document.getElementById('hm-kv').value:'',
+    ap:document.getElementById('hm-ap')?document.getElementById('hm-ap').value:''
+  };
+  addLocalEntry('hm', entry);
+  renderHM();
+  // Formular leeren
+  ['hm-bez','hm-arzt','hm-lief','hm-tel','hm-kk','hm-kv','hm-ap'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  closeM('m-hm');
+  showToast('"'+bez+'" gespeichert ✓');
 }
 
 async function saveMed(){
@@ -1230,15 +1261,30 @@ async function saveMed(){
   document.getElementById('med-notiz').value='';
   setMedFreq(1);
   closeM('m-med-neu');
+  updateDashboard();
   showToast('"'+name+'" gespeichert ✓');
 
 
 }
 
 async function saveDok(){
-  var bez=document.getElementById('dok-bez').value||'Dokument';
-  await fbSave('tildi_dokumente',{bez:bez,absender:document.getElementById('dok-absender').value,datum:document.getElementById('dok-datum').value,frist:document.getElementById('dok-frist').value,foto:_dokFoto?'ja':'nein'});
-  resetDokForm();closeM('m-dok');var dl=document.getElementById('dok-leer');if(dl)dl.style.display='none';showToast('"'+bez+'" gespeichert ✓');
+  var bez=document.getElementById('dok-bez').value.trim()||'Dokument';
+  var typEl=document.querySelector('#m-dok .tbtn.sel');
+  var entry={
+    bez:bez,
+    typ:typEl?typEl.textContent.trim():'Sonstiges',
+    absender:document.getElementById('dok-absender').value,
+    datum:document.getElementById('dok-datum').value,
+    frist:document.getElementById('dok-frist').value,
+    link:document.getElementById('dok-link')?document.getElementById('dok-link').value:'',
+    erin:document.getElementById('dok-erin')?document.getElementById('dok-erin').value:'',
+    foto:_dokFoto?'ja':'nein'
+  };
+  addLocalEntry('dokumente', entry);
+  renderDokumente();
+  resetDokForm();
+  closeM('m-dok');
+  showToast('"'+bez+'" gespeichert ✓');
 }
 
 var _anfIntens=0,_buccGeben=false;
@@ -1334,6 +1380,173 @@ function removeLocalEntry(key, id) {
 function renderAll() {
   renderTermine();
   renderMedikamente();
+  renderRezepte();
+  renderHM();
+  renderDokumente();
+  updateDashboard();
+}
+
+function updateDashboard() {
+  // Zähler aktualisieren
+  var t = (_localData.termine||[]).length;
+  var m = (_localData.medikamente||[]).length;
+  var r = (_localData.rezepte||[]).length;
+  var a = (_localData.anfaelle||[]).length;
+
+  var el;
+  el=document.getElementById('dash-termine-count');   if(el)el.textContent=t;
+  el=document.getElementById('dash-rez-count');       if(el)el.textContent=r;
+  el=document.getElementById('dash-med-count');       if(el)el.textContent=m;
+  el=document.getElementById('dash-anfall-count');    if(el)el.textContent=a;
+
+  // Leer-Hinweis nur zeigen wenn wirklich alles leer
+  var leer = document.getElementById('dash-leer');
+  if (leer) {
+    var hatDaten = t > 0 || m > 0 || r > 0 || a > 0;
+    leer.style.display = hatDaten ? 'none' : 'block';
+  }
+}
+
+
+
+// ── REZEPTE ANZEIGEN ──
+function renderRezepte() {
+  var cont = document.getElementById('firebase-rezepte');
+  var leer = document.getElementById('rez-therapie-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = (_localData.rezepte || []);
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  alle.forEach(function(r) {
+    var card = '<div class="card">'
+      +'<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">'
+      +'<div style="width:36px;height:46px;border-radius:6px;background:#EAF3EC;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">'+(r.foto==='ja'?'📷':'📋')+'</div>'
+      +'<div style="flex:1">'
+      +'<div class="ct" style="margin-bottom:2px"><span class="cti">'+r.titel+'</span>'
+      +(r.bis?'<span class="bdg ok">'+formatDatumKurz(r.bis)+'</span>':'')
+      +'</div>'
+      +(r.arzt?'<div class="cme" style="margin:0">'+r.arzt+'</div>':'')
+      +'</div></div>'
+      +'<div class="tags">'
+      +(r.typ?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+r.typ+'</span>':'')
+      +(r.foto==='ja'?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">Foto ✓</span>':'')
+      +(r.by?'<span class="tag" style="background:'+(r.byColor||'#7BAE8A')+';color:white">'+r.by+'</span>':'')
+      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-rezid="'+r.id+'" onclick="deleteRezEntry(this.dataset.rezid)">✕</span>'
+      +'</div></div>';
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+}
+
+function deleteRezEntry(id) {
+  if (!confirm('Rezept löschen?')) return;
+  removeLocalEntry('rezepte', id);
+  renderRezepte();
+  showToast('Gelöscht ✓');
+}
+
+// ── HILFSMITTEL ANZEIGEN ──
+function renderHM() {
+  var cont = document.getElementById('firebase-hm');
+  var leer = document.getElementById('hm-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = _localData.hm || [];
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  alle.forEach(function(h) {
+    var card = '<div class="card" data-hmid="'+h.id+'" style="cursor:pointer">'
+      +'<div style="display:flex;gap:10px;align-items:flex-start">'
+      +'<div style="font-size:24px;flex-shrink:0">♿</div>'
+      +'<div style="flex:1">'
+      +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+h.bez+'</span><span class="bdg blue">'+(h.kat||'Hilfsmittel')+'</span></div>'
+      +(h.lief?'<div class="cme">'+h.lief+(h.kk?' · '+h.kk:'')+'</div>':'')
+      +'<div class="tags">'
+      +(h.arzt?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+h.arzt+'</span>':'')
+      +(h.kv?'<span class="tag" style="background:#F4F7F4;color:#6B7C6D">'+h.kv+'</span>':'')
+      +(h.by?'<span class="tag" style="background:'+(h.byColor||'#7BAE8A')+';color:white">'+h.by+'</span>':'')
+      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-hmid="'+h.id+'" onclick="event.stopPropagation();deleteHMEntry(this.dataset.hmid)">✕</span>'
+      +'</div></div></div></div>';
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+}
+
+function deleteHMEntry(id) {
+  if (!confirm('Hilfsmittel löschen?')) return;
+  removeLocalEntry('hm', id);
+  renderHM();
+  showToast('Gelöscht ✓');
+}
+
+// ── DOKUMENTE ANZEIGEN ──
+function renderDokumente() {
+  var cont = document.getElementById('firebase-dokumente');
+  var leer = document.getElementById('dok-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = _localData.dokumente || [];
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  alle.forEach(function(d) {
+    var hatFrist = d.frist && d.frist !== '';
+    var typColor = {
+      'Behörde':'#EEEDFE','Arztbrief':'#E8F1FB','Bescheid':'#FDECEA','Sonstiges':'#F4F7F4'
+    };
+    var typTxt = {
+      'Behörde':'#3C3489','Arztbrief':'#0A4A8A','Bescheid':'#8B1A1A','Sonstiges':'#6B7C6D'
+    };
+    var tc = typColor[d.typ]||'#F4F7F4';
+    var tt = typTxt[d.typ]||'#6B7C6D';
+
+    var card = '<div class="card'+(hatFrist?' warn':'')+'" style="cursor:pointer">'
+      +'<div style="display:flex;gap:12px;align-items:flex-start">'
+      +'<div style="font-size:24px;flex-shrink:0">'+(d.foto==='ja'?'📷':'📄')+'</div>'
+      +'<div style="flex:1">'
+      +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+d.bez+'</span>'
+      +(hatFrist?'<span class="bdg warn">Frist!</span>':'')
+      +'</div>'
+      +(d.absender?'<div class="cme">'+(d.absender)+(d.datum?' · '+formatDatumKurz(d.datum):'')+'</div>':'')
+      +'<div class="tags">'
+      +'<span class="tag" style="background:'+tc+';color:'+tt+'">'+(d.typ||'Dokument')+'</span>'
+      +(hatFrist?'<span class="tag" style="background:#FEF3E2;color:#7A4A0A">bis '+formatDatumKurz(d.frist)+'</span>':'')
+      +(d.link?'<span class="tag" style="background:#EEEDFE;color:#3C3489">→ '+d.link+'</span>':'')
+      +(d.by?'<span class="tag" style="background:'+(d.byColor||'#7BAE8A')+';color:white">'+d.by+'</span>':'')
+      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-dokid="'+d.id+'" onclick="event.stopPropagation();deleteDokEntry(this.dataset.dokid)">✕</span>'
+      +'</div></div></div>'
+      +(hatFrist?'<div class="cbottom"><div class="cdot" style="background:#D4900A"></div><span class="cst">Frist: '+formatDatumKurz(d.frist)+'</span></div>':'')
+      +'</div>';
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+}
+
+function deleteDokEntry(id) {
+  if (!confirm('Dokument löschen?')) return;
+  removeLocalEntry('dokumente', id);
+  renderDokumente();
+  showToast('Gelöscht ✓');
+}
+
+function formatDatumKurz(datum) {
+  if (!datum) return '';
+  try {
+    var d = new Date(datum+'T00:00');
+    return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear();
+  } catch(e) { return datum; }
 }
 
 // ── TERMINE ANZEIGEN ──
@@ -1402,9 +1615,11 @@ function renderMedikamente() {
   if (alle.length === 0) {
     if (leer) leer.style.display = 'block';
     buildHeuteKarten();
+    var dc=document.getElementById('dash-med-count');if(dc)dc.textContent='0';
     return;
   }
   if (leer) leer.style.display = 'none';
+  var dc=document.getElementById('dash-med-count');if(dc)dc.textContent=alle.length;
 
   // _medListe aufbauen
   _medListe = {};
@@ -1486,6 +1701,173 @@ function removeLocalEntry(key, id) {
 function renderAll() {
   renderTermine();
   renderMedikamente();
+  renderRezepte();
+  renderHM();
+  renderDokumente();
+  updateDashboard();
+}
+
+function updateDashboard() {
+  // Zähler aktualisieren
+  var t = (_localData.termine||[]).length;
+  var m = (_localData.medikamente||[]).length;
+  var r = (_localData.rezepte||[]).length;
+  var a = (_localData.anfaelle||[]).length;
+
+  var el;
+  el=document.getElementById('dash-termine-count');   if(el)el.textContent=t;
+  el=document.getElementById('dash-rez-count');       if(el)el.textContent=r;
+  el=document.getElementById('dash-med-count');       if(el)el.textContent=m;
+  el=document.getElementById('dash-anfall-count');    if(el)el.textContent=a;
+
+  // Leer-Hinweis nur zeigen wenn wirklich alles leer
+  var leer = document.getElementById('dash-leer');
+  if (leer) {
+    var hatDaten = t > 0 || m > 0 || r > 0 || a > 0;
+    leer.style.display = hatDaten ? 'none' : 'block';
+  }
+}
+
+
+
+// ── REZEPTE ANZEIGEN ──
+function renderRezepte() {
+  var cont = document.getElementById('firebase-rezepte');
+  var leer = document.getElementById('rez-therapie-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = (_localData.rezepte || []);
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  alle.forEach(function(r) {
+    var card = '<div class="card">'
+      +'<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">'
+      +'<div style="width:36px;height:46px;border-radius:6px;background:#EAF3EC;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">'+(r.foto==='ja'?'📷':'📋')+'</div>'
+      +'<div style="flex:1">'
+      +'<div class="ct" style="margin-bottom:2px"><span class="cti">'+r.titel+'</span>'
+      +(r.bis?'<span class="bdg ok">'+formatDatumKurz(r.bis)+'</span>':'')
+      +'</div>'
+      +(r.arzt?'<div class="cme" style="margin:0">'+r.arzt+'</div>':'')
+      +'</div></div>'
+      +'<div class="tags">'
+      +(r.typ?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+r.typ+'</span>':'')
+      +(r.foto==='ja'?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">Foto ✓</span>':'')
+      +(r.by?'<span class="tag" style="background:'+(r.byColor||'#7BAE8A')+';color:white">'+r.by+'</span>':'')
+      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-rezid="'+r.id+'" onclick="deleteRezEntry(this.dataset.rezid)">✕</span>'
+      +'</div></div>';
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+}
+
+function deleteRezEntry(id) {
+  if (!confirm('Rezept löschen?')) return;
+  removeLocalEntry('rezepte', id);
+  renderRezepte();
+  showToast('Gelöscht ✓');
+}
+
+// ── HILFSMITTEL ANZEIGEN ──
+function renderHM() {
+  var cont = document.getElementById('firebase-hm');
+  var leer = document.getElementById('hm-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = _localData.hm || [];
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  alle.forEach(function(h) {
+    var card = '<div class="card" data-hmid="'+h.id+'" style="cursor:pointer">'
+      +'<div style="display:flex;gap:10px;align-items:flex-start">'
+      +'<div style="font-size:24px;flex-shrink:0">♿</div>'
+      +'<div style="flex:1">'
+      +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+h.bez+'</span><span class="bdg blue">'+(h.kat||'Hilfsmittel')+'</span></div>'
+      +(h.lief?'<div class="cme">'+h.lief+(h.kk?' · '+h.kk:'')+'</div>':'')
+      +'<div class="tags">'
+      +(h.arzt?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+h.arzt+'</span>':'')
+      +(h.kv?'<span class="tag" style="background:#F4F7F4;color:#6B7C6D">'+h.kv+'</span>':'')
+      +(h.by?'<span class="tag" style="background:'+(h.byColor||'#7BAE8A')+';color:white">'+h.by+'</span>':'')
+      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-hmid="'+h.id+'" onclick="event.stopPropagation();deleteHMEntry(this.dataset.hmid)">✕</span>'
+      +'</div></div></div></div>';
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+}
+
+function deleteHMEntry(id) {
+  if (!confirm('Hilfsmittel löschen?')) return;
+  removeLocalEntry('hm', id);
+  renderHM();
+  showToast('Gelöscht ✓');
+}
+
+// ── DOKUMENTE ANZEIGEN ──
+function renderDokumente() {
+  var cont = document.getElementById('firebase-dokumente');
+  var leer = document.getElementById('dok-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = _localData.dokumente || [];
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  alle.forEach(function(d) {
+    var hatFrist = d.frist && d.frist !== '';
+    var typColor = {
+      'Behörde':'#EEEDFE','Arztbrief':'#E8F1FB','Bescheid':'#FDECEA','Sonstiges':'#F4F7F4'
+    };
+    var typTxt = {
+      'Behörde':'#3C3489','Arztbrief':'#0A4A8A','Bescheid':'#8B1A1A','Sonstiges':'#6B7C6D'
+    };
+    var tc = typColor[d.typ]||'#F4F7F4';
+    var tt = typTxt[d.typ]||'#6B7C6D';
+
+    var card = '<div class="card'+(hatFrist?' warn':'')+'" style="cursor:pointer">'
+      +'<div style="display:flex;gap:12px;align-items:flex-start">'
+      +'<div style="font-size:24px;flex-shrink:0">'+(d.foto==='ja'?'📷':'📄')+'</div>'
+      +'<div style="flex:1">'
+      +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+d.bez+'</span>'
+      +(hatFrist?'<span class="bdg warn">Frist!</span>':'')
+      +'</div>'
+      +(d.absender?'<div class="cme">'+(d.absender)+(d.datum?' · '+formatDatumKurz(d.datum):'')+'</div>':'')
+      +'<div class="tags">'
+      +'<span class="tag" style="background:'+tc+';color:'+tt+'">'+(d.typ||'Dokument')+'</span>'
+      +(hatFrist?'<span class="tag" style="background:#FEF3E2;color:#7A4A0A">bis '+formatDatumKurz(d.frist)+'</span>':'')
+      +(d.link?'<span class="tag" style="background:#EEEDFE;color:#3C3489">→ '+d.link+'</span>':'')
+      +(d.by?'<span class="tag" style="background:'+(d.byColor||'#7BAE8A')+';color:white">'+d.by+'</span>':'')
+      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-dokid="'+d.id+'" onclick="event.stopPropagation();deleteDokEntry(this.dataset.dokid)">✕</span>'
+      +'</div></div></div>'
+      +(hatFrist?'<div class="cbottom"><div class="cdot" style="background:#D4900A"></div><span class="cst">Frist: '+formatDatumKurz(d.frist)+'</span></div>':'')
+      +'</div>';
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+}
+
+function deleteDokEntry(id) {
+  if (!confirm('Dokument löschen?')) return;
+  removeLocalEntry('dokumente', id);
+  renderDokumente();
+  showToast('Gelöscht ✓');
+}
+
+function formatDatumKurz(datum) {
+  if (!datum) return '';
+  try {
+    var d = new Date(datum+'T00:00');
+    return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear();
+  } catch(e) { return datum; }
 }
 
 // ── TERMINE ANZEIGEN ──
@@ -1554,9 +1936,11 @@ function renderMedikamente() {
   if (alle.length === 0) {
     if (leer) leer.style.display = 'block';
     buildHeuteKarten();
+    var dc=document.getElementById('dash-med-count');if(dc)dc.textContent='0';
     return;
   }
   if (leer) leer.style.display = 'none';
+  var dc=document.getElementById('dash-med-count');if(dc)dc.textContent=alle.length;
 
   // _medListe aufbauen
   _medListe = {};
@@ -2174,6 +2558,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadLocalData();
   loadMedData();
   renderAll();
+  updateDashboard();
 
   // Event-Delegation für Karten
   document.addEventListener('click', function(e) {
