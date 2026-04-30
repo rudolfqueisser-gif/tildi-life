@@ -264,11 +264,11 @@ textarea.finp{resize:none}
 <div id="s-termine" class="screen">
   <div class="hdr"><div class="hdr-row"><span class="hdr-title">Termine</span><button class="hdr-act" onclick="openM('m-termin')">+</button></div></div>
   <div class="fbar">
-    <div class="fpill fp-act" onclick="filtT('all',this)">Alle</div>
-    <div class="fpill" onclick="filtT('arzt',this)">Arzt</div>
-    <div class="fpill" onclick="filtT('therapie',this)">Therapie</div>
-    <div class="fpill" onclick="filtT('besonders',this)">Besonderes</div>
-    <div class="fpill" onclick="filtT('behoerde',this)">Behörde</div>
+    <div class="fpill fp-act" id="tf-all" onclick="filtT('all',this)">Alle</div>
+    <div class="fpill" id="tf-arzt" onclick="filtT('arzt',this)">Arzt</div>
+    <div class="fpill" id="tf-therapie" onclick="filtT('therapie',this)">Therapie</div>
+    <div class="fpill" id="tf-besonders" onclick="filtT('besonders',this)">Besonderes</div>
+    <div class="fpill" id="tf-behoerde" onclick="filtT('behoerde',this)">Behörde</div>
   </div>
   <div class="pc">
     <div id="termine-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:32px 20px;text-align:center;margin-bottom:14px">
@@ -392,6 +392,13 @@ textarea.finp{resize:none}
       </div>
     </div>
     <div class="dsec" id="rez-fb-info"></div>
+    <div class="dsec" style="margin-top:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="dstitle" style="margin:0">Verlauf & Notizen</div>
+        <button onclick="openNotiz('rezepte',_currentRezId)" style="background:#7BAE8A;border:none;color:white;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit">+ Notiz</button>
+      </div>
+      <div id="rez-notiz-anzeige"><div style="font-size:13px;color:#6B7C6D;font-style:italic">Noch keine Notizen.</div></div>
+    </div>
     <button class="abtn p" onclick="showToast('Erinnerung gesetzt ✓')">Erinnerung aktivieren</button>
     <button class="abtn s" onclick="exportRezPDF()">📄 Als PDF exportieren</button>
     <button class="abtn s" onclick="exportAllRezPDF()">📊 Alle Rezepte exportieren</button>
@@ -456,6 +463,13 @@ textarea.finp{resize:none}
   </div>
   <div class="dcont">
     <div class="dsec" id="hm-fb-info"></div>
+    <div class="dsec" style="margin-top:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="dstitle" style="margin:0">Verlauf & Notizen</div>
+        <button onclick="openNotiz('hm',_currentHMId)" style="background:#7BAE8A;border:none;color:white;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit">+ Notiz</button>
+      </div>
+      <div id="hm-notiz-anzeige"><div style="font-size:13px;color:#6B7C6D;font-style:italic">Noch keine Notizen.</div></div>
+    </div>
     <button class="abtn p" onclick="showToast('Lieferanten angerufen')">Lieferanten anrufen</button>
     <button class="abtn s" onclick="exportHMPDF()">📄 Als PDF exportieren</button>
     <button class="abtn s" onclick="exportAllHMPDF()">📊 Alle Hilfsmittel exportieren</button>
@@ -562,6 +576,13 @@ textarea.finp{resize:none}
   </div>
   <div class="dcont">
     <div class="dsec" id="med-detail-info"></div>
+    <div class="dsec" style="margin-top:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="dstitle" style="margin:0">Verlauf & Notizen</div>
+        <button onclick="openNotiz('medikamente',_currentMedId)" style="background:#7BAE8A;border:none;color:white;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit">+ Notiz</button>
+      </div>
+      <div id="med-notiz-anzeige"><div style="font-size:13px;color:#6B7C6D;font-style:italic">Noch keine Notizen.</div></div>
+    </div>
     <button class="abtn p" onclick="showToast('Erinnerungen aktiv ✓')">Erinnerungen aktivieren</button>
     <button class="abtn s" onclick="openM('m-vorrat')">Vorrat aktualisieren</button>
     <button class="abtn u" onclick="deleteCurrentMed()">Medikament löschen</button>
@@ -1123,6 +1144,21 @@ textarea.finp{resize:none}
   </div>
 </div>
 
+
+<!-- MODAL: NOTIZ HINZUFÜGEN -->
+<div class="movl" id="m-notiz">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Notiz hinzufügen</div>
+    <div id="notiz-verlauf" style="max-height:220px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:8px"></div>
+    <span class="flbl">Neue Notiz</span>
+    <textarea class="finp" id="notiz-text" rows="3" placeholder="z.B. Lieferung erfolgt am 15.05. · Gespräch mit Hr. Krause wegen Anpassung..."></textarea>
+    <div class="fbtns">
+      <button class="fcnc" onclick="closeM('m-notiz')">Abbrechen</button>
+      <button class="fsav" onclick="saveNotiz()">Notiz speichern</button>
+    </div>
+  </div>
+</div>
 <!-- MODAL: LÖSCHEN -->
 <div class="movl" id="m-del">
   <div class="msheet">
@@ -1446,7 +1482,7 @@ async function saveTermin(){
   var ort=document.getElementById('t-ort').value;
   var erin=document.getElementById('t-erin').value;
   var katEl=document.querySelector('#m-termin .cbtn[class*="s-"]');
-  var kat=katEl?katEl.textContent.trim():'Termin';
+  var kat=katEl?katEl.textContent.trim():'Arzt';
 
   var entry={bez:bez,datum:datum,zeit:zeit,ort:ort,erin:erin,kat:kat};
 
@@ -1847,6 +1883,11 @@ function openRezDetail(id) {
     if (r.by)     h += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">'+r.by+'</span></div>';
     info.innerHTML = h;
   }
+  // Notizen anzeigen
+  setTimeout(function(){
+    updateNotizAnzeige('rez-notiz-anzeige', r.notizen||[]);
+  }, 50);
+
   goTo('s-rez-fb'); setNav('n-verwaltung');
 }
 
@@ -2060,6 +2101,13 @@ function renderTermine() {
   // Dashboard counter
   var dc = document.getElementById('dash-termine-count');
   if (dc) dc.textContent = alle.length;
+
+  // Aktiven Filter erneut anwenden
+  if (_aktiverTerminFilter && _aktiverTerminFilter !== 'all') {
+    document.querySelectorAll('#s-termine [data-tcat]').forEach(function(card){
+      card.style.display=(card.dataset.tcat===_aktiverTerminFilter)?'block':'none';
+    });
+  }
 }
 
 function buildTerminCard(t) {
@@ -2072,7 +2120,11 @@ function buildTerminCard(t) {
   var katColor={'Arzt':'#E8F1FB','Therapie':'#EAF3EC','Besonderes':'#FEF3E2','Behörde':'#EEEDFE','Termin':'#E8F1FB'};
   var katTxt={'Arzt':'#0A4A8A','Therapie':'#1E5C2A','Besonderes':'#7A4A0A','Behörde':'#3C3489','Termin':'#0A4A8A'};
   var kc = katColor[t.kat]||'#E8F1FB', kt = katTxt[t.kat]||'#0A4A8A';
-  return '<div class="card proc" data-tid="'+t.id+'" style="cursor:pointer">'
+  var tcat = (t.kat||'Termin').toLowerCase().replace('ä','ae').replace('ö','oe').replace('ü','ue');
+  // Kategorie auf Filter-Werte mappen
+  var catMap = {'arzt':'arzt','therapie':'therapie','besonderes':'besonders','behörde':'behoerde','behoerde':'behoerde','termin':'arzt'};
+  var dataTcat = catMap[tcat] || 'arzt';
+  return '<div class="card proc" data-tid="'+t.id+'" data-tcat="'+dataTcat+'" style="cursor:pointer">'
     +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
     +(tag?'<div style="width:42px;height:42px;background:'+kc+';border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:17px;font-weight:800;color:'+kt+';line-height:1">'+tag+'</span><span style="font-size:10px;color:'+kt+'">'+mo+'</span></div>':'')
     +'<div style="flex:1;min-width:0"><div class="cti" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.bez+'</div>'
@@ -2503,6 +2555,13 @@ function renderTermine() {
   // Dashboard counter
   var dc = document.getElementById('dash-termine-count');
   if (dc) dc.textContent = alle.length;
+
+  // Aktiven Filter erneut anwenden
+  if (_aktiverTerminFilter && _aktiverTerminFilter !== 'all') {
+    document.querySelectorAll('#s-termine [data-tcat]').forEach(function(card){
+      card.style.display=(card.dataset.tcat===_aktiverTerminFilter)?'block':'none';
+    });
+  }
 }
 
 function buildTerminCard(t) {
@@ -2515,7 +2574,11 @@ function buildTerminCard(t) {
   var katColor={'Arzt':'#E8F1FB','Therapie':'#EAF3EC','Besonderes':'#FEF3E2','Behörde':'#EEEDFE','Termin':'#E8F1FB'};
   var katTxt={'Arzt':'#0A4A8A','Therapie':'#1E5C2A','Besonderes':'#7A4A0A','Behörde':'#3C3489','Termin':'#0A4A8A'};
   var kc = katColor[t.kat]||'#E8F1FB', kt = katTxt[t.kat]||'#0A4A8A';
-  return '<div class="card proc" data-tid="'+t.id+'" style="cursor:pointer">'
+  var tcat = (t.kat||'Termin').toLowerCase().replace('ä','ae').replace('ö','oe').replace('ü','ue');
+  // Kategorie auf Filter-Werte mappen
+  var catMap = {'arzt':'arzt','therapie':'therapie','besonderes':'besonders','behörde':'behoerde','behoerde':'behoerde','termin':'arzt'};
+  var dataTcat = catMap[tcat] || 'arzt';
+  return '<div class="card proc" data-tid="'+t.id+'" data-tcat="'+dataTcat+'" style="cursor:pointer">'
     +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
     +(tag?'<div style="width:42px;height:42px;background:'+kc+';border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:17px;font-weight:800;color:'+kt+';line-height:1">'+tag+'</span><span style="font-size:10px;color:'+kt+'">'+mo+'</span></div>':'')
     +'<div style="flex:1;min-width:0"><div class="cti" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.bez+'</div>'
@@ -2832,6 +2895,11 @@ function openMedDetail(id){
     if(med.notiz)h+='<div class="drow"><span class="dl">Notiz</span><span class="dv">'+med.notiz+'</span></div>';
     info.innerHTML=h;
   }
+  // Notizen anzeigen
+  setTimeout(function(){
+    updateNotizAnzeige('med-notiz-anzeige', med.notizen||[]);
+  }, 50);
+
   goTo('s-med-detail');setNav('n-gesundheit');
 }
 
@@ -2967,7 +3035,20 @@ function resetDokForm(){resetDokCam();['dok-bez','dok-absender','dok-datum','dok
 // ══════════════════════════════════════════════
 // FILTER & TABS
 // ══════════════════════════════════════════════
-function filtT(cat,el){document.querySelectorAll('.fbar .fpill').forEach(function(p){p.classList.remove('fp-act');});el.classList.add('fp-act');document.querySelectorAll('[data-tcat]').forEach(function(c){c.style.display=(cat==='all'||c.dataset.tcat===cat)?'block':'none';});}
+var _aktiverTerminFilter = 'all';
+
+function filtT(cat,el){
+  _aktiverTerminFilter = cat;
+  document.querySelectorAll('#s-termine .fbar .fpill').forEach(function(p){p.classList.remove('fp-act');});
+  el.classList.add('fp-act');
+  document.querySelectorAll('#s-termine [data-tcat]').forEach(function(card){
+    card.style.display=(cat==='all'||card.dataset.tcat===cat)?'block':'none';
+  });
+  // Leer-Hinweis: zeigen wenn gefiltert nichts vorhanden
+  var sichtbar=document.querySelectorAll('#s-termine [data-tcat]:not([style*="none"])').length;
+  var leer=document.getElementById('termine-leer');
+  if(leer)leer.style.display=(sichtbar===0&&(_localData.termine||[]).length>0)?'block':'none';
+}
 function filtDok(cat,el){document.querySelectorAll('#s-dok .fbar .fpill').forEach(function(p){p.classList.remove('fp-act');});el.classList.add('fp-act');document.querySelectorAll('[data-dkat]').forEach(function(c){c.style.display=(cat==='all'||c.dataset.dkat===cat)?'block':'none';});}
 function switchRTab(tab){['t','h','m'].forEach(function(k){document.getElementById('rtab-'+k).classList.remove('active');});var map={therapie:'t',hilfsmittel:'h',medikament:'m'};document.getElementById('rtab-'+map[tab]).classList.add('active');['rez-therapie','rez-hilfsmittel','rez-medikament'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('rez-'+tab).style.display='block';}
 function switchTbTab(tab){['list','stat','bericht'].forEach(function(t){document.getElementById('tbtab-'+t).classList.toggle('active',t===tab);document.getElementById('tb-view-'+t).style.display=t===tab?'block':'none';});}
@@ -3074,6 +3155,11 @@ function openHMDetail(id) {
     if (hm.by)    h += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">'+hm.by+'</span></div>';
     info.innerHTML = h;
   }
+
+  // Notizen anzeigen
+  setTimeout(function(){
+    updateNotizAnzeige('hm-notiz-anzeige', hm.notizen||[]);
+  }, 50);
 
   goTo('s-hm-fb');
   setNav('n-verwaltung');
@@ -3420,6 +3506,102 @@ function shareCurrentFoto() {
   } catch(e) {
     downloadCurrentFoto();
   }
+}
+
+
+// ── NOTIZEN ──
+var _notizKategorie = null; // 'hm', 'medikamente', 'rezepte'
+var _notizEintragId = null;
+
+function openNotiz(kategorie, id) {
+  _notizKategorie = kategorie;
+  _notizEintragId = id;
+
+  // Bestehende Notizen laden und anzeigen
+  var verlauf = document.getElementById('notiz-verlauf');
+  if (!verlauf) return;
+  verlauf.innerHTML = '';
+
+  var alle = _localData[kategorie] || [];
+  var eintrag = alle.find(function(e) { return e.id === id; });
+  var notizen = (eintrag && eintrag.notizen) ? eintrag.notizen : [];
+
+  if (notizen.length === 0) {
+    verlauf.innerHTML = '<div style="text-align:center;padding:16px;color:#6B7C6D;font-size:13px">Noch keine Notizen vorhanden.</div>';
+  } else {
+    notizen.slice().reverse().forEach(function(n) {
+      verlauf.insertAdjacentHTML('beforeend',
+        '<div style="background:#F4F7F4;border-radius:10px;padding:10px 12px">'
+        +'<div style="font-size:11px;color:#6B7C6D;margin-bottom:4px">'
+        +n.datum+' · '+n.uhrzeit+' · <span style="color:'+(n.byColor||'#7BAE8A')+';font-weight:600">'+n.by+'</span>'
+        +'</div>'
+        +'<div style="font-size:13px;color:#1E2D20;line-height:1.5">'+n.text+'</div>'
+        +'</div>'
+      );
+    });
+  }
+
+  document.getElementById('notiz-text').value = '';
+  openM('m-notiz');
+}
+
+function saveNotiz() {
+  var text = document.getElementById('notiz-text').value.trim();
+  if (!text) { showToast('Bitte Text eingeben'); return; }
+
+  var now = new Date();
+  var notiz = {
+    text: text,
+    datum: now.toLocaleDateString('de-DE'),
+    uhrzeit: now.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}),
+    by: getCurrentUser(),
+    byColor: getCurrentColor(),
+    ts: Date.now()
+  };
+
+  // Zum Eintrag hinzufügen
+  var alle = _localData[_notizKategorie] || [];
+  var idx = alle.findIndex(function(e) { return e.id === _notizEintragId; });
+  if (idx >= 0) {
+    if (!alle[idx].notizen) alle[idx].notizen = [];
+    alle[idx].notizen.push(notiz);
+    saveLocalData(_notizKategorie);
+
+    // Detail-Ansicht aktualisieren
+    if (_notizKategorie === 'hm') {
+      _currentHM = alle[idx];
+      updateNotizAnzeige('hm-notiz-anzeige', alle[idx].notizen);
+    } else if (_notizKategorie === 'medikamente') {
+      _currentMed = alle[idx];
+      updateNotizAnzeige('med-notiz-anzeige', alle[idx].notizen);
+    } else if (_notizKategorie === 'rezepte') {
+      _currentRez = alle[idx];
+      updateNotizAnzeige('rez-notiz-anzeige', alle[idx].notizen);
+    }
+  }
+
+  closeM('m-notiz');
+  showToast('Notiz gespeichert ✓');
+}
+
+function updateNotizAnzeige(containerId, notizen) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  if (!notizen || notizen.length === 0) {
+    el.innerHTML = '<div style="font-size:13px;color:#6B7C6D;font-style:italic">Noch keine Notizen.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  notizen.slice().reverse().forEach(function(n) {
+    el.insertAdjacentHTML('beforeend',
+      '<div style="background:#F4F7F4;border-radius:10px;padding:10px 12px;margin-bottom:6px">'
+      +'<div style="font-size:11px;color:#6B7C6D;margin-bottom:3px">'
+      +n.datum+' · '+n.uhrzeit+' · <span style="color:'+(n.byColor||'#7BAE8A')+';font-weight:600">'+n.by+'</span>'
+      +'</div>'
+      +'<div style="font-size:13px;color:#1E2D20;line-height:1.5">'+n.text+'</div>'
+      +'</div>'
+    );
+  });
 }
 
 // ── TERMIN DETAIL ──
