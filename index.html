@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tildi Life">
+<meta name="theme-color" content="#7BAE8A">
+<title>Tildi Life</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#F4F7F4;overflow-x:hidden}
+body{font-family:-apple-system,'Helvetica Neue',sans-serif;margin:0;padding:0;width:100%;overflow-x:hidden}
+#root{width:100%;max-width:100%;min-height:100vh;background:#F4F7F4;position:relative;overflow-x:hidden}
+@media(min-width:430px){body{background:#E8EDE8;display:flex;justify-content:center}#root{max-width:430px;box-shadow:0 0 40px rgba(0,0,0,.12)}}
+.screen{display:none;min-height:100vh;padding-bottom:80px}
+.screen.active{display:block}
+#s-login.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px}
+.hdr{background:#7BAE8A;padding:52px 18px 16px;position:sticky;top:0;z-index:10}
+.hdr-row{display:flex;justify-content:space-between;align-items:center}
+.hdr-title{font-size:20px;font-weight:700;color:white}
+.hdr-sub{font-size:13px;color:rgba(255,255,255,.75);margin-top:2px}
+.hdr-back{background:none;border:none;color:rgba(255,255,255,.9);font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;font-family:inherit}
+.hdr-act{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:50%;border:none;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.avatar{width:34px;height:34px;background:#F0A882;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;cursor:pointer}
+.sync-bar{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 10px;margin-top:8px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#C43030;flex-shrink:0}
+.bnav{position:fixed;bottom:0;left:0;right:0;width:100%;background:white;border-top:.5px solid rgba(74,122,90,.15);display:flex;padding:8px 0 20px;z-index:20}@media(min-width:430px){.bnav{left:50%;right:auto;transform:translateX(-50%);width:430px;}}
+.nbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;padding:4px 0;color:#6B7C6D;font-family:inherit}
+.nbtn.active{color:#4A7A5A}
+.nbtn.active .nlbl{font-weight:700}
+.nlbl{font-size:10px}
+.npip{width:4px;height:4px;border-radius:50%;background:#7BAE8A;opacity:0}
+.nbtn.active .npip{opacity:1}
+.pc{padding:14px}
+.stitle{font-size:11px;font-weight:700;color:#6B7C6D;text-transform:uppercase;letter-spacing:.8px;margin:4px 0 10px}
+.card{background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:15px;margin-bottom:10px;cursor:pointer}
+.card.warn{border-color:#F0C060}.card.urg{border-color:#E88080}.card.proc{border-color:#A8C8F0}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
+.cti{font-size:14px;font-weight:700;color:#1E2D20}
+.cme{font-size:12px;color:#6B7C6D;margin-bottom:7px}
+.cbottom{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:.5px solid rgba(74,122,90,.15)}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cst{font-size:12px;color:#6B7C6D;flex:1}
+.ccta{font-size:11px;font-weight:700;color:#4A7A5A}
+.pbar{height:3px;background:#F4F7F4;border-radius:2px;margin-top:9px;overflow:hidden}
+.pbf{height:100%;border-radius:2px}
+.bdg{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.bdg.ok{background:#EAF3EC;color:#1E5C2A}.bdg.warn{background:#FEF3E2;color:#7A4A0A}
+.bdg.urg{background:#FDECEA;color:#8B1A1A}.bdg.blue{background:#E8F1FB;color:#0A4A8A}
+.tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.qcard{background:white;border-radius:14px;border:.5px solid rgba(74,122,90,.15);padding:14px;cursor:pointer}
+.alert-b{background:#FDECEA;border:1px solid #E88080;border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.adot{width:8px;height:8px;background:#C43030;border-radius:50%;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fbar{background:white;padding:10px 14px;display:flex;gap:7px;border-bottom:.5px solid rgba(74,122,90,.15);overflow-x:auto}
+.fbar::-webkit-scrollbar{display:none}
+.fpill{padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer;border:.5px solid rgba(74,122,90,.28);background:white;color:#6B7C6D}
+.fp-act{background:#7BAE8A;color:white;border-color:#7BAE8A}
+.tbar{background:white;display:flex;border-bottom:.5px solid rgba(74,122,90,.15)}
+.titem{flex:1;padding:11px 6px;text-align:center;font-size:11px;font-weight:600;color:#6B7C6D;cursor:pointer;border-bottom:2.5px solid transparent}
+.titem.active{color:#4A7A5A;border-bottom-color:#7BAE8A}
+.dcont{padding:14px}
+.dsec{background:white;border-radius:14px;border:.5px solid rgba(74,122,90,.15);padding:14px;margin-bottom:10px}
+.dstitle{font-size:11px;font-weight:700;color:#6B7C6D;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.drow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid rgba(74,122,90,.15)}
+.drow:last-child{border-bottom:none;padding-bottom:0}
+.dl{font-size:12px;color:#6B7C6D}.dv{font-size:12px;font-weight:700;color:#1E2D20;text-align:right;max-width:60%}
+.dv.warn{color:#9A5A00}.dv.urg{color:#B02020}
+.psteps{display:flex;flex-direction:column}
+.pstep{display:flex;gap:12px;padding-bottom:14px}
+.pstep:last-child{padding-bottom:0}
+.psl{display:flex;flex-direction:column;align-items:center}
+.pcirc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.pc-done{background:#EAF3EC;color:#1E5C2A}.pc-act{background:#7BAE8A;color:white}
+.pc-pend{background:#F4F7F4;color:#6B7C6D;border:1px solid rgba(74,122,90,.28)}
+.pline{width:1.5px;background:rgba(74,122,90,.15);flex:1;margin:4px 0;min-height:14px}
+.pbody{flex:1;padding-top:3px}
+.pt{font-size:13px;font-weight:700;color:#1E2D20}
+.ps{font-size:11px;color:#6B7C6D;margin-top:2px}
+.pn{font-size:11px;color:#185FA5;font-weight:600;margin-top:3px}
+.msteps{display:flex;gap:3px;margin-top:9px}
+.ms{flex:1;height:3px;border-radius:2px}
+.ms.done{background:#7BAE8A}.ms.act{background:#378ADD}.ms.pend{background:rgba(74,122,90,.2)}
+.abtn{width:100%;padding:14px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;font-family:inherit;text-align:center}
+.abtn.p{background:#7BAE8A;color:white}.abtn.s{background:white;color:#1E2D20;border:.5px solid rgba(74,122,90,.28)}
+.abtn.w{background:#FEF3E2;color:#7A4A0A}.abtn.u{background:#FDECEA;color:#8B1A1A}
+.movl{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.movl.open{display:flex}
+.msheet{background:white;border-radius:20px 20px 0 0;padding:18px 16px 32px;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;animation:sup .28s ease}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:36px;height:4px;background:rgba(74,122,90,.28);border-radius:2px;margin:0 auto 16px}
+.mtitle{font-size:17px;font-weight:800;color:#1E2D20;margin-bottom:16px}
+.flbl{font-size:12px;color:#6B7C6D;margin-bottom:5px;display:block}
+.finp{width:100%;padding:10px 12px;border-radius:10px;border:.5px solid rgba(74,122,90,.28);background:#F4F7F4;font-size:14px;color:#1E2D20;margin-bottom:10px;-webkit-appearance:none;font-family:inherit}
+.finp:focus{outline:none;border-color:#7BAE8A;background:white}
+.f2col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fbtns{display:flex;gap:8px;margin-top:8px}
+.fcnc{flex:1;padding:12px;border-radius:12px;border:.5px solid rgba(74,122,90,.28);background:#F4F7F4;font-size:14px;color:#6B7C6D;cursor:pointer;font-weight:600;font-family:inherit}
+.fsav{flex:2;padding:12px;border-radius:12px;border:none;background:#7BAE8A;font-size:14px;font-weight:800;color:white;cursor:pointer;font-family:inherit}
+.tbtn{flex:1;padding:9px 4px;border-radius:10px;border:.5px solid rgba(74,122,90,.28);background:#F4F7F4;font-size:11px;font-weight:700;text-align:center;cursor:pointer;color:#6B7C6D;font-family:inherit}
+.tbtn.sel{background:#7BAE8A;color:white;border-color:#7BAE8A}
+.tog{width:44px;height:24px;background:rgba(74,122,90,.28);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tog.on{background:#7BAE8A}
+.togthumb{width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.on .togthumb{left:22px}
+.remrow{display:flex;align-items:center;gap:10px;background:#F4F7F4;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.remrow label{font-size:12px;color:#6B7C6D;flex:1}
+.remrow select{font-size:12px;padding:4px 8px;background:white;border:.5px solid rgba(74,122,90,.28);border-radius:8px;color:#1E2D20;-webkit-appearance:none;font-family:inherit}
+.catsel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.cbtn{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:.5px solid rgba(74,122,90,.28);background:#F4F7F4;color:#6B7C6D}
+.cbtn.s-arzt{background:#E8F1FB;color:#0A4A8A;border-color:#A8C8F0}
+.cbtn.s-therapie{background:#EAF3EC;color:#1E5C2A;border-color:#A0CCA0}
+.cbtn.s-besonders{background:#FEF3E2;color:#7A4A0A;border-color:#F0C060}
+.cbtn.s-behoerde{background:#EEEDFE;color:#3C3489;border-color:#C0BCF0}
+.recrow{display:flex;align-items:center;justify-content:space-between;background:#F4F7F4;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.info-box{background:#E8F1FB;border-radius:10px;padding:12px;margin-bottom:10px}
+.info-box p{font-size:13px;color:#0A4A8A;line-height:1.6}
+.info-box.ok{background:#EAF3EC}.info-box.ok p{color:#1E5C2A}
+.info-box.warn{background:#FEF3E2}.info-box.warn p{color:#7A4A0A}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1E2D20;color:white;font-size:13px;font-weight:600;padding:10px 20px;border-radius:30px;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+#notfall-fab{position:fixed;bottom:88px;right:16px;z-index:30;width:52px;height:52px;background:#C43030;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(196,48,48,.45);cursor:pointer;border:none}@media(min-width:430px){#notfall-fab{right:calc(50% - 199px)}}
+.med-dosis-btn{flex:1;background:#F4F7F4;border-radius:10px;border:.5px solid rgba(74,122,90,.15);padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s}
+.med-dosis-btn.done{background:#EAF3EC;border-color:#A0CCA0}
+.med-dosis-btn:active{transform:scale(.95)}
+.med-einnahme-card{background:white;border-radius:14px;border:.5px solid rgba(74,122,90,.15);padding:14px;display:flex;align-items:center;gap:12px}
+.med-einnahme-card.done{background:#EAF3EC;border-color:#A0CCA0}
+.med-check-btn{width:48px;height:48px;border-radius:50%;border:2px solid rgba(74,122,90,.28);background:#F4F7F4;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:20px;transition:all .2s}
+.med-check-btn.done{background:#7BAE8A;border-color:#4A7A5A;font-size:18px}
+.ausl-btn{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:.5px solid rgba(74,122,90,.28);background:#F4F7F4;color:#6B7C6D}
+.ausl-btn.sel{background:#FEF3E2;color:#7A4A0A;border-color:#F0C060}
+.mehr-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:.5px solid rgba(74,122,90,.15);cursor:pointer}
+.mehr-row:last-child{border-bottom:none}
+.mehr-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.mehr-title{font-size:14px;font-weight:600;color:#1E2D20}
+.mehr-sub{font-size:12px;color:#6B7C6D;margin-top:1px}
+.cam-overlay{position:fixed;inset:0;background:#000;z-index:80;display:none;flex-direction:column}
+.cam-overlay.open{display:flex}
+.camzone{border:1.5px dashed rgba(74,122,90,.28);border-radius:14px;padding:20px 16px;text-align:center;cursor:pointer;background:#F4F7F4;margin-bottom:12px}
+.camico{width:48px;height:48px;background:#EAF3EC;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.cabb{flex:1;padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;border:none;font-family:inherit}
+.cabb.p{background:#7BAE8A;color:white}.cabb.s{background:white;color:#1E2D20;border:.5px solid rgba(74,122,90,.28)}
+.foto-preview-strip{display:none;margin-bottom:12px;border-radius:12px;overflow:hidden;border:.5px solid rgba(74,122,90,.15);position:relative}
+.foto-preview-strip img{width:100%;display:block;max-height:160px;object-fit:cover}
+.aibox{background:#E8F1FB;border-radius:12px;padding:12px 14px;margin-bottom:12px;display:none}
+.aibox.vis{display:block}
+.scananim{background:#F4F7F4;border-radius:12px;padding:20px;text-align:center;margin-bottom:12px;display:none}
+.scananim.vis{display:block}
+.spinner{width:32px;height:32px;border:3px solid rgba(74,122,90,.2);border-top-color:#7BAE8A;border-radius:50%;margin:0 auto 10px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rfoto{border-radius:12px;overflow:hidden;margin-bottom:10px;border:.5px solid rgba(74,122,90,.15)}
+.rmock{background:linear-gradient(150deg,#f5f8f5,#e8f2e8);padding:18px;display:flex;flex-direction:column;gap:10px;min-height:140px;justify-content:space-between}
+.user-card{background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;width:100%;max-width:320px;text-align:left;font-family:inherit}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none}
+select.finp{-webkit-appearance:none}
+textarea.finp{resize:none}
+</style>
+</head>
+<body>
+<div id="root">
+<div class="toast" id="toast"></div>
+
+<!-- KAMERA -->
+<div class="cam-overlay" id="cam-overlay">
+  <div style="position:relative;flex:1;overflow:hidden">
+    <video id="cam-video" style="width:100%;height:100%;object-fit:cover" autoplay playsinline muted></video>
+    <canvas id="cam-canvas" style="display:none"></canvas>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);border:2px solid rgba(255,255,255,.6);border-radius:12px;width:80%;height:55%;pointer-events:none">
+      <div style="position:absolute;bottom:-28px;left:0;right:0;text-align:center;color:rgba(255,255,255,.8);font-size:12px">In Rahmen halten</div>
+    </div>
+  </div>
+  <div style="padding:16px 20px 28px;background:#000;display:flex;align-items:center;justify-content:space-between">
+    <button onclick="camClose()" style="color:white;font-size:15px;font-weight:600;background:none;border:none;cursor:pointer;font-family:inherit">Abbrechen</button>
+    <div onclick="camShoot()" style="width:64px;height:64px;border-radius:50%;background:white;border:4px solid rgba(255,255,255,.4);cursor:pointer"></div>
+    <button onclick="camSwitch()" style="width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</div>
+<div class="cam-overlay" id="cam-preview">
+  <div style="flex:1;background:#000;display:flex;align-items:center;justify-content:center;padding:20px">
+    <img id="cam-preview-img" style="max-width:100%;max-height:100%;border-radius:12px" alt="">
+  </div>
+  <div style="padding:16px 20px 28px;background:#000;display:flex;gap:12px">
+    <button onclick="camRetake()" style="flex:1;padding:13px;border-radius:12px;background:rgba(255,255,255,.15);color:white;font-size:14px;font-weight:600;border:none;cursor:pointer;font-family:inherit">Neu aufnehmen</button>
+    <button onclick="camUse()" style="flex:2;padding:13px;border-radius:12px;background:#7BAE8A;color:white;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit">Verwenden &amp; auslesen</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="s-login" class="screen active">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="width:72px;height:72px;background:#7BAE8A;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <svg width="36" height="36" viewBox="0 0 16 16" fill="none"><path d="M8 2C5 2 2 5 2 9c0 2.5 1.5 4 3 4.5C6 10 9 7 13 6c-1 2-2.5 4-4.5 5.5C10.5 11 12 9 12 6.5 12 3.5 10 2 8 2z" fill="white"/></svg>
+    </div>
+    <div style="font-size:28px;font-weight:800;color:#1E2D20">Tildi Life</div>
+    <div style="font-size:14px;color:#6B7C6D;margin-top:6px">Wer bist du?</div>
+  </div>
+  <div id="user-list" style="width:100%;display:flex;flex-direction:column;gap:12px"></div>
+  <button onclick="openM('m-newuser')" style="margin-top:20px;padding:12px 24px;border-radius:12px;border:1.5px dashed rgba(74,122,90,.28);background:transparent;font-size:14px;font-weight:600;color:#6B7C6D;cursor:pointer;width:280px;font-family:inherit">+ Neue Person hinzufügen</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="s-dash" class="screen">
+  <div class="hdr">
+    <div class="hdr-row">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:30px;height:30px;background:rgba(255,255,255,.22);border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2C5 2 2 5 2 9c0 2.5 1.5 4 3 4.5C6 10 9 7 13 6c-1 2-2.5 4-4.5 5.5C10.5 11 12 9 12 6.5 12 3.5 10 2 8 2z" fill="white"/></svg>
+        </div>
+        <span style="font-size:20px;font-weight:700;color:white">Tildi Life</span>
+      </div>
+      <div class="avatar" id="user-avatar" onclick="goTo('s-mehr')">?</div>
+    </div>
+    <div style="margin-top:6px">
+      <div style="font-size:13px;color:rgba(255,255,255,.75)" id="greet-time">Guten Tag,</div>
+      <div style="font-size:22px;font-weight:700;color:white" id="greet-name">...</div>
+    </div>
+    <div class="sync-bar"><div class="sync-dot" id="sync-dot"></div><span style="font-size:11px;color:rgba(255,255,255,.9)" id="sync-txt">Daten werden geladen...</span></div>
+  </div>
+  <div class="pc">
+    <div class="stitle">Heute im Blick</div>
+    <div class="qgrid">
+      <div class="qcard" onclick="goTo('s-termine')">
+        <div style="font-size:24px">📅</div>
+        <div style="font-size:22px;font-weight:800;color:#0A4A8A;margin-top:8px" id="dash-termine-count">0</div>
+        <div style="font-size:12px;color:#6B7C6D;margin-top:2px">Termine</div>
+        <div style="margin-top:8px"><span class="bdg blue">Verwalten →</span></div>
+      </div>
+      <div class="qcard" onclick="goTo('s-rez')">
+        <div style="font-size:24px">📋</div>
+        <div style="font-size:22px;font-weight:800;color:#4A7A5A;margin-top:8px" id="dash-rez-count">0</div>
+        <div style="font-size:12px;color:#6B7C6D;margin-top:2px">Rezepte</div>
+        <div style="margin-top:8px"><span class="bdg ok">Verwalten →</span></div>
+      </div>
+      <div class="qcard" onclick="goTo('s-med')">
+        <div style="font-size:24px">💊</div>
+        <div style="font-size:22px;font-weight:800;color:#3C3489;margin-top:8px" id="dash-med-count">0</div>
+        <div style="font-size:12px;color:#6B7C6D;margin-top:2px">Medikamente</div>
+        <div style="margin-top:8px"><span class="bdg" style="background:#EEEDFE;color:#3C3489">Verwalten →</span></div>
+      </div>
+      <div class="qcard" onclick="goTo('s-tagebuch')">
+        <div style="font-size:24px">📓</div>
+        <div style="font-size:22px;font-weight:800;color:#4A7A5A;margin-top:8px" id="dash-anfall-count">0</div>
+        <div style="font-size:12px;color:#6B7C6D;margin-top:2px">Anfälle</div>
+        <div style="margin-top:8px"><span class="bdg ok">Tagebuch →</span></div>
+      </div>
+    </div>
+    <div id="dash-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:32px 20px;text-align:center;margin-bottom:14px">
+      <div style="font-size:40px;margin-bottom:12px">🌿</div>
+      <div style="font-size:16px;font-weight:700;color:#1E2D20;margin-bottom:6px">Willkommen bei Tildi Life</div>
+      <div style="font-size:13px;color:#6B7C6D;line-height:1.6">Trage deinen ersten Termin, ein Rezept oder ein Medikament ein – alles erscheint dann hier auf einen Blick.</div>
+    </div>
+    <div id="dash-fristen"></div>
+    <button class="abtn s" style="margin-top:4px" onclick="prepareUebergabe();openM('m-uebergabe')">🤝 Übergabe starten</button>
+    <div id="dash-firebase"></div>
+  </div>
+</div>
+
+<!-- TERMINE -->
+<div id="s-termine" class="screen">
+  <div class="hdr"><div class="hdr-row"><span class="hdr-title">Termine</span><button class="hdr-act" onclick="openM('m-termin')">+</button></div></div>
+  <div class="fbar">
+    <div class="fpill fp-act" onclick="filtT('all',this)">Alle</div>
+    <div class="fpill" onclick="filtT('arzt',this)">Arzt</div>
+    <div class="fpill" onclick="filtT('therapie',this)">Therapie</div>
+    <div class="fpill" onclick="filtT('besonders',this)">Besonderes</div>
+    <div class="fpill" onclick="filtT('behoerde',this)">Behörde</div>
+  </div>
+  <div class="pc">
+    <div id="termine-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:32px 20px;text-align:center;margin-bottom:14px">
+      <div style="font-size:36px;margin-bottom:12px">📅</div>
+      <div style="font-size:15px;font-weight:700;color:#1E2D20;margin-bottom:6px">Noch keine Termine</div>
+      <div style="font-size:13px;color:#6B7C6D;line-height:1.6">Tippe auf + um deinen ersten Termin einzutragen.</div>
+    </div>
+    <div id="termine-list-inner"></div>
+    <div id="firebase-termine"></div>
+  </div>
+</div>
+
+
+<!-- TERMIN DETAIL (Firebase) -->
+<div id="s-td-fb" class="screen">
+  <div class="hdr" id="td-fb-hdr">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-termine');setNav('n-verwaltung')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+      <button class="hdr-act" id="td-fb-edit-btn">✏️</button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px" id="td-fb-title">Termin</div>
+    <div class="hdr-sub" id="td-fb-sub"></div>
+  </div>
+  <div class="dcont">
+    <div class="dsec" id="td-fb-details">
+      <div class="dstitle">Termin</div>
+    </div>
+    <div class="dsec" id="td-fb-notiz-sec" style="display:none">
+      <div class="dstitle">Notizen</div>
+      <p id="td-fb-notiz" style="font-size:13px;color:#6B7C6D;line-height:1.6"></p>
+    </div>
+    <button class="abtn p" onclick="showToast('Erinnerung gesetzt ✓')">Erinnerung aktivieren</button>
+    <button class="abtn s" onclick="showToast('In Kalender eingetragen ✓')">In Kalender eintragen</button>
+    <button class="abtn s" id="td-fb-edit-full" onclick="openTerminEdit()">Termin bearbeiten</button>
+    <button class="abtn u" id="td-fb-del-btn" onclick="deleteCurrentTermin()">Termin löschen</button>
+  </div>
+</div>
+
+<!-- TERMIN DETAIL -->
+<div id="s-td" class="screen" data-back="s-termine">
+  <div class="hdr"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-termine')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Neurologe Kontrolltermin</div><div class="hdr-sub">Dr. Fischer · LMU Klinikum</div></div>
+  <div class="dcont">
+    <div class="dsec"><div class="dstitle">Termin</div><div class="drow"><span class="dl">Datum</span><span class="dv">Mo, 12. Mai 2025</span></div><div class="drow"><span class="dl">Uhrzeit</span><span class="dv">10:30 Uhr</span></div><div class="drow"><span class="dl">Ort</span><span class="dv">LMU Klinikum, Haus 14</span></div><div class="drow"><span class="dl">Erinnerung</span><span class="dv">3 Tage vorher</span></div></div>
+    <div class="dsec"><div class="dstitle">Notizen</div><p style="font-size:13px;color:#6B7C6D;line-height:1.6">Walker-Rezept mitbringen lassen. Baclofen besprechen.</p></div>
+    <button class="abtn p" onclick="showToast('Erinnerung gesetzt ✓')">Erinnerung aktivieren</button>
+    <button class="abtn s" onclick="showToast('In Kalender eingetragen ✓')">In Kalender eintragen</button>
+    <button class="abtn u" onclick="confirmDel('termin','s-termine')">Löschen</button>
+  </div>
+</div>
+
+<!-- REZEPTE -->
+<div id="s-rez" class="screen">
+  <div class="hdr"><div class="hdr-row"><span class="hdr-title">Rezepte</span><button class="hdr-act" onclick="openM('m-rezept')">+</button></div></div>
+  <div class="tbar">
+    <div class="titem active" id="rtab-t" onclick="switchRTab('therapie')">Therapie</div>
+    <div class="titem" id="rtab-h" onclick="switchRTab('hilfsmittel')">Hilfsmittel</div>
+    <div class="titem" id="rtab-m" onclick="switchRTab('medikament')">Medikamente</div>
+  </div>
+  <div class="pc">
+    <div id="rez-therapie">
+      <div id="rez-therapie-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:28px 20px;text-align:center;margin-bottom:10px">
+        <div style="font-size:32px;margin-bottom:10px">📋</div>
+        <div style="font-size:14px;font-weight:700;color:#1E2D20;margin-bottom:4px">Noch keine Rezepte</div>
+        <div style="font-size:12px;color:#6B7C6D">Tippe auf + um ein Rezept hinzuzufügen.</div>
+      </div>
+      <div id="firebase-rezepte"></div>
+    </div>
+    <div id="rez-hilfsmittel" style="display:none">
+      <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:28px 20px;text-align:center;margin-bottom:10px">
+        <div style="font-size:32px;margin-bottom:10px">♿</div>
+        <div style="font-size:14px;font-weight:700;color:#1E2D20;margin-bottom:4px">Noch keine Hilfsmittel-Rezepte</div>
+        <div style="font-size:12px;color:#6B7C6D">Tippe auf + um ein Rezept hinzuzufügen.</div>
+      </div>
+    </div>
+    <div id="rez-medikament" style="display:none">
+      <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:28px 20px;text-align:center;margin-bottom:10px">
+        <div style="font-size:32px;margin-bottom:10px">💊</div>
+        <div style="font-size:14px;font-weight:700;color:#1E2D20;margin-bottom:4px">Noch keine Medikamenten-Rezepte</div>
+        <div style="font-size:12px;color:#6B7C6D">Tippe auf + um ein Rezept hinzuzufügen.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REZEPT DETAIL -->
+<div id="s-rez-detail" class="screen">
+  <div class="hdr"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-rez')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Physiotherapie</div><div class="hdr-sub">Dr. Fischer · noch 8 Tage</div></div>
+  <div class="dcont">
+    <div class="rfoto"><div class="rmock"><div style="display:flex;justify-content:space-between"><div><div style="font-size:9px;color:#4A7A5A;font-weight:700;text-transform:uppercase">Kassenrezept · Muster 13</div><div style="font-size:15px;font-weight:800;color:#1E2D20;margin-top:2px">Physiotherapie</div></div><div style="background:#7BAE8A;color:white;font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700">KFO</div></div><div style="font-size:12px;color:#1E2D20;line-height:1.5">20 × Krankengymnastik neurophysiologisch (KG-ZNS)</div><div style="display:flex;justify-content:space-between;padding-top:8px;border-top:.5px solid rgba(74,122,90,.2);font-size:10px;color:#4A7A5A"><span>Dr. M. Fischer · 15.02.2025</span><span>LMU Klinikum</span></div></div><div style="background:rgba(0,0,0,.4);padding:9px 12px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:white">Foto 15.02.2025</span><button onclick="showToast('Vollbild geöffnet')" style="font-size:11px;font-weight:700;color:white;background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit">Vollbild</button></div></div>
+    <div class="dsec"><div class="dstitle">Details</div><div class="drow"><span class="dl">Verordnung</span><span class="dv">20×KG-ZNS</span></div><div class="drow"><span class="dl">Diagnose</span><span class="dv">G80.1</span></div><div class="drow"><span class="dl">Gültig bis</span><span class="dv warn">06.05.2025</span></div></div>
+    <button class="abtn p" onclick="showToast('Erinnerung gesetzt ✓')">Erinnerung aktivieren</button>
+    <button class="abtn s" onclick="goTo('s-termine');openM('m-termin');showToast('Arzttermin vorbereitet')">Verlängerung – Termin eintragen</button>
+    <button class="abtn s" onclick="showToast('Rezept geteilt ✓')">Rezept teilen</button>
+    <button class="abtn u" onclick="confirmDel('rezept','s-rez')">Löschen</button>
+  </div>
+</div>
+
+<!-- BUCCOLAM DETAIL -->
+<div id="s-bucc-detail" class="screen">
+  <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-rez')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Buccolam 5mg</div><div class="hdr-sub">Notfallmedikament · Eingesetzt 22.04.</div></div>
+  <div class="dcont">
+    <div class="dsec" style="border-color:#E88080"><div class="dstitle" style="color:#8B1A1A">Status: Verwendet</div><div class="drow"><span class="dl">Eingesetzt am</span><span class="dv urg">22.04.2025, 03:40</span></div><div class="drow"><span class="dl">Anlass</span><span class="dv">Epileptischer Anfall</span></div><div class="drow"><span class="dl">Wirkung</span><span class="dv">Anfall gestoppt</span></div></div>
+    <div class="info-box"><p><strong>Wichtig:</strong> Ersatz sofort besorgen. Mit Dr. Meier Rezept vereinbaren.</p></div>
+    <button class="abtn u" onclick="window.location.href='tel:089123456'">Dr. Meier anrufen – 089 123456</button>
+    <button class="abtn p" onclick="goTo('s-termine');openM('m-termin')">Arzttermin eintragen</button>
+    <button class="abtn s" onclick="showToast('Als neu markiert ✓')">Als neu markieren</button>
+  </div>
+</div>
+
+<!-- HILFSMITTEL -->
+<div id="s-hm" class="screen">
+  <div class="hdr"><div class="hdr-row"><span class="hdr-title">Hilfsmittel</span><button class="hdr-act" onclick="openM('m-hm')">+</button></div></div>
+  <div class="pc">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:white;border-radius:12px;border:.5px solid rgba(74,122,90,.15);padding:10px 6px;text-align:center;cursor:pointer" onclick="goTo('s-hm-detail')"><div style="font-size:20px;font-weight:800;color:#B02020" id="hm-stat-1">0</div><div style="font-size:10px;color:#6B7C6D;margin-top:3px">Widerspruch</div></div>
+      <div style="background:white;border-radius:12px;border:.5px solid rgba(74,122,90,.15);padding:10px 6px;text-align:center"><div style="font-size:20px;font-weight:800;color:#0A4A8A" id="hm-stat-2">0</div><div style="font-size:10px;color:#6B7C6D;margin-top:3px">In Prozess</div></div>
+      <div style="background:white;border-radius:12px;border:.5px solid rgba(74,122,90,.15);padding:10px 6px;text-align:center"><div style="font-size:20px;font-weight:800;color:#4A7A5A" id="hm-stat-3">0</div><div style="font-size:10px;color:#6B7C6D;margin-top:3px">Gesamt</div></div>
+    </div>
+    <div id="hm-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:32px 20px;text-align:center;margin-bottom:14px">
+      <div style="font-size:36px;margin-bottom:12px">♿</div>
+      <div style="font-size:15px;font-weight:700;color:#1E2D20;margin-bottom:6px">Noch keine Hilfsmittel</div>
+      <div style="font-size:13px;color:#6B7C6D;line-height:1.6">Tippe auf + um ein Hilfsmittel hinzuzufügen.</div>
+    </div>
+    <div id="firebase-hm"></div>
+  </div>
+</div>
+
+<!-- HM WIDERSPRUCH -->
+<div id="s-hm-detail" class="screen">
+  <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-hm')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Elektrorollstuhl</div><div class="hdr-sub">Abgelehnt · Widerspruch bis 30.05.2025</div></div>
+  <div class="dcont">
+    <div class="dsec" style="border-color:#E88080"><div class="dstitle" style="color:#8B1A1A">Ablehnungsbescheid</div><div class="drow"><span class="dl">Abgelehnt am</span><span class="dv urg">15.04.2025</span></div><div class="drow"><span class="dl">Begründung</span><span class="dv">Wirtschaftlichkeitsgebot</span></div><div class="drow"><span class="dl">Widerspruchsfrist</span><span class="dv urg">30.05.2025</span></div><div class="drow"><span class="dl">Verbleibend</span><span class="dv urg">32 Tage</span></div></div>
+    <div class="info-box"><p><strong>Dein Recht:</strong> Innerhalb von 4 Wochen schriftlich Widerspruch einlegen.</p></div>
+    <div class="dsec"><div class="dstitle">Schritte</div><div class="psteps"><div class="pstep"><div class="psl"><div class="pcirc pc-act">1</div><div class="pline"></div></div><div class="pbody"><div class="pt">Widerspruch formulieren</div><div class="ps">Schriftlich an AOK Bayern</div><div class="pn">Frist: 30.05.2025</div></div></div><div class="pstep"><div class="psl"><div class="pcirc pc-pend">2</div><div class="pline"></div></div><div class="pbody"><div class="pt">Ärztliche Stellungnahme</div><div class="ps">Dr. Fischer bitten</div></div></div><div class="pstep"><div class="psl"><div class="pcirc pc-pend">3</div></div><div class="pbody"><div class="pt">VdK / Sozialdienst</div><div class="ps">Bei weiterer Ablehnung</div></div></div></div></div>
+    <div class="dsec"><div class="dstitle">Lieferant</div><div style="font-size:14px;font-weight:700;color:#1E2D20">Sanitätshaus Zentral GmbH</div><div style="font-size:12px;color:#6B7C6D;margin:4px 0 10px">Frau Hofmann</div><div style="display:flex;gap:8px"><button onclick="window.location.href='tel:089778899'" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#7BAE8A;color:white;font-family:inherit">📞 Anrufen</button><button onclick="mailTo('hofmann@sanitaetshaus-zentral.de')" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;background:#F4F7F4;color:#1E2D20;border:.5px solid rgba(74,122,90,.28);font-family:inherit">✉️ E-Mail</button></div></div>
+    <button class="abtn u" onclick="openM('m-widerspruch')">Widerspruch vorbereiten</button>
+    <button class="abtn w" onclick="goTo('s-termine');openM('m-termin');showToast('Termin bei Dr. Fischer vorbereitet')">Arzt um Stellungnahme bitten</button>
+    <button class="abtn s" onclick="window.location.href='tel:0895302980'">VdK Bayern – 089 530298-0</button>
+    <button class="abtn s" onclick="window.location.href='tel:0894400577'">Sozialdienst LMU – 089 4400-577</button>
+    <button class="abtn s" onclick="openM('m-dok');showToast('Kamera: Bescheid scannen')">Bescheid scannen / speichern</button>
+  </div>
+</div>
+
+<!-- WALKER DETAIL -->
+<div id="s-walker-detail" class="screen">
+  <div class="hdr"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-hm')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Therapie-Walker</div><div class="hdr-sub">Schritt 3 von 5 · KK prüft</div></div>
+  <div class="dcont">
+    <div class="dsec"><div class="dstitle">Prozess</div><div class="psteps"><div class="pstep"><div class="psl"><div class="pcirc pc-done">✓</div><div class="pline"></div></div><div class="pbody"><div class="pt">Rezept ausgestellt</div><div class="ps">Dr. Fischer · 10.03.2025</div></div></div><div class="pstep"><div class="psl"><div class="pcirc pc-done">✓</div><div class="pline"></div></div><div class="pbody"><div class="pt">Kostenvoranschlag</div><div class="ps">Reha-Team GmbH · 2.340€</div></div></div><div class="pstep"><div class="psl"><div class="pcirc pc-act">3</div><div class="pline"></div></div><div class="pbody"><div class="pt">Krankenkasse prüft</div><div class="ps">AOK Bayern · seit 20.03.</div><div class="pn">Typisch 4–6 Wochen</div></div></div><div class="pstep"><div class="psl"><div class="pcirc pc-pend">4</div><div class="pline"></div></div><div class="pbody"><div class="pt">Genehmigung</div><div class="ps">Ausstehend</div></div></div><div class="pstep"><div class="psl"><div class="pcirc pc-pend">5</div></div><div class="pbody"><div class="pt">Lieferung</div><div class="ps">Ausstehend</div></div></div></div></div>
+    <div class="dsec"><div class="dstitle">Lieferant</div><div style="font-size:14px;font-weight:700;color:#1E2D20">Reha-Team GmbH</div><div style="font-size:12px;color:#6B7C6D;margin:4px 0 10px">Hr. Krause</div><div style="display:flex;gap:8px"><button onclick="window.location.href='tel:089445566'" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#7BAE8A;color:white;font-family:inherit">📞 Anrufen</button><button onclick="mailTo('krause@reha-team.de')" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;background:#F4F7F4;color:#1E2D20;border:.5px solid rgba(74,122,90,.28);font-family:inherit">✉️ E-Mail</button></div></div>
+    <button class="abtn p" onclick="openM('m-schritt-update')">Schritt aktualisieren</button>
+    <button class="abtn s" onclick="window.location.href='tel:089445566'">Lieferanten anrufen</button>
+  </div>
+</div>
+
+<!-- MEDIKAMENTE -->
+<div id="s-med" class="screen">
+  <div class="hdr">
+    <div class="hdr-row">
+      <span class="hdr-title">Medikamente</span>
+      <button class="hdr-act" onclick="openM('m-med-neu')">+</button>
+    </div>
+    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:12px;color:rgba(255,255,255,.8)" id="med-datum-anzeige"></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.9);font-weight:600" id="med-heute-fort">0 von 0 heute</div>
+    </div>
+  </div>
+
+  <!-- HEUTE -->
+  <div style="background:white;margin:0;border-bottom:.5px solid rgba(74,122,90,.15);padding:14px 14px 10px">
+    <div class="stitle" style="margin-bottom:10px">Heute bestätigen</div>
+    <div id="med-heute-cards" style="display:flex;flex-direction:column;gap:8px">
+      <div style="text-align:center;padding:20px;color:#6B7C6D;font-size:13px" id="med-heute-leer">
+        Noch keine Medikamente angelegt.<br>Tippe auf + um zu starten.
+      </div>
+    </div>
+  </div>
+
+  <!-- ALLE MEDIKAMENTE -->
+  <div class="pc">
+    <div class="stitle">Meine Medikamente</div>
+    <div id="med-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:28px 20px;text-align:center;margin-bottom:10px">
+      <div style="font-size:36px;margin-bottom:12px">💊</div>
+      <div style="font-size:15px;font-weight:700;color:#1E2D20;margin-bottom:6px">Noch keine Medikamente</div>
+      <div style="font-size:13px;color:#6B7C6D;line-height:1.6">Tippe auf + um ein Medikament hinzuzufügen.</div>
+    </div>
+    <div id="firebase-medikamente"></div>
+
+    <!-- STATISTIK -->
+    <div id="med-statistik" style="display:none">
+      <div class="stitle" style="margin-top:4px">Einnahme letzte 14 Tage</div>
+      <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:flex-end;gap:4px;height:60px;margin-bottom:8px" id="med-chart-bars"></div>
+        <div style="display:flex;gap:4px" id="med-chart-labels"></div>
+        <div style="display:flex;gap:12px;margin-top:10px;padding-top:10px;border-top:.5px solid rgba(74,122,90,.15)">
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;background:#7BAE8A;border-radius:2px"></div><span style="font-size:11px;color:#6B7C6D">Vollständig</span></div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;background:#F0A882;border-radius:2px"></div><span style="font-size:11px;color:#6B7C6D">Teilweise</span></div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;background:#F4F7F4;border-radius:2px;border:.5px solid rgba(74,122,90,.2)"></div><span style="font-size:11px;color:#6B7C6D">Nicht genommen</span></div>
+        </div>
+      </div>
+      <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:14px;margin-bottom:10px">
+        <div class="dstitle">Einnahme-Quote</div>
+        <div style="display:flex;justify-content:space-around;text-align:center;padding:8px 0">
+          <div><div style="font-size:26px;font-weight:800;color:#7BAE8A" id="stat-quote">–</div><div style="font-size:11px;color:#6B7C6D">14 Tage</div></div>
+          <div><div style="font-size:26px;font-weight:800;color:#4A7A5A" id="stat-streak">–</div><div style="font-size:11px;color:#6B7C6D">Tage in Folge</div></div>
+          <div><div style="font-size:26px;font-weight:800;color:#0A4A8A" id="stat-gesamt">–</div><div style="font-size:11px;color:#6B7C6D">Gesamt</div></div>
+        </div>
+      </div>
+      <button class="abtn s" onclick="exportMedPDF()">📄 Bericht für Arzt exportieren</button>
+      <button class="abtn s" onclick="exportMedBericht()">📊 Tabelle exportieren</button>
+    </div>
+  </div>
+</div>
+
+<!-- MED DETAIL -->
+<div id="s-med-detail" class="screen">
+  <div class="hdr" id="med-detail-hdr">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-med');setNav('n-gesundheit')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+      <button class="hdr-act" onclick="editCurrentMed()">✏️</button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px" id="med-detail-title">Medikament</div>
+    <div class="hdr-sub" id="med-detail-sub"></div>
+  </div>
+  <div class="dcont">
+    <div class="dsec" id="med-detail-info"></div>
+    <button class="abtn p" onclick="showToast('Erinnerungen aktiv ✓')">Erinnerungen aktivieren</button>
+    <button class="abtn s" onclick="openM('m-vorrat')">Vorrat aktualisieren</button>
+    <button class="abtn u" onclick="deleteCurrentMed()">Medikament löschen</button>
+  </div>
+</div>
+
+<!-- MED DETAIL -->
+<div id="s-med-detail" class="screen">
+  <div class="hdr"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-med')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Baclofen 10mg</div><div class="hdr-sub">3× täglich · Dr. Meier</div></div>
+  <div class="dcont">
+    <div class="dsec" style="background:#EAF3EC;border-color:#A0CCA0"><div class="dstitle" style="color:#1E5C2A">Vorrat</div><div style="font-size:28px;font-weight:800;color:#1E5C2A;margin-bottom:8px">45 Tage</div><div style="height:8px;background:rgba(0,0,0,.1);border-radius:4px;overflow:hidden"><div style="height:100%;width:75%;background:#4A7A5A;border-radius:4px"></div></div></div>
+    <div class="dsec"><div class="dstitle">Details</div><div class="drow"><span class="dl">Dosierung</span><span class="dv">3× täglich je 1 Tbl.</span></div><div class="drow"><span class="dl">Uhrzeiten</span><span class="dv">07:30 · 13:00 · 19:00</span></div><div class="drow"><span class="dl">Hinweis</span><span class="dv">Nach dem Essen</span></div></div>
+    <div class="dsec"><div class="dstitle">Einnahme letzte 7 Tage</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px" id="med-verlauf"></div></div>
+    <button class="abtn p" onclick="showToast('Erinnerungen: 07:30, 13:00, 19:00 ✓')">Erinnerungen aktivieren</button>
+    <button class="abtn s" onclick="openM('m-vorrat')">Vorrat aktualisieren</button>
+    <button class="abtn s" onclick="exportMedBericht()">Einnahmebericht exportieren</button>
+  </div>
+</div>
+
+<!-- TAGEBUCH -->
+<div id="s-tagebuch" class="screen">
+  <div class="hdr"><div class="hdr-row"><span class="hdr-title">Anfallstagebuch</span><button class="hdr-act" onclick="openM('m-anfall-neu')">+</button></div></div>
+  <div style="background:#7BAE8A;padding:14px 16px 16px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div style="background:rgba(255,255,255,.18);border-radius:12px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:white" id="tb-7">0</div><div style="font-size:10px;color:rgba(255,255,255,.8)">7 Tage</div></div>
+      <div style="background:rgba(255,255,255,.18);border-radius:12px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:white" id="tb-30">0</div><div style="font-size:10px;color:rgba(255,255,255,.8)">30 Tage</div></div>
+      <div style="background:rgba(255,255,255,.18);border-radius:12px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:white" id="tb-notfall">0</div><div style="font-size:10px;color:rgba(255,255,255,.8)">Notfälle</div></div>
+    </div>
+  </div>
+  <div class="tbar">
+    <div class="titem active" id="tbtab-list" onclick="switchTbTab('list')">Verlauf</div>
+    <div class="titem" id="tbtab-stat" onclick="switchTbTab('stat')">Statistik</div>
+    <div class="titem" id="tbtab-bericht" onclick="switchTbTab('bericht')">Arztbericht</div>
+  </div>
+  <div id="tb-view-list" class="pc">
+    <div class="stitle">Einträge</div>
+    <div id="tb-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:28px 20px;text-align:center;margin-bottom:10px">
+      <div style="font-size:36px;margin-bottom:12px">📓</div>
+      <div style="font-size:15px;font-weight:700;color:#1E2D20;margin-bottom:6px">Noch keine Einträge</div>
+      <div style="font-size:13px;color:#6B7C6D;line-height:1.6">Tippe auf + um einen Anfall zu dokumentieren.</div>
+    </div>
+    <div id="firebase-tagebuch"></div>
+  </div>
+  <div id="tb-view-stat" class="pc" style="display:none"><div class="info-box ok"><p>Statistik wird aus deinen Einträgen berechnet. Trage mehr Anfälle ein um Muster zu erkennen.</p></div></div>
+  <div id="tb-view-bericht" class="pc" style="display:none">
+    <div class="info-box ok"><p>Arztbericht der letzten 30 Tage – bereit für den Neurologen-Termin.</p></div>
+    <div class="dsec"><div class="dstitle">Vorschau</div><div style="font-size:12px;color:#6B7C6D;line-height:1.8"><strong>TILDI LIFE – ANFALLSBERICHT</strong><br>Zeitraum: 30 Tage · Patient: Matilda<br><br>Noch keine Einträge vorhanden.<br>Trage Anfälle im Tagebuch ein – sie erscheinen dann hier.</div></div>
+    <button class="abtn p" onclick="exportAnfallBericht()">Als Textdatei exportieren</button>
+    <button class="abtn s" onclick="showToast('Bericht geteilt ✓')">Bericht teilen</button>
+  </div>
+</div>
+
+<!-- ANFALL DETAIL -->
+<div id="s-anfall-detail" class="screen">
+  <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-tagebuch')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button><button class="hdr-act">✏️</button></div><div class="hdr-title" style="margin-top:6px">Tonisch-klonisch · 22.04.2025</div><div class="hdr-sub">03:38 Uhr · 2 Min · Intensität 4/4</div></div>
+  <div class="dcont">
+    <div class="dsec" style="border-color:#E88080"><div class="dstitle" style="color:#8B1A1A">Anfall</div><div class="drow"><span class="dl">Art</span><span class="dv">Tonisch-klonisch</span></div><div class="drow"><span class="dl">Datum</span><span class="dv">22.04.2025, 03:38</span></div><div class="drow"><span class="dl">Dauer</span><span class="dv">ca. 2 Minuten</span></div><div class="drow"><span class="dl">Intensität</span><span class="dv urg">4/4 (stark)</span></div><div class="drow"><span class="dl">Auslöser</span><span class="dv">Schlafmangel</span></div><div class="drow"><span class="dl">Notiert von</span><span class="dv">Iris</span></div></div>
+    <div class="dsec" style="border-color:#E88080"><div class="dstitle" style="color:#8B1A1A">Buccolam-Gabe</div><div class="drow"><span class="dl">Gegeben um</span><span class="dv urg">03:40 Uhr</span></div><div class="drow"><span class="dl">Wirkung</span><span class="dv">Anfall gestoppt</span></div></div>
+    <div class="info-box"><p>Buccolam-Vorrat wurde als "Verwendet" markiert. Ersatz nötig.</p></div>
+    <button class="abtn p" onclick="goTo('s-bucc-detail')">→ Buccolam-Eintrag öffnen</button>
+    <button class="abtn s" onclick="showToast('Eintrag geteilt ✓')">Eintrag teilen</button>
+    <button class="abtn u" onclick="confirmDel('anfall','s-tagebuch')">Löschen</button>
+  </div>
+</div>
+
+<!-- DOKUMENTE -->
+<div id="s-dok" class="screen">
+  <div class="hdr"><div class="hdr-row"><span class="hdr-title">Dokumente</span><button class="hdr-act" onclick="openM('m-dok')">+</button></div></div>
+  <div class="fbar"><div class="fpill fp-act" onclick="filtDok('all',this)">Alle</div><div class="fpill" onclick="filtDok('behoerde',this)">Behörde</div><div class="fpill" onclick="filtDok('arzt',this)">Arztbriefe</div><div class="fpill" onclick="filtDok('bescheid',this)">Bescheide</div></div>
+  <div class="pc">
+    <div id="dok-leer" style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);padding:32px 20px;text-align:center;margin-bottom:14px">
+      <div style="font-size:36px;margin-bottom:12px">📄</div>
+      <div style="font-size:15px;font-weight:700;color:#1E2D20;margin-bottom:6px">Noch keine Dokumente</div>
+      <div style="font-size:13px;color:#6B7C6D;line-height:1.6">Tippe auf + um einen Brief, Bescheid oder Arztbrief hinzuzufügen.</div>
+    </div>
+    <div id="firebase-dokumente"></div>
+  </div>
+</div>
+
+<!-- DOK DETAIL -->
+<div id="s-dok-detail" class="screen">
+  <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-dok')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button><button class="hdr-act" onclick="showToast('Geteilt')">⬆️</button></div><div class="hdr-title" style="margin-top:6px">Ablehnungsbescheid Rollstuhl</div><div class="hdr-sub">AOK Bayern · 15.04.2025</div></div>
+  <div class="dcont">
+    <div class="rfoto"><div class="rmock"><div style="display:flex;justify-content:space-between"><div><div style="font-size:9px;color:#4A7A5A;font-weight:700;text-transform:uppercase">Bescheid · AOK Bayern</div><div style="font-size:15px;font-weight:800;color:#1E2D20;margin-top:2px">Ablehnung Hilfsmittel</div></div><div style="background:#C43030;color:white;font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700">Abgelehnt</div></div><div style="font-size:12px;color:#1E2D20;line-height:1.5">Ihr Antrag auf Elektrorollstuhl wird abgelehnt. §12 SGB V Wirtschaftlichkeitsgebot.</div><div style="display:flex;justify-content:space-between;padding-top:8px;border-top:.5px solid rgba(74,122,90,.2);font-size:10px;color:#4A7A5A"><span>AOK Bayern · 15.04.2025</span><span>Widerspruch bis 30.05.</span></div></div><div style="background:rgba(0,0,0,.4);padding:9px 12px;display:flex;justify-content:space-between"><span style="font-size:11px;color:white">von Rudolf · 15.04.2025</span><button onclick="showToast('Vollbild')" style="font-size:11px;font-weight:700;color:white;background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit">Vollbild</button></div></div>
+    <div class="dsec"><div class="dstitle">Info</div><div class="drow"><span class="dl">Frist</span><span class="dv urg">30.05.2025</span></div><div class="drow"><span class="dl">Verknüpft</span><span class="dv" style="color:#185FA5;cursor:pointer" onclick="goTo('s-hm-detail')">→ Elektrorollstuhl</span></div></div>
+    <button class="abtn u" onclick="goTo('s-hm-detail')">Zum Hilfsmittel</button>
+    <button class="abtn p" onclick="openM('m-widerspruch')">Widerspruch vorbereiten</button>
+    <button class="abtn u" onclick="confirmDel('dokument','s-dok')">Löschen</button>
+  </div>
+</div>
+
+<!-- MEHR -->
+<div id="s-mehr" class="screen">
+  <div class="hdr"><div class="hdr-row"><span class="hdr-title">Mehr</span><div class="avatar" id="mehr-avatar" onclick="goTo('s-einstellungen')">?</div></div></div>
+  <div class="pc">
+    <div style="position:relative;margin-bottom:14px"><input class="finp" id="global-search" type="text" placeholder="Suchen..." oninput="globalSearch(this.value)" style="padding-left:40px;margin:0"><svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%)" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#6B7C6D" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="#6B7C6D" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div id="search-results"></div>
+    <div class="stitle">Gesundheit</div>
+    <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);overflow:hidden;margin-bottom:14px">
+      <div class="mehr-row" onclick="goTo('s-med')"><div class="mehr-icon" style="background:#EEEDFE">💊</div><div><div class="mehr-title">Medikamente</div><div class="mehr-sub">Tracker, Vorrat, Erinnerungen</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" onclick="goTo('s-tagebuch')"><div class="mehr-icon" style="background:#FDECEA">📓</div><div><div class="mehr-title">Anfallstagebuch</div><div class="mehr-sub">Dokumentation, Statistik, Bericht</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" onclick="goTo('s-rez')"><div class="mehr-icon" style="background:#EAF3EC">📋</div><div><div class="mehr-title">Rezepte</div><div class="mehr-sub">Therapie, Hilfsmittel, Medikamente</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+    </div>
+    <div class="stitle">Verwaltung</div>
+    <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);overflow:hidden;margin-bottom:14px">
+      <div class="mehr-row" onclick="goTo('s-termine')"><div class="mehr-icon" style="background:#E8F1FB">📅</div><div><div class="mehr-title">Termine</div><div class="mehr-sub">Arzt, Therapie, Behörden</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" onclick="goTo('s-hm')"><div class="mehr-icon" style="background:#FEF3E2">♿</div><div><div class="mehr-title">Hilfsmittel</div><div class="mehr-sub">Anträge, Genehmigungen, Widerspruch</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" onclick="goTo('s-dok')"><div class="mehr-icon" style="background:#EEEDFE">📄</div><div><div class="mehr-title">Dokumente</div><div class="mehr-sub">Arztbriefe, Bescheide</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+    </div>
+    <div class="stitle">Konto</div>
+    <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);overflow:hidden;margin-bottom:14px">
+      <div class="mehr-row" onclick="goTo('s-einstellungen')"><div class="mehr-icon" style="background:#F4F7F4">⚙️</div><div><div class="mehr-title">Einstellungen</div><div class="mehr-sub">Push, Sync, Profil</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" onclick="switchUser()"><div class="mehr-icon" style="background:#F4F7F4">👤</div><div><div class="mehr-title">Nutzer wechseln</div><div class="mehr-sub" id="mehr-user-sub">Aktuell: –</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- EINSTELLUNGEN -->
+<div id="s-einstellungen" class="screen">
+  <div class="hdr"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-mehr')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Einstellungen</div></div>
+  <div class="pc">
+    <div class="stitle">Profil</div>
+    <div class="dsec"><div class="drow"><span class="dl">Name</span><span class="dv" id="settings-name">–</span></div><div class="drow"><span class="dl">Kind</span><span class="dv">Matilda · Rett-Syndrom</span></div></div>
+    <div class="stitle">Sync</div>
+    <div class="dsec"><div class="drow"><span class="dl">Firebase</span><span class="dv" id="fb-status-detail">Wird geprüft...</span></div><div class="drow"><span class="dl">URL</span><span class="dv">tildi-life.netlify.app</span></div></div>
+    <div class="stitle">Push-Benachrichtigungen</div>
+    <button class="abtn p" onclick="requestPush()">Benachrichtigungen aktivieren</button>
+    <button class="abtn s" onclick="sendTestNotif()">Testbenachrichtigung senden</button>
+    <div class="stitle">Daten</div>
+    <button class="abtn s" onclick="exportData()">Alle Daten exportieren</button>
+    <button class="abtn u" style="margin-top:4px" onclick="switchUser()">Abmelden</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="bnav">
+  <button class="nbtn active" id="n-dash" onclick="goTo('s-dash');setNav('n-dash')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <span class="nlbl">Übersicht</span><div class="npip"></div>
+  </button>
+  <button class="nbtn" id="n-gesundheit" onclick="goTo('s-med');setNav('n-gesundheit')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3h6v3H9zM7 6h10l1 14H6L7 6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="10" x2="12" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span class="nlbl">Gesundheit</span><div class="npip"></div>
+  </button>
+  <button class="nbtn" id="n-verwaltung" onclick="goTo('s-termine');setNav('n-verwaltung')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 9h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span class="nlbl">Verwaltung</span><div class="npip"></div>
+  </button>
+  <button class="nbtn" id="n-mehr" onclick="goTo('s-mehr');setNav('n-mehr')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+    <span class="nlbl">Mehr</span><div class="npip"></div>
+  </button>
+</nav>
+
+<!-- NOTFALL FAB -->
+<button id="notfall-fab" onclick="openM('m-notfall')" aria-label="Notfall">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 7v5M12 17h.01" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+</button>
+
+<!-- MODAL: NEUER NUTZER -->
+<div class="movl" id="m-newuser">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Person hinzufügen</div>
+    <span class="flbl">Vorname</span>
+    <input class="finp" id="nu-name" type="text" placeholder="z.B. Rudolf oder Iris">
+    <span class="flbl">Farbe</span>
+    <div style="display:flex;gap:10px;margin-bottom:14px" id="nu-colors">
+      <div onclick="selColor(this,'#7BAE8A')" style="width:40px;height:40px;border-radius:50%;background:#7BAE8A;cursor:pointer;border:3px solid #4A7A5A"></div>
+      <div onclick="selColor(this,'#F0A882')" style="width:40px;height:40px;border-radius:50%;background:#F0A882;cursor:pointer;border:2px solid transparent"></div>
+      <div onclick="selColor(this,'#378ADD')" style="width:40px;height:40px;border-radius:50%;background:#378ADD;cursor:pointer;border:2px solid transparent"></div>
+      <div onclick="selColor(this,'#B07ACF')" style="width:40px;height:40px;border-radius:50%;background:#B07ACF;cursor:pointer;border:2px solid transparent"></div>
+    </div>
+    <div class="fbtns">
+      <button class="fcnc" onclick="closeM('m-newuser')">Abbrechen</button>
+      <button class="fsav" onclick="saveNewUser()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NEUER TERMIN -->
+<div class="movl" id="m-termin">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Neuer Termin</div>
+    <span class="flbl">Bezeichnung</span><input class="finp" id="t-bez" type="text" placeholder="z.B. Neurologe Kontrolltermin">
+    <span class="flbl">Kategorie</span>
+    <div class="catsel">
+      <div class="cbtn s-arzt" onclick="selCat(this,'arzt')">Arzt</div>
+      <div class="cbtn" onclick="selCat(this,'therapie')">Therapie</div>
+      <div class="cbtn" onclick="selCat(this,'besonders')">Besonderes</div>
+      <div class="cbtn" onclick="selCat(this,'behoerde')">Behörde</div>
+    </div>
+    <div class="f2col"><div><span class="flbl">Datum</span><input class="finp" id="t-datum" type="date"></div><div><span class="flbl">Uhrzeit</span><input class="finp" id="t-zeit" type="time" value="10:00"></div></div>
+    <span class="flbl">Ort</span><input class="finp" id="t-ort" type="text" placeholder="z.B. LMU Klinikum">
+    <div class="recrow"><span class="reclbl">Wiederkehrend</span><div class="tog" id="tog-recur" onclick="togRecur()"><div class="togthumb"></div></div></div>
+    <div id="recur-opts" style="display:none;margin-bottom:10px"><select class="finp" style="margin:0"><option>Wöchentlich</option><option>Zweiwöchentlich</option><option>Monatlich</option></select></div>
+    <div class="remrow"><label>Erinnerung</label><select id="t-erin"><option>Am gleichen Tag</option><option>1 Tag vorher</option><option selected>3 Tage vorher</option><option>7 Tage vorher</option><option>2 Wochen vorher</option></select></div>
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-termin')">Abbrechen</button><button class="fsav" onclick="saveTermin()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NEUES REZEPT -->
+<div class="movl" id="m-rezept">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Neues Rezept</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <div class="tbtn sel" onclick="selType(this)">Therapie</div>
+      <div class="tbtn" onclick="selType(this)">Hilfsmittel</div>
+      <div class="tbtn" onclick="selType(this)">Medikament</div>
+    </div>
+    <div class="camzone" id="camzone">
+      <div class="camico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#4A7A5A" stroke-width="1.5"/><circle cx="12" cy="13" r="4" stroke="#4A7A5A" stroke-width="1.5"/></svg></div>
+      <div style="font-size:14px;font-weight:700;color:#1E2D20;margin-bottom:4px">Rezept fotografieren</div>
+      <div style="font-size:12px;color:#6B7C6D">Felder werden automatisch erkannt</div>
+      <div style="display:flex;gap:8px;margin-top:14px"><button class="cabb p" onclick="openCamera()">Kamera</button><button class="cabb s" onclick="openGallery()">Galerie</button></div>
+    </div>
+    <input type="file" id="gallery-input" accept="image/*" style="display:none" onchange="handleGallery(event)">
+    <div class="foto-preview-strip" id="foto-strip"><img id="foto-img" alt=""><span style="position:absolute;top:8px;right:8px;background:#7BAE8A;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">Foto ✓</span><button onclick="resetCamera()" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.5);color:white;font-size:11px;padding:5px 10px;border-radius:8px;border:none;cursor:pointer;font-family:inherit">Neu</button></div>
+    <div class="scananim" id="scananim"><div class="spinner"></div><div style="font-size:13px;color:#6B7C6D">Wird ausgelesen...</div></div>
+    <div class="aibox" id="aibox">
+      <div style="font-size:11px;font-weight:700;color:#0A4A8A;margin-bottom:8px;display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#0A4A8A" stroke-width="1.5"/></svg>Automatisch erkannt – prüfen</div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid rgba(10,74,138,.12)"><span style="font-size:11px;color:#185FA5">Bezeichnung</span><span style="font-size:11px;font-weight:700;color:#0A4A8A" id="ai-bez">–</span></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:11px;color:#185FA5">Arzt</span><span style="font-size:11px;font-weight:700;color:#0A4A8A" id="ai-arzt">–</span></div>
+    </div>
+    <span class="flbl">Bezeichnung</span><input class="finp" id="rez-titel" type="text" placeholder="z.B. Ergotherapie">
+    <div class="f2col"><div><span class="flbl">Ausgestellt</span><input class="finp" id="rez-datum" type="date"></div><div><span class="flbl">Gültig bis</span><input class="finp" id="rez-bis" type="date"></div></div>
+    <span class="flbl">Arzt</span><input class="finp" id="rez-arzt" type="text" placeholder="z.B. Dr. Fischer">
+    <div class="remrow"><label>Erinnerung</label><select id="rez-erin"><option>3 Tage</option><option selected>7 Tage</option><option>14 Tage</option></select></div>
+    <div class="fbtns"><button class="fcnc" onclick="resetRezeptForm();closeM('m-rezept')">Abbrechen</button><button class="fsav" onclick="saveRezept()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NEUES HILFSMITTEL -->
+<div class="movl" id="m-hm">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Neues Hilfsmittel</div>
+    <span class="flbl">Bezeichnung</span><input class="finp" id="hm-bez" type="text" placeholder="z.B. Therapie-Walker">
+    <span class="flbl">Kategorie</span><select class="finp"><option>Mobilität</option><option>Kommunikation</option><option>Pflege</option><option>Therapie</option></select>
+    <span class="flbl">Arzt</span><input class="finp" id="hm-arzt" type="text" placeholder="z.B. Dr. Fischer">
+    <div class="f2col"><div><span class="flbl">Beantragt</span><input class="finp" id="hm-datum" type="date"></div><div><span class="flbl">Kostenvoranschlag</span><input class="finp" id="hm-kv" type="text" placeholder="z.B. 2.340€"></div></div>
+    <span class="flbl">Krankenkasse</span><input class="finp" id="hm-kk" type="text" placeholder="z.B. AOK Bayern">
+    <span class="flbl">Lieferant</span><input class="finp" id="hm-lief" type="text" placeholder="Firmenname">
+    <div class="f2col"><div><span class="flbl">Ansprechpartner</span><input class="finp" id="hm-ap" type="text" placeholder="Name"></div><div><span class="flbl">Telefon</span><input class="finp" id="hm-tel" type="tel" placeholder="089..."></div></div>
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-hm')">Abbrechen</button><button class="fsav" onclick="saveHM()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NEUES MEDIKAMENT -->
+<div class="movl" id="m-med-neu">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Neues Medikament</div>
+    <span class="flbl">Name &amp; Stärke</span>
+    <input class="finp" id="med-name" type="text" placeholder="z.B. Baclofen 10mg">
+    <span class="flbl">Kategorie</span>
+    <select class="finp" id="med-kat">
+      <option>Muskelrelaxans</option><option>Antiepileptikum</option>
+      <option>Schlafmittel</option><option>Notfallmedikament</option><option>Sonstiges</option>
+    </select>
+    <span class="flbl">Verschreibender Arzt</span>
+    <input class="finp" id="med-arzt" type="text" placeholder="z.B. Dr. Meier · Neurologie">
+    <span class="flbl">Einnahme-Häufigkeit</span>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <div class="tbtn sel" id="med-freq-1" onclick="setMedFreq(1)">1× täglich</div>
+      <div class="tbtn" id="med-freq-2" onclick="setMedFreq(2)">2× täglich</div>
+      <div class="tbtn" id="med-freq-3" onclick="setMedFreq(3)">3× täglich</div>
+    </div>
+    <span class="flbl">Einnahmezeiten</span>
+    <div id="med-zeiten-container" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div><span class="flbl">Morgens</span><input class="finp" id="med-t1" type="time" value="07:30" style="margin:0"></div>
+      <div id="med-t2-wrap" style="display:none"><span class="flbl">Abends</span><input class="finp" id="med-t2" type="time" value="19:00" style="margin:0"></div>
+      <div id="med-t3-wrap" style="display:none"><span class="flbl">Mittags</span><input class="finp" id="med-t3" type="time" value="13:00" style="margin:0"></div>
+    </div>
+    <span class="flbl">Einnahmehinweis</span>
+    <input class="finp" id="med-hinweis" type="text" placeholder="z.B. Nach dem Essen nehmen">
+    <div class="f2col">
+      <div><span class="flbl">Vorrat (Tage)</span><input class="finp" id="med-vorrat" type="number" placeholder="z.B. 45" min="0"></div>
+      <div><span class="flbl">Warnung bei (Tage)</span><input class="finp" id="med-warn" type="number" placeholder="z.B. 14" min="0"></div>
+    </div>
+    <span class="flbl">Notizen</span>
+    <input class="finp" id="med-notiz" type="text" placeholder="z.B. Bei Müdigkeit Arzt informieren">
+    <div class="fbtns">
+      <button class="fcnc" onclick="closeM('m-med-neu')">Abbrechen</button>
+      <button class="fsav" onclick="saveMed()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VORRAT -->
+<div class="movl" id="m-vorrat">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Vorrat aktualisieren</div>
+    <span class="flbl">Medikament</span><select class="finp"><option>Baclofen 10mg</option><option>Melatonin 1mg</option><option>Buccolam 5mg</option></select>
+    <span class="flbl">Neue Menge (Stück)</span><input class="finp" type="number" placeholder="z.B. 90">
+    <span class="flbl">Gekauft am</span><input class="finp" type="date">
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-vorrat')">Abbrechen</button><button class="fsav" onclick="closeM('m-vorrat');showToast('Vorrat aktualisiert ✓')">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NEUER ANFALL -->
+<div class="movl" id="m-anfall-neu">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Anfall dokumentieren</div>
+    <div class="info-box" style="background:#FDECEA;border-left:3px solid #E88080;margin-bottom:14px"><p style="color:#8B1A1A">Ruhig dokumentieren. Buccolam-Gabe unten angeben.</p></div>
+    <span class="flbl">Anfallsart</span><select class="finp" id="anfall-art"><option>Tonisch-klonisch</option><option>Fokal bewusst</option><option>Absence</option><option>Myoklonisch</option><option>Unbekannt</option></select>
+    <div class="f2col"><div><span class="flbl">Datum</span><input class="finp" id="anfall-datum" type="date"></div><div><span class="flbl">Uhrzeit</span><input class="finp" id="anfall-zeit" type="time"></div></div>
+    <span class="flbl">Dauer</span>
+    <div class="f2col" style="margin-bottom:10px"><div><input class="finp" id="anfall-min" type="number" placeholder="Min" min="0" style="margin:0"></div><div><input class="finp" id="anfall-sek" type="number" placeholder="Sek" min="0" max="59" style="margin:0"></div></div>
+    <span class="flbl">Intensität</span>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div class="tbtn" onclick="selIntens(1,this)">😌<div style="font-size:10px">Leicht</div></div>
+      <div class="tbtn" onclick="selIntens(2,this)">😟<div style="font-size:10px">Mittel</div></div>
+      <div class="tbtn" onclick="selIntens(3,this)">😰<div style="font-size:10px">Schwer</div></div>
+      <div class="tbtn" onclick="selIntens(4,this)">🚨<div style="font-size:10px">Notfall</div></div>
+    </div>
+    <span class="flbl">Auslöser</span>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px">
+      <div class="ausl-btn" onclick="this.classList.toggle('sel')">Schlafmangel</div>
+      <div class="ausl-btn" onclick="this.classList.toggle('sel')">Stress</div>
+      <div class="ausl-btn" onclick="this.classList.toggle('sel')">Fieber</div>
+      <div class="ausl-btn" onclick="this.classList.toggle('sel')">Müdigkeit</div>
+      <div class="ausl-btn" onclick="this.classList.toggle('sel')">Lichtreize</div>
+      <div class="ausl-btn" onclick="this.classList.toggle('sel')">Unbekannt</div>
+    </div>
+    <div class="recrow"><span class="reclbl" style="color:#8B1A1A;font-weight:600">🚨 Buccolam wurde gegeben</span><div class="tog" id="buccolam-tog" onclick="toggleBucc()"><div class="togthumb"></div></div></div>
+    <div id="buccolam-det" style="display:none;background:#FDECEA;border-radius:10px;padding:12px;margin-bottom:12px">
+      <div class="f2col"><div><span class="flbl">Gegeben um</span><input class="finp" id="bucc-zeit" type="time" style="margin:0"></div><div><span class="flbl">Wirkung</span><select class="finp" id="bucc-wirkung" style="margin:0"><option>Anfall gestoppt</option><option>Reduziert</option><option>Keine Wirkung</option><option>Notarzt gerufen</option></select></div></div>
+    </div>
+    <span class="flbl">Notizen</span><textarea class="finp" id="anfall-notiz" rows="3" placeholder="z.B. Matilda war danach sehr schläfrig..."></textarea>
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-anfall-neu')">Abbrechen</button><button class="fsav" onclick="saveAnfall()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NEUES DOKUMENT -->
+<div class="movl" id="m-dok">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Neues Dokument</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <div class="tbtn sel" onclick="selType(this)">Behörde</div>
+      <div class="tbtn" onclick="selType(this)">Arztbrief</div>
+      <div class="tbtn" onclick="selType(this)">Bescheid</div>
+      <div class="tbtn" onclick="selType(this)">Sonstiges</div>
+    </div>
+    <div class="camzone" id="dok-camzone">
+      <div class="camico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#4A7A5A" stroke-width="1.5"/><circle cx="12" cy="13" r="4" stroke="#4A7A5A" stroke-width="1.5"/></svg></div>
+      <div style="font-size:14px;font-weight:700;color:#1E2D20;margin-bottom:4px">Dokument fotografieren</div>
+      <div style="display:flex;gap:8px;margin-top:14px"><button class="cabb p" onclick="openDokCam()">Kamera</button><button class="cabb s" onclick="openDokGallery()">Galerie</button></div>
+    </div>
+    <input type="file" id="dok-gallery-input" accept="image/*" style="display:none" onchange="handleDokGallery(event)">
+    <div class="foto-preview-strip" id="dok-foto-strip"><img id="dok-foto-img" alt=""><button onclick="resetDokCam()" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.5);color:white;font-size:11px;padding:5px 10px;border-radius:8px;border:none;cursor:pointer;font-family:inherit">Neu</button></div>
+    <span class="flbl">Bezeichnung</span><input class="finp" id="dok-bez" type="text" placeholder="z.B. Ablehnungsbescheid AOK">
+    <span class="flbl">Absender</span><input class="finp" id="dok-absender" type="text" placeholder="z.B. AOK Bayern">
+    <div class="f2col"><div><span class="flbl">Eingegangen</span><input class="finp" id="dok-datum" type="date"></div><div><span class="flbl">Frist</span><input class="finp" id="dok-frist" type="date"></div></div>
+    <span class="flbl">Verknüpfen mit</span><select class="finp" id="dok-link"><option value="">Keine</option><option>Elektrorollstuhl</option><option>Therapie-Walker</option><option>Rezept Physiotherapie</option></select>
+    <div class="remrow"><label>Erinnerung</label><select id="dok-erin"><option>Keine</option><option selected>7 Tage vorher</option><option>14 Tage vorher</option><option>30 Tage vorher</option></select></div>
+    <div class="fbtns"><button class="fcnc" onclick="resetDokForm();closeM('m-dok')">Abbrechen</button><button class="fsav" onclick="saveDok()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: WIDERSPRUCH -->
+<div class="movl" id="m-widerspruch">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Widerspruch vorbereiten</div>
+    <div class="info-box"><p>Schriftlich innerhalb von 4 Wochen nach Ablehnung einlegen.</p></div>
+    <span class="flbl">Datum Ablehnung</span><input class="finp" type="date" value="2025-04-15">
+    <span class="flbl">Widerspruchsgrund</span><input class="finp" type="text" placeholder="z.B. Medizinische Notwendigkeit">
+    <span class="flbl">Begründung</span><textarea class="finp" rows="4" placeholder="Matilda benötigt den Elektrorollstuhl aufgrund von..."></textarea>
+    <div class="info-box ok"><p>Tipp: Lass Dr. Fischer eine ärztliche Stellungnahme schreiben.</p></div>
+    <button class="abtn p" style="margin-bottom:8px" onclick="closeM('m-widerspruch');showToast('Entwurf gespeichert ✓')">Entwurf speichern</button>
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-widerspruch')">Schließen</button></div>
+  </div>
+</div>
+
+<!-- MODAL: SCHRITT UPDATE -->
+<div class="movl" id="m-schritt-update">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Schritt aktualisieren</div>
+    <span class="flbl">Status</span><select class="finp"><option>Schritt 1: Rezept ausgestellt</option><option>Schritt 2: Kostenvoranschlag</option><option selected>Schritt 3: KK prüft</option><option>Schritt 4: Genehmigt</option><option>Schritt 4b: Abgelehnt</option><option>Schritt 5: Lieferung</option></select>
+    <span class="flbl">Datum</span><input class="finp" type="date">
+    <span class="flbl">Notiz</span><input class="finp" type="text" placeholder="z.B. KK hat Unterlagen angefordert">
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-schritt-update')">Abbrechen</button><button class="fsav" onclick="closeM('m-schritt-update');showToast('Status aktualisiert ✓')">Speichern</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NOTFALL -->
+<div class="movl" id="m-notfall">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div style="text-align:center;margin-bottom:20px"><div style="font-size:48px;margin-bottom:8px">🚨</div><div style="font-size:20px;font-weight:800;color:#8B1A1A">Notfall</div><div style="font-size:13px;color:#6B7C6D;margin-top:4px">Was ist passiert?</div></div>
+    <button class="abtn u" style="font-size:16px;padding:16px;margin-bottom:10px" onclick="schnellAnfall(true)">🚨 Anfall – Buccolam gegeben</button>
+    <button style="background:#FEF3E2;color:#7A4A0A;font-size:15px;padding:14px;margin-bottom:10px;border:none;border-radius:14px;width:100%;cursor:pointer;font-weight:700;font-family:inherit" onclick="schnellAnfall(false)">⚡ Anfall – kein Buccolam</button>
+    <button class="abtn s" onclick="closeM('m-notfall');openM('m-anfall-neu')">📝 Detailliert dokumentieren</button>
+    <div style="background:#FDECEA;border-radius:12px;padding:12px 14px;margin:10px 0">
+      <div style="font-size:12px;font-weight:700;color:#8B1A1A;margin-bottom:8px">Notfallnummern</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="window.location.href='tel:112';showToast('Notruf 112 wird gewählt...')" style="flex:1;padding:10px;background:#C43030;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🚑 112</button>
+        <button onclick="window.location.href='tel:116117';showToast('116117 wird gewählt...')" style="flex:1;padding:10px;background:white;color:#1E2D20;border:.5px solid rgba(74,122,90,.28);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">📞 116117</button>
+      </div>
+    </div>
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-notfall')">Schließen</button></div>
+  </div>
+</div>
+
+<!-- MODAL: ÜBERGABE -->
+<div class="movl" id="m-uebergabe">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><div style="font-size:32px">🤝</div><div><div style="font-size:17px;font-weight:800;color:#1E2D20">Übergabe</div><div style="font-size:12px;color:#6B7C6D" id="uebergabe-von-zu">Rudolf → Iris</div></div></div>
+    <div style="background:#EAF3EC;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:#4A7A5A;margin-bottom:8px">Heute (automatisch)</div>
+      <div style="font-size:13px;color:#1E2D20;line-height:1.7" id="uebergabe-auto">Wird geladen...</div>
+    </div>
+    <span class="flbl">Wie war der Tag?</span>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div class="tbtn" onclick="selTag(this)" style="font-size:20px">😊</div>
+      <div class="tbtn" onclick="selTag(this)" style="font-size:20px">😐</div>
+      <div class="tbtn" onclick="selTag(this)" style="font-size:20px">😟</div>
+      <div class="tbtn" onclick="selTag(this)" style="font-size:20px">😰</div>
+    </div>
+    <span class="flbl">Besondere Vorkommnisse</span><textarea class="finp" id="uebergabe-notiz" rows="3" placeholder="z.B. Matilda war heute sehr müde..."></textarea>
+    <span class="flbl">Aufgabe für die andere Person</span><input class="finp" id="uebergabe-aufgabe" type="text" placeholder="z.B. Rezept holen">
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-uebergabe')">Abbrechen</button><button class="fsav" onclick="saveUebergabe()">Abschließen</button></div>
+  </div>
+</div>
+
+<!-- MODAL: LÖSCHEN -->
+<div class="movl" id="m-del">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="del-title">Löschen?</div>
+    <p id="del-msg" style="font-size:14px;color:#6B7C6D;margin-bottom:20px;line-height:1.6"></p>
+    <button class="abtn u" id="del-btn">Endgültig löschen</button>
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-del')">Abbrechen</button></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════════════
+// Kein Firebase
+var _db=null,_fs=null,_fbReady=false;
+var _currentTermin=null,_currentTerminId=null;
+var _termineCache={};
+
+async function initFB(){
+  setSyncStatus(true);
+}
+
+function setSyncStatus(ok){
+  var dot=document.getElementById('sync-dot');
+  var txt=document.getElementById('sync-txt');
+  var fb=document.getElementById('fb-status-detail');
+  if(dot)dot.style.background='#3B6D11';
+  if(txt)txt.textContent='Daten gespeichert ✓';
+  if(fb)fb.textContent='Lokal gespeichert ✓';
+}
+
+async function fbSave(col,data){
+  data.by=getCurrentUser();data.byColor=getCurrentColor();
+  if(_fbReady&&_db){
+    try{data.ts=_fs.serverTimestamp();return(await _fs.addDoc(_fs.collection(_db,col),data)).id;}catch(e){}
+  }
+  var k='tl_'+col,arr=JSON.parse(localStorage.getItem(k)||'[]');
+  data.ts=Date.now();arr.push(data);localStorage.setItem(k,JSON.stringify(arr));
+  return null;
+}
+
+async function fbDel(col,id){
+  if(!confirm('Löschen?'))return;
+  if(_fbReady&&_db){try{await _fs.deleteDoc(_fs.doc(_db,col,id));showToast('Gelöscht ✓');return;}catch(e){}}
+  showToast('Offline – nicht möglich');
+}
+
+function loadFBData(){
+  if(!_fbReady||!_db)return;
+  var map={tildi_termine:'firebase-termine',tildi_rezepte:'firebase-rezepte',tildi_hm:'firebase-hm',tildi_dokumente:'firebase-dokumente',tildi_anfaelle:'firebase-tagebuch',tildi_medikamente:'firebase-medikamente'};
+  Object.keys(map).forEach(function(col){
+    try{
+      var q=_fs.query(_fs.collection(_db,col),_fs.orderBy('ts','asc'));
+      _fs.onSnapshot(q,function(snap){
+        var c=document.getElementById(map[col]);if(!c)return;
+        c.innerHTML='';
+        var count=0;
+        snap.forEach(function(d){
+          var data=d.data();
+          // Medikamente extra in _medListe speichern
+          if(col==='tildi_medikamente'&&data.name){
+            data.id=d.id;
+            _medListe[d.id]=data;
+          }
+          var h=buildCard(col,data,d.id);
+          if(h){c.insertAdjacentHTML('beforeend',h);count++;}
+        });
+        // Nach Laden der Medikamente: Heute-Karten aufbauen
+        if(col==='tildi_medikamente'){buildHeuteKarten();}
+        // Leer-Hinweise steuern
+        var leerMap={'firebase-termine':'termine-leer','firebase-rezepte':'rez-therapie-leer','firebase-hm':'hm-leer','firebase-dokumente':'dok-leer','firebase-tagebuch':'tb-leer','firebase-medikamente':'med-leer'};
+        var leerId=leerMap[map[col]];
+        if(leerId){var leerEl=document.getElementById(leerId);if(leerEl)leerEl.style.display=count>0?'none':'block';}
+        // Dashboard Counter
+        var dashMap={'firebase-termine':'dash-termine-count','firebase-rezepte':'dash-rez-count','firebase-tagebuch':'dash-anfall-count','firebase-medikamente':'dash-med-count'};
+        var dashId=dashMap[map[col]];
+        if(dashId){var dashEl=document.getElementById(dashId);if(dashEl)dashEl.textContent=count;}
+      });
+    }catch(e){}
+  });
+}
+
+function buildCard(col,d,id){
+  var u=d.by||'',uc=d.byColor||'#7BAE8A';
+  var utag=u?'<span class="tag" style="background:'+uc+';color:white">'+u+'</span>':'';
+  var del='<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" onclick="fbDel(\''+col+'\',\''+id+'\')">✕</span>';
+  if(col==='tildi_termine'&&d.bez){
+    var dt='',tag='',mo='';
+    if(d.datum){var dd=new Date(d.datum+'T00:00');var monate=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];tag=dd.getDate();mo=monate[dd.getMonth()];}
+    var katColor={'Arzt':'#E8F1FB','Therapie':'#EAF3EC','Besonderes':'#FEF3E2','Behörde':'#EEEDFE','Termin':'#E8F1FB'};
+    var katTxt={'Arzt':'#0A4A8A','Therapie':'#1E5C2A','Besonderes':'#7A4A0A','Behörde':'#3C3489','Termin':'#0A4A8A'};
+    var kc=katColor[d.kat]||'#E8F1FB',kt=katTxt[d.kat]||'#0A4A8A';
+    _termineCache[id]=d;
+    return'<div class="card proc" data-tid="'+id+'" style="cursor:pointer">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+      +(tag?'<div style="width:42px;height:42px;background:'+kc+';border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:17px;font-weight:800;color:'+kt+';line-height:1">'+tag+'</span><span style="font-size:10px;color:'+kt+'">'+mo+'</span></div>':'')
+      +'<div style="flex:1;min-width:0"><div class="cti" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+d.bez+'</div>'
+      +'<div class="cme" style="margin:0">'+(d.ort||'Kein Ort')+'</div></div>'
+      +(d.zeit?'<span class="bdg blue" style="flex-shrink:0">'+d.zeit+'</span>':'')
+      +'</div>'
+      +'<div class="tags">'
+      +'<span class="tag" style="background:'+kc+';color:'+kt+'">'+(d.kat||'Termin')+'</span>'
+      +(d.erin?'<span class="tag" style="background:#F4F7F4;color:#6B7C6D">'+d.erin+'</span>':'')
+      +utag+del+'</div></div>';
+  }
+  if(col==='tildi_rezepte'&&d.titel)return'<div class="card"><div class="ct"><span class="cti">'+d.titel+'</span>'+(d.foto==='ja'?'<span class="bdg ok">Foto ✓</span>':'')+'</div><div class="cme">'+(d.arzt||'')+(d.bis?' · bis '+d.bis:'')+'</div><div class="tags">'+utag+del+'</div></div>';
+  if(col==='tildi_hm'&&d.bez)return'<div class="card"><div class="ct"><span class="cti">'+d.bez+'</span><span class="bdg blue">'+(d.kat||'')+'</span></div><div class="cme">'+(d.lief||'')+'</div><div class="tags">'+utag+del+'</div></div>';
+  if(col==='tildi_dokumente'&&d.bez)return'<div class="card"><div class="ct"><span class="cti">'+d.bez+'</span>'+(d.frist?'<span class="bdg warn">'+d.frist+'</span>':'')+'</div><div class="cme">'+(d.absender||'')+'</div><div class="tags">'+utag+del+'</div></div>';
+  if(col==='tildi_anfaelle'&&d.art){var n=d.midazolam||d.intensitaet>=4;return'<div class="card '+(n?'urg':d.intensitaet>=3?'warn':'')+'"><div class="ct"><span class="cti">'+d.art.split(' ')[0]+'</span><span class="bdg '+(n?'urg':d.intensitaet>=3?'warn':'blue')+'">'+(n?'Notfall':d.intensitaet>=3?'Schwer':'Leicht')+'</span></div><div class="cme">'+(d.datum||'')+(d.zeit?' · '+d.zeit:'')+'</div><div class="tags">'+(d.midazolam?'<span class="tag" style="background:#FDECEA;color:#8B1A1A">Buccolam</span>':'')+utag+'</div></div>';}
+  if(col==='tildi_medikamente'&&d.name){
+    var zeiten=[d.t1,d.t2,d.t3].filter(Boolean).join(' · ');
+    return'<div class="card" data-mid="'+id+'" style="cursor:pointer">'
+      +'<div style="display:flex;align-items:center;gap:12px">'
+      +'<div style="font-size:28px">💊</div>'
+      +'<div style="flex:1"><div class="ct" style="margin-bottom:3px"><span class="cti">'+d.name+'</span><span class="bdg ok">Aktiv</span></div>'
+      +'<div class="cme">'+(zeiten?zeiten+' Uhr':'')+(d.arzt?' · '+d.arzt:'')+'</div>'
+      +(d.hinweis?'<div style="font-size:11px;color:#6B7C6D;margin-top:3px">'+d.hinweis+'</div>':'')
+      +'</div></div>'
+      +'<div class="tags" style="margin-top:8px">'+(d.kat?'<span class="tag" style="background:#EEEDFE;color:#3C3489">'+d.kat+'</span>':'')
+      +(d.vorrat?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+d.vorrat+' Tage Vorrat</span>':'')
+      +utag+del+'</div></div>';
+  }
+  return'';
+}
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  var t=document.getElementById(id);
+  if(t)t.classList.add('active');
+  window.scrollTo(0,0);
+}
+function setNav(id){
+  document.querySelectorAll('.nbtn').forEach(function(b){b.classList.remove('active');});
+  var el=document.getElementById(id);if(el)el.classList.add('active');
+}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.movl').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2800);}
+
+// ══════════════════════════════════════════════
+// NUTZER
+// ══════════════════════════════════════════════
+var _cu=null,_sc='#7BAE8A';
+function loadUsers(){try{return JSON.parse(localStorage.getItem('tl_users')||'[]');}catch(e){return[];}}
+function saveUsers(u){localStorage.setItem('tl_users',JSON.stringify(u));}
+function getInitials(n){var p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.substring(0,2).toUpperCase();}
+function getGreeting(){var h=new Date().getHours();return h<11?'Guten Morgen,':h<17?'Guten Tag,':h<21?'Guten Abend,':'Gute Nacht,';}
+function getCurrentUser(){return _cu?_cu.name:'Unbekannt';}
+function getCurrentColor(){return _cu?_cu.color:'#7BAE8A';}
+
+function renderUserList(){
+  var users=loadUsers();
+  var list=document.getElementById('user-list');
+  list.innerHTML='';
+  if(users.length===0){setTimeout(function(){openM('m-newuser');},300);return;}
+  users.forEach(function(u,i){
+    var btn=document.createElement('button');
+    btn.className='user-card';
+    btn.innerHTML='<div style="width:52px;height:52px;border-radius:50%;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;flex-shrink:0">'+getInitials(u.name)+'</div><div><div style="font-size:17px;font-weight:700;color:#1E2D20">'+u.name+'</div><div style="font-size:12px;color:#6B7C6D;margin-top:2px">Tippen zum Anmelden</div></div><span style="margin-left:auto;font-size:20px;color:#6B7C6D">›</span>';
+    btn.addEventListener('click',function(){loginAs(i);});
+    list.appendChild(btn);
+  });
+}
+
+function loginAs(i){
+  var users=loadUsers();
+  _cu=users[i];
+  sessionStorage.setItem('tl_su',JSON.stringify(_cu));
+  applyUser();
+  goTo('s-dash');setNav('n-dash');
+  showToast('Willkommen, '+_cu.name+'! 👋');
+}
+
+function applyUser(){
+  if(!_cu)return;
+  var n=_cu.name,c=_cu.color;
+  var gt=document.getElementById('greet-time');if(gt)gt.textContent=getGreeting();
+  var gn=document.getElementById('greet-name');if(gn)gn.textContent=n;
+  var av=document.getElementById('user-avatar');if(av){av.textContent=getInitials(n);av.style.background=c;}
+  var ma=document.getElementById('mehr-avatar');if(ma){ma.textContent=getInitials(n);ma.style.background=c;}
+  var sn=document.getElementById('settings-name');if(sn)sn.textContent=n;
+  var ms=document.getElementById('mehr-user-sub');if(ms)ms.textContent='Aktuell: '+n;
+}
+
+function selColor(el,c){
+  _sc=c;
+  document.querySelectorAll('#nu-colors div').forEach(function(d){d.style.border='2px solid transparent';});
+  el.style.border='3px solid rgba(0,0,0,.3)';
+}
+
+function saveNewUser(){
+  var name=document.getElementById('nu-name').value.trim();
+  if(!name){showToast('Bitte Namen eingeben');return;}
+  var users=loadUsers();
+  users.push({name:name,color:_sc});
+  saveUsers(users);
+  document.getElementById('nu-name').value='';
+  closeM('m-newuser');
+  renderUserList();
+  showToast(name+' hinzugefügt ✓');
+}
+
+function switchUser(){
+  sessionStorage.removeItem('tl_su');_cu=null;
+  goTo('s-login');setNav('');
+  renderUserList();
+}
+
+// ══════════════════════════════════════════════
+// FORMULARE
+// ══════════════════════════════════════════════
+async function saveTermin(){
+  var bez=document.getElementById('t-bez').value.trim()||'Termin';
+  var datum=document.getElementById('t-datum').value;
+  var zeit=document.getElementById('t-zeit').value;
+  var ort=document.getElementById('t-ort').value;
+  var erin=document.getElementById('t-erin').value;
+  var katEl=document.querySelector('#m-termin .cbtn[class*="s-"]');
+  var kat=katEl?katEl.textContent.trim():'Termin';
+
+  var entry={bez:bez,datum:datum,zeit:zeit,ort:ort,erin:erin,kat:kat};
+
+  // Edit-Modus: alten entfernen
+  if(window._editMode && window._editId){
+    removeLocalEntry('termine', window._editId);
+    if(_fbReady&&_db){try{await _fs.deleteDoc(_fs.doc(_db,'tildi_termine',window._editId));}catch(e){}}
+    window._editMode=false; window._editId=null;
+  }
+
+  // Sofort lokal speichern und anzeigen
+  var id = addLocalEntry('termine', entry);
+  renderTermine();
+
+  // Formular zurücksetzen
+  document.getElementById('t-bez').value='';
+  document.getElementById('t-ort').value='';
+  closeM('m-termin');
+  showToast('"'+bez+'" gespeichert ✓');
+
+
+}
+
+async function saveRezept(){
+  var titel=document.getElementById('rez-titel').value||'Rezept';
+  await fbSave('tildi_rezepte',{titel:titel,arzt:document.getElementById('rez-arzt').value,datum:document.getElementById('rez-datum').value,bis:document.getElementById('rez-bis').value,foto:_lastFoto?'ja':'nein'});
+  resetRezeptForm();closeM('m-rezept');var rl=document.getElementById('rez-therapie-leer');if(rl)rl.style.display='none';showToast('"'+titel+'" gespeichert ✓');
+}
+
+async function saveHM(){
+  var bez=document.getElementById('hm-bez').value||'Hilfsmittel';
+  await fbSave('tildi_hm',{bez:bez,arzt:document.getElementById('hm-arzt').value,lief:document.getElementById('hm-lief').value,tel:document.getElementById('hm-tel').value,kk:document.getElementById('hm-kk').value});
+  closeM('m-hm');var hl=document.getElementById('hm-leer');if(hl)hl.style.display='none';showToast('"'+bez+'" gespeichert ✓');
+}
+
+async function saveMed(){
+  var name=document.getElementById('med-name').value.trim();
+  if(!name){showToast('Bitte Namen eingeben');return;}
+  var data={
+    name:name,
+    kat:document.getElementById('med-kat').value,
+    arzt:document.getElementById('med-arzt').value,
+    hinweis:document.getElementById('med-hinweis').value,
+    notiz:document.getElementById('med-notiz').value,
+    vorrat:document.getElementById('med-vorrat').value,
+    warn:document.getElementById('med-warn').value,
+    t1:document.getElementById('med-t1').value,
+    t2:_medFreq>=2?document.getElementById('med-t2').value:'',
+    t3:_medFreq>=3?document.getElementById('med-t3').value:'',
+    freq:_medFreq
+  };
+
+  // Edit-Modus: altes entfernen
+  if(window._medEditMode&&window._medEditId){
+    removeLocalEntry('medikamente', window._medEditId);
+    if(_fbReady&&_db){try{await _fs.deleteDoc(_fs.doc(_db,'tildi_medikamente',window._medEditId));}catch(e){}}
+    window._medEditMode=false; window._medEditId=null;
+  }
+
+  // Sofort lokal speichern und anzeigen
+  var id = addLocalEntry('medikamente', data);
+  renderMedikamente();
+
+  // Formular zurücksetzen
+  document.getElementById('med-name').value='';
+  document.getElementById('med-arzt').value='';
+  document.getElementById('med-hinweis').value='';
+  document.getElementById('med-notiz').value='';
+  setMedFreq(1);
+  closeM('m-med-neu');
+  showToast('"'+name+'" gespeichert ✓');
+
+
+}
+
+async function saveDok(){
+  var bez=document.getElementById('dok-bez').value||'Dokument';
+  await fbSave('tildi_dokumente',{bez:bez,absender:document.getElementById('dok-absender').value,datum:document.getElementById('dok-datum').value,frist:document.getElementById('dok-frist').value,foto:_dokFoto?'ja':'nein'});
+  resetDokForm();closeM('m-dok');var dl=document.getElementById('dok-leer');if(dl)dl.style.display='none';showToast('"'+bez+'" gespeichert ✓');
+}
+
+var _anfIntens=0,_buccGeben=false;
+function selIntens(v,el){_anfIntens=v;document.querySelectorAll('#m-anfall-neu .tbtn').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');}
+function toggleBucc(){var t=document.getElementById('buccolam-tog');t.classList.toggle('on');_buccGeben=t.classList.contains('on');document.getElementById('buccolam-det').style.display=_buccGeben?'block':'none';}
+
+async function saveAnfall(){
+  var art=document.getElementById('anfall-art').value;
+  var datum=document.getElementById('anfall-datum').value;
+  var ausl=Array.from(document.querySelectorAll('.ausl-btn.sel')).map(function(b){return b.textContent;}).join(', ');
+  var data={art:art,datum:datum,zeit:document.getElementById('anfall-zeit').value,dauer:document.getElementById('anfall-min').value+'Min',intensitaet:_anfIntens,ausloser:ausl,midazolam:_buccGeben,notiz:document.getElementById('anfall-notiz').value,notfall:_buccGeben||_anfIntens>=4};
+  if(_buccGeben){data.buccZeit=document.getElementById('bucc-zeit').value;data.buccWirkung=document.getElementById('bucc-wirkung').value;}
+  await fbSave('tildi_anfaelle',data);
+  document.querySelectorAll('#m-anfall-neu .tbtn').forEach(function(b){b.classList.remove('sel');});
+  document.querySelectorAll('.ausl-btn').forEach(function(b){b.classList.remove('sel');});
+  document.getElementById('buccolam-tog').classList.remove('on');
+  document.getElementById('buccolam-det').style.display='none';
+  document.getElementById('anfall-notiz').value='';
+  _anfIntens=0;_buccGeben=false;
+  closeM('m-anfall-neu');var tbl=document.getElementById('tb-leer');if(tbl)tbl.style.display='none';showToast('Anfall dokumentiert ✓'+(_buccGeben?' · Buccolam eingetragen':''));
+}
+
+async function schnellAnfall(mitBucc){
+  var now=new Date();
+  var zeit=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  var datum=now.toISOString().split('T')[0];
+  await fbSave('tildi_anfaelle',{art:mitBucc?'Tonisch-klonisch':'Unbekannt',datum:datum,zeit:zeit,dauer:'unbekannt',intensitaet:mitBucc?4:2,midazolam:mitBucc,notfall:mitBucc,notiz:'Schnelleintrag'});
+  closeM('m-notfall');
+  showToast('Dokumentiert ✓'+(mitBucc?' · Buccolam eingetragen':''));
+}
+
+async function saveUebergabe(){
+  await fbSave('tildi_uebergaben',{von:getCurrentUser(),notiz:document.getElementById('uebergabe-notiz').value,aufgabe:document.getElementById('uebergabe-aufgabe').value,datum:new Date().toISOString().split('T')[0]});
+  closeM('m-uebergabe');showToast('Übergabe abgeschlossen ✓');
+}
+
+function prepareUebergabe(){
+  var n=getCurrentUser();
+  var other=n==='Rudolf'?'Iris':'Rudolf';
+  var el=document.getElementById('uebergabe-von-zu');if(el)el.textContent=n+' → '+other;
+  loadMedData();
+  var today=new Date().toISOString().split('T')[0];
+  var dosen=['07:30','13:00','19:00'];
+  var g=dosen.filter(function(t){return!!_md[today+'_baclofen_'+t];}).length;
+  var au=document.getElementById('uebergabe-auto');
+  if(au)au.innerHTML='✅ Baclofen heute: '+g+'/3 Dosen<br>✅ Kein Anfall heute<br>📅 Neurologe 12.05.';
+}
+
+
+// ══════════════════════════════════════════════
+// LOKALER DATENSPEICHER (primär)
+// ══════════════════════════════════════════════
+var _localData = {
+  termine: [],
+  medikamente: [],
+  rezepte: [],
+  hm: [],
+  dokumente: [],
+  anfaelle: []
+};
+
+function loadLocalData() {
+  try {
+    var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle'];
+    keys.forEach(function(k) {
+      var stored = localStorage.getItem('tl_data_'+k);
+      if (stored) _localData[k] = JSON.parse(stored);
+    });
+  } catch(e) { console.warn('loadLocalData error:', e); }
+}
+
+function saveLocalData(key) {
+  try {
+    localStorage.setItem('tl_data_'+key, JSON.stringify(_localData[key]));
+  } catch(e) {}
+}
+
+function addLocalEntry(key, entry) {
+  if (!entry.id) entry.id = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+  entry.ts = Date.now();
+  entry.by = getCurrentUser();
+  entry.byColor = getCurrentColor();
+  _localData[key].push(entry);
+  saveLocalData(key);
+  return entry.id;
+}
+
+function removeLocalEntry(key, id) {
+  _localData[key] = _localData[key].filter(function(e) { return e.id !== id; });
+  saveLocalData(key);
+}
+
+function renderAll() {
+  renderTermine();
+  renderMedikamente();
+}
+
+// ── TERMINE ANZEIGEN ──
+function renderTermine() {
+  var list = document.getElementById('termine-list-inner');
+  var leer = document.getElementById('termine-leer');
+  var fbCont = document.getElementById('firebase-termine');
+  if (!list) return;
+
+  list.innerHTML = '';
+  if (fbCont) fbCont.innerHTML = '';
+
+  var alle = _localData.termine;
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  // Sortiere nach Datum
+  alle.sort(function(a,b) { return (a.datum||'') > (b.datum||'') ? 1 : -1; });
+
+  alle.forEach(function(t) {
+    var card = buildTerminCard(t);
+    list.insertAdjacentHTML('beforeend', card);
+    _termineCache[t.id] = t;
+  });
+
+  // Dashboard counter
+  var dc = document.getElementById('dash-termine-count');
+  if (dc) dc.textContent = alle.length;
+}
+
+function buildTerminCard(t) {
+  var tag='', mo='';
+  if (t.datum) {
+    var dd = new Date(t.datum+'T00:00');
+    var monate=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    tag = dd.getDate(); mo = monate[dd.getMonth()];
+  }
+  var katColor={'Arzt':'#E8F1FB','Therapie':'#EAF3EC','Besonderes':'#FEF3E2','Behörde':'#EEEDFE','Termin':'#E8F1FB'};
+  var katTxt={'Arzt':'#0A4A8A','Therapie':'#1E5C2A','Besonderes':'#7A4A0A','Behörde':'#3C3489','Termin':'#0A4A8A'};
+  var kc = katColor[t.kat]||'#E8F1FB', kt = katTxt[t.kat]||'#0A4A8A';
+  return '<div class="card proc" data-tid="'+t.id+'" style="cursor:pointer">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+    +(tag?'<div style="width:42px;height:42px;background:'+kc+';border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:17px;font-weight:800;color:'+kt+';line-height:1">'+tag+'</span><span style="font-size:10px;color:'+kt+'">'+mo+'</span></div>':'')
+    +'<div style="flex:1;min-width:0"><div class="cti" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.bez+'</div>'
+    +'<div class="cme" style="margin:0">'+(t.ort||'Kein Ort angegeben')+'</div></div>'
+    +(t.zeit?'<span class="bdg blue" style="flex-shrink:0">'+t.zeit+'</span>':'')
+    +'</div>'
+    +'<div class="tags">'
+    +'<span class="tag" style="background:'+kc+';color:'+kt+'">'+(t.kat||'Termin')+'</span>'
+    +(t.erin?'<span class="tag" style="background:#F4F7F4;color:#6B7C6D">'+t.erin+'</span>':'')
+    +(t.by?'<span class="tag" style="background:'+(t.byColor||'#7BAE8A')+';color:white">'+t.by+'</span>':'')
+    +'</div></div>';
+}
+
+// ── MEDIKAMENTE ANZEIGEN ──
+function renderMedikamente() {
+  var cont = document.getElementById('firebase-medikamente');
+  var leer = document.getElementById('med-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = _localData.medikamente;
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    buildHeuteKarten();
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  // _medListe aufbauen
+  _medListe = {};
+  alle.forEach(function(m) {
+    _medListe[m.id] = m;
+    var card = buildMedCard(m);
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+
+  buildHeuteKarten();
+  updateStatistik();
+  var mst = document.getElementById('med-statistik');
+  if (mst) mst.style.display = 'block';
+}
+
+function buildMedCard(m) {
+  var zeiten = [m.t1,m.t2,m.t3].filter(Boolean).join(' · ');
+  return '<div class="card" data-mid="'+m.id+'" style="cursor:pointer">'
+    +'<div style="display:flex;align-items:center;gap:12px">'
+    +'<div style="font-size:28px">💊</div>'
+    +'<div style="flex:1"><div class="ct" style="margin-bottom:3px"><span class="cti">'+m.name+'</span><span class="bdg ok">Aktiv</span></div>'
+    +'<div class="cme">'+(zeiten?zeiten+' Uhr':'')+(m.arzt?' · '+m.arzt:'')+'</div>'
+    +(m.hinweis?'<div style="font-size:11px;color:#6B7C6D;margin-top:3px">'+m.hinweis+'</div>':'')
+    +'</div></div>'
+    +'<div class="tags" style="margin-top:8px">'
+    +(m.kat?'<span class="tag" style="background:#EEEDFE;color:#3C3489">'+m.kat+'</span>':'')
+    +(m.vorrat?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+m.vorrat+' Tage Vorrat</span>':'')
+    +(m.by?'<span class="tag" style="background:'+(m.byColor||'#7BAE8A')+';color:white">'+m.by+'</span>':'')
+    +'</div></div>';
+}
+
+// ══════════════════════════════════════════════
+// MEDIKAMENTE
+// ══════════════════════════════════════════════
+
+// ══════════════════════════════════════════════
+// LOKALER DATENSPEICHER (primär)
+// ══════════════════════════════════════════════
+var _localData = {
+  termine: [],
+  medikamente: [],
+  rezepte: [],
+  hm: [],
+  dokumente: [],
+  anfaelle: []
+};
+
+function loadLocalData() {
+  try {
+    var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle'];
+    keys.forEach(function(k) {
+      var stored = localStorage.getItem('tl_data_'+k);
+      if (stored) _localData[k] = JSON.parse(stored);
+    });
+  } catch(e) { console.warn('loadLocalData error:', e); }
+}
+
+function saveLocalData(key) {
+  try {
+    localStorage.setItem('tl_data_'+key, JSON.stringify(_localData[key]));
+  } catch(e) {}
+}
+
+function addLocalEntry(key, entry) {
+  if (!entry.id) entry.id = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+  entry.ts = Date.now();
+  entry.by = getCurrentUser();
+  entry.byColor = getCurrentColor();
+  _localData[key].push(entry);
+  saveLocalData(key);
+  return entry.id;
+}
+
+function removeLocalEntry(key, id) {
+  _localData[key] = _localData[key].filter(function(e) { return e.id !== id; });
+  saveLocalData(key);
+}
+
+function renderAll() {
+  renderTermine();
+  renderMedikamente();
+}
+
+// ── TERMINE ANZEIGEN ──
+function renderTermine() {
+  var list = document.getElementById('termine-list-inner');
+  var leer = document.getElementById('termine-leer');
+  var fbCont = document.getElementById('firebase-termine');
+  if (!list) return;
+
+  list.innerHTML = '';
+  if (fbCont) fbCont.innerHTML = '';
+
+  var alle = _localData.termine;
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  // Sortiere nach Datum
+  alle.sort(function(a,b) { return (a.datum||'') > (b.datum||'') ? 1 : -1; });
+
+  alle.forEach(function(t) {
+    var card = buildTerminCard(t);
+    list.insertAdjacentHTML('beforeend', card);
+    _termineCache[t.id] = t;
+  });
+
+  // Dashboard counter
+  var dc = document.getElementById('dash-termine-count');
+  if (dc) dc.textContent = alle.length;
+}
+
+function buildTerminCard(t) {
+  var tag='', mo='';
+  if (t.datum) {
+    var dd = new Date(t.datum+'T00:00');
+    var monate=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    tag = dd.getDate(); mo = monate[dd.getMonth()];
+  }
+  var katColor={'Arzt':'#E8F1FB','Therapie':'#EAF3EC','Besonderes':'#FEF3E2','Behörde':'#EEEDFE','Termin':'#E8F1FB'};
+  var katTxt={'Arzt':'#0A4A8A','Therapie':'#1E5C2A','Besonderes':'#7A4A0A','Behörde':'#3C3489','Termin':'#0A4A8A'};
+  var kc = katColor[t.kat]||'#E8F1FB', kt = katTxt[t.kat]||'#0A4A8A';
+  return '<div class="card proc" data-tid="'+t.id+'" style="cursor:pointer">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+    +(tag?'<div style="width:42px;height:42px;background:'+kc+';border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:17px;font-weight:800;color:'+kt+';line-height:1">'+tag+'</span><span style="font-size:10px;color:'+kt+'">'+mo+'</span></div>':'')
+    +'<div style="flex:1;min-width:0"><div class="cti" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.bez+'</div>'
+    +'<div class="cme" style="margin:0">'+(t.ort||'Kein Ort angegeben')+'</div></div>'
+    +(t.zeit?'<span class="bdg blue" style="flex-shrink:0">'+t.zeit+'</span>':'')
+    +'</div>'
+    +'<div class="tags">'
+    +'<span class="tag" style="background:'+kc+';color:'+kt+'">'+(t.kat||'Termin')+'</span>'
+    +(t.erin?'<span class="tag" style="background:#F4F7F4;color:#6B7C6D">'+t.erin+'</span>':'')
+    +(t.by?'<span class="tag" style="background:'+(t.byColor||'#7BAE8A')+';color:white">'+t.by+'</span>':'')
+    +'</div></div>';
+}
+
+// ── MEDIKAMENTE ANZEIGEN ──
+function renderMedikamente() {
+  var cont = document.getElementById('firebase-medikamente');
+  var leer = document.getElementById('med-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = _localData.medikamente;
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    buildHeuteKarten();
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  // _medListe aufbauen
+  _medListe = {};
+  alle.forEach(function(m) {
+    _medListe[m.id] = m;
+    var card = buildMedCard(m);
+    cont.insertAdjacentHTML('beforeend', card);
+  });
+
+  buildHeuteKarten();
+  updateStatistik();
+  var mst = document.getElementById('med-statistik');
+  if (mst) mst.style.display = 'block';
+}
+
+function buildMedCard(m) {
+  var zeiten = [m.t1,m.t2,m.t3].filter(Boolean).join(' · ');
+  return '<div class="card" data-mid="'+m.id+'" style="cursor:pointer">'
+    +'<div style="display:flex;align-items:center;gap:12px">'
+    +'<div style="font-size:28px">💊</div>'
+    +'<div style="flex:1"><div class="ct" style="margin-bottom:3px"><span class="cti">'+m.name+'</span><span class="bdg ok">Aktiv</span></div>'
+    +'<div class="cme">'+(zeiten?zeiten+' Uhr':'')+(m.arzt?' · '+m.arzt:'')+'</div>'
+    +(m.hinweis?'<div style="font-size:11px;color:#6B7C6D;margin-top:3px">'+m.hinweis+'</div>':'')
+    +'</div></div>'
+    +'<div class="tags" style="margin-top:8px">'
+    +(m.kat?'<span class="tag" style="background:#EEEDFE;color:#3C3489">'+m.kat+'</span>':'')
+    +(m.vorrat?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+m.vorrat+' Tage Vorrat</span>':'')
+    +(m.by?'<span class="tag" style="background:'+(m.byColor||'#7BAE8A')+';color:white">'+m.by+'</span>':'')
+    +'</div></div>';
+}
+
+// ══════════════════════════════════════════════
+// MEDIKAMENTE
+// ══════════════════════════════════════════════
+var _md={};
+var _medListe={}; // Firebase Medikamente: id -> data
+var _currentMedId=null;
+var _medFreq=1;
+
+function loadMedData(){try{_md=JSON.parse(localStorage.getItem('tl_med')||'{}');}catch(e){_md={};}}
+function saveMedData(){try{localStorage.setItem('tl_med',JSON.stringify(_md));}catch(e){}}
+function getTodayKey(){return new Date().toISOString().split('T')[0];}
+
+function setMedFreq(n){
+  _medFreq=n;
+  [1,2,3].forEach(function(i){
+    var b=document.getElementById('med-freq-'+i);
+    if(b)b.classList.toggle('sel',i===n);
+  });
+  document.getElementById('med-t2-wrap').style.display=n>=2?'block':'none';
+  document.getElementById('med-t3-wrap').style.display=n>=3?'block':'none';
+}
+
+// Medikament aus Firebase laden → Heute-Karten aufbauen
+function buildHeuteKarten(){
+  loadMedData();
+  var today=getTodayKey();
+  var container=document.getElementById('med-heute-cards');
+  var leer=document.getElementById('med-heute-leer');
+  if(!container)return;
+
+  var meds=Object.keys(_medListe);
+  if(meds.length===0){
+    if(leer)leer.style.display='block';
+    var fort=document.getElementById('med-heute-fort');
+    if(fort)fort.textContent='Noch keine Medikamente';
+    return;
+  }
+  if(leer)leer.style.display='none';
+
+  container.innerHTML='';
+  var gesamt=0,genommen=0;
+
+  meds.forEach(function(medId){
+    var med=_medListe[medId];
+    var zeiten=[med.t1,med.t2,med.t3].filter(Boolean);
+    zeiten.forEach(function(zeit){
+      var key=today+'_'+medId+'_'+zeit;
+      var isDone=!!_md[key];
+      gesamt++;
+      if(isDone)genommen++;
+
+      var card=document.createElement('div');
+      card.className='med-einnahme-card'+(isDone?' done':'');
+      // Aufbau per DOM (kein inline onclick)
+      var checkBtn=document.createElement('div');
+      checkBtn.className='med-check-btn'+(isDone?' done':'');
+      checkBtn.textContent=isDone?'✓':'';
+      checkBtn.setAttribute('data-medid',medId);
+      checkBtn.setAttribute('data-zeit',zeit);
+      checkBtn.addEventListener('click',function(e){e.stopPropagation();toggleEinnahme(this.getAttribute('data-medid'),this.getAttribute('data-zeit'),this);});
+      var infoDiv=document.createElement('div');
+      infoDiv.style.flex='1';
+      infoDiv.innerHTML='<div style="font-size:14px;font-weight:700;color:#1E2D20">'+med.name+'</div>'
+        +'<div style="font-size:12px;color:#6B7C6D;margin-top:2px">'+zeit+' Uhr'+(med.hinweis?' · '+med.hinweis:'')+'</div>'
+        +(isDone&&_md[key]?'<div style="font-size:11px;color:#4A7A5A;margin-top:3px;font-weight:600">✓ Genommen'+(_md[key].uhrzeit?' um '+_md[key].uhrzeit:'')+(_md[key].user?' von '+_md[key].user:'')+'</div>':'');
+      card.appendChild(checkBtn);
+      card.appendChild(infoDiv);
+      container.appendChild(card);
+    });
+  });
+
+  var fort=document.getElementById('med-heute-fort');
+  if(fort)fort.textContent=genommen+' von '+gesamt+' heute';
+
+  // Datum anzeigen
+  var datEl=document.getElementById('med-datum-anzeige');
+  if(datEl){
+    var d=new Date();
+    var tage=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    var monate=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    datEl.textContent=tage[d.getDay()]+', '+d.getDate()+'. '+monate[d.getMonth()];
+  }
+
+  updateStatistik();
+}
+
+function toggleEinnahme(medId, zeit, btn){
+  loadMedData();
+  var today=getTodayKey();
+  var key=today+'_'+medId+'_'+zeit;
+  var now=new Date();
+  var uhrzeit=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+
+  if(_md[key]){
+    delete _md[key];
+    showToast(zeit+' Uhr – Einnahme rückgängig');
+  }else{
+    _md[key]={ts:Date.now(),user:getCurrentUser(),uhrzeit:uhrzeit,medId:medId,zeit:zeit,datum:today};
+    // Auch in Firebase speichern für Statistik
+    fbSave('tildi_einnahmen',{medId:medId,medName:(_medListe[medId]?_medListe[medId].name:''),geplant:zeit,genommen:uhrzeit,datum:today,genommen_bool:true});
+    showToast('✓ '+(_medListe[medId]?_medListe[medId].name:'')+' '+zeit+' Uhr bestätigt – von '+getCurrentUser());
+  }
+  saveMedData();
+  buildHeuteKarten();
+}
+
+function updateStatistik(){
+  loadMedData();
+  var statDiv=document.getElementById('med-statistik');
+  if(!statDiv)return;
+  var meds=Object.keys(_medListe);
+  if(meds.length===0){statDiv.style.display='none';return;}
+  statDiv.style.display='block';
+
+  // 14 Tage Chart
+  var bars=document.getElementById('med-chart-bars');
+  var labels=document.getElementById('med-chart-labels');
+  if(!bars||!labels)return;
+  bars.innerHTML='';labels.innerHTML='';
+
+  var tage=['Mo','Di','Mi','Do','Fr','Sa','So'];
+  var gesamtGenommen=0,gesamtMoeglich=0,streak=0,streakAktiv=true;
+
+  for(var i=13;i>=0;i--){
+    var d=new Date();d.setDate(d.getDate()-i);
+    var key=d.toISOString().split('T')[0];
+    var tagN=tage[d.getDay()===0?6:d.getDay()-1];
+    var moeglich=0,genommen=0;
+    meds.forEach(function(medId){
+      var med=_medListe[medId];
+      var zeiten=[med.t1,med.t2,med.t3].filter(Boolean);
+      zeiten.forEach(function(z){
+        moeglich++;
+        if(_md[key+'_'+medId+'_'+z])genommen++;
+      });
+    });
+    gesamtMoeglich+=moeglich;gesamtGenommen+=genommen;
+    var pct=moeglich>0?Math.round((genommen/moeglich)*100):0;
+    if(i>0){if(pct===100&&streakAktiv)streak++;else if(pct<100)streakAktiv=false;}
+    var col=pct===100?'#7BAE8A':pct>0?'#F0A882':'#F4F7F4';
+    var h=Math.max(4,Math.round((pct/100)*56));
+    bars.insertAdjacentHTML('beforeend','<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:60px"><div style="width:100%;height:'+h+'px;background:'+col+';border-radius:3px 3px 0 0'+(pct===0?';border:.5px solid rgba(74,122,90,.15)':'')+'" title="'+pct+'%"></div></div>');
+    if(i%2===0)labels.insertAdjacentHTML('beforeend','<div style="flex:1;text-align:center;font-size:9px;color:#6B7C6D">'+tagN+'</div>');
+    else labels.insertAdjacentHTML('beforeend','<div style="flex:1"></div>');
+  }
+  var quote=gesamtMoeglich>0?Math.round((gesamtGenommen/gesamtMoeglich)*100):0;
+  var qEl=document.getElementById('stat-quote');if(qEl)qEl.textContent=quote+'%';
+  var sEl=document.getElementById('stat-streak');if(sEl)sEl.textContent=streak;
+  var gEl=document.getElementById('stat-gesamt');if(gEl)gEl.textContent=gesamtGenommen;
+}
+
+function exportMedBericht(){
+  loadMedData();
+  var today=new Date().toISOString().split('T')[0];
+  var meds=Object.values(_medListe);
+  var lines=[
+    'TILDI LIFE – EINNAHMEBERICHT',
+    '='.repeat(50),
+    'Patient: Matilda',
+    'Erstellt: '+new Date().toLocaleDateString('de-DE')+' '+new Date().toLocaleTimeString('de-DE'),
+    'Erstellt von: '+getCurrentUser(),
+    '',
+    'MEDIKAMENTE:'
+  ];
+  meds.forEach(function(m){
+    var zeiten=[m.t1,m.t2,m.t3].filter(Boolean).join(', ');
+    lines.push('• '+m.name+' – '+zeiten+' Uhr'+(m.hinweis?' ('+m.hinweis+')':''));
+  });
+  lines.push('','EINNAHME LETZTE 14 TAGE:','-'.repeat(50));
+  for(var i=13;i>=0;i--){
+    var d=new Date();d.setDate(d.getDate()-i);
+    var k=d.toISOString().split('T')[0];
+    var row=d.toLocaleDateString('de-DE')+':  ';
+    meds.forEach(function(m){
+      var zeiten=[m.t1,m.t2,m.t3].filter(Boolean);
+      zeiten.forEach(function(z){
+        var done=!!_md[k+'_'+m.id+'_'+z];
+        row+=m.name+' '+z+' '+(done?'✓':'○')+'   ';
+      });
+    });
+    lines.push(row);
+  }
+  var blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='tildi-einnahme-'+today+'.txt';
+  a.click();
+  showToast('Tabelle exportiert ✓');
+}
+
+function exportMedPDF(){
+  loadMedData();
+  var meds=Object.values(_medListe);
+  var today=new Date().toLocaleDateString('de-DE');
+  var html='<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">';
+  html+='<style>body{font-family:Arial,sans-serif;max-width:700px;margin:20px auto;color:#1E2D20}';
+  html+='h1{color:#4A7A5A;border-bottom:2px solid #7BAE8A;padding-bottom:8px}';
+  html+='h2{color:#4A7A5A;font-size:14px;margin-top:20px}';
+  html+='table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}';
+  html+='th{background:#7BAE8A;color:white;padding:6px 8px;text-align:left}';
+  html+='td{padding:5px 8px;border-bottom:.5px solid #ddd}';
+  html+='.ok{color:#1E5C2A;font-weight:bold}.miss{color:#C43030}';
+  html+='</style></head><body>';
+  html+='<h1>Tildi Life – Einnahmebericht</h1>';
+  html+='<p><strong>Patient:</strong> Matilda &nbsp;|&nbsp; <strong>Erstellt:</strong> '+today+' &nbsp;|&nbsp; <strong>von:</strong> '+getCurrentUser()+'</p>';
+  html+='<h2>Medikamente</h2><ul>';
+  meds.forEach(function(m){
+    var z=[m.t1,m.t2,m.t3].filter(Boolean).join(', ');
+    html+='<li><strong>'+m.name+'</strong> – '+z+' Uhr'+(m.hinweis?' ('+m.hinweis+')':'')+'</li>';
+  });
+  html+='</ul><h2>Einnahme letzte 14 Tage</h2><table><tr><th>Datum</th>';
+  meds.forEach(function(m){
+    [m.t1,m.t2,m.t3].filter(Boolean).forEach(function(z){html+='<th>'+m.name+'<br>'+z+'</th>';});
+  });
+  html+='</tr>';
+  for(var i=13;i>=0;i--){
+    var d=new Date();d.setDate(d.getDate()-i);
+    var k=d.toISOString().split('T')[0];
+    html+='<tr><td>'+d.toLocaleDateString('de-DE')+'</td>';
+    meds.forEach(function(m){
+      [m.t1,m.t2,m.t3].filter(Boolean).forEach(function(z){
+        var done=!!_md[k+'_'+m.id+'_'+z];
+        html+='<td class="'+(done?'ok':'miss')+'">'+(done?'✓ Genommen':'○ Nicht genommen')+'</td>';
+      });
+    });
+    html+='</tr>';
+  }
+  html+='</table><p style="margin-top:20px;font-size:11px;color:#888">Erstellt mit Tildi Life · tildi-life.netlify.app</p></body></html>';
+  var w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},500);
+  showToast('PDF-Druck geöffnet ✓');
+}
+
+var _currentMed=null;
+function openMedDetail(id){
+  var med=_medListe[id];if(!med)return;
+  _currentMed=med;_currentMedId=id;
+  var t=document.getElementById('med-detail-title');if(t)t.textContent=med.name;
+  var s=document.getElementById('med-detail-sub');
+  var zeiten=[med.t1,med.t2,med.t3].filter(Boolean).join(' · ');
+  if(s)s.textContent=zeiten+' Uhr'+(med.arzt?' · '+med.arzt:'');
+  var info=document.getElementById('med-detail-info');
+  if(info){
+    var h='<div class="dstitle">Details</div>';
+    if(med.name)h+='<div class="drow"><span class="dl">Medikament</span><span class="dv">'+med.name+'</span></div>';
+    if(med.kat)h+='<div class="drow"><span class="dl">Kategorie</span><span class="dv">'+med.kat+'</span></div>';
+    if(med.arzt)h+='<div class="drow"><span class="dl">Arzt</span><span class="dv">'+med.arzt+'</span></div>';
+    var z=[med.t1,med.t2,med.t3].filter(Boolean).join(', ');
+    if(z)h+='<div class="drow"><span class="dl">Uhrzeiten</span><span class="dv">'+z+' Uhr</span></div>';
+    if(med.hinweis)h+='<div class="drow"><span class="dl">Hinweis</span><span class="dv">'+med.hinweis+'</span></div>';
+    if(med.vorrat)h+='<div class="drow"><span class="dl">Vorrat</span><span class="dv">'+med.vorrat+' Tage</span></div>';
+    if(med.notiz)h+='<div class="drow"><span class="dl">Notiz</span><span class="dv">'+med.notiz+'</span></div>';
+    info.innerHTML=h;
+  }
+  goTo('s-med-detail');setNav('n-gesundheit');
+}
+
+function editCurrentMed(){
+  if(!_currentMed)return;
+  var n=document.getElementById('med-name');if(n)n.value=_currentMed.name||'';
+  var a=document.getElementById('med-arzt');if(a)a.value=_currentMed.arzt||'';
+  var h=document.getElementById('med-hinweis');if(h)h.value=_currentMed.hinweis||'';
+  var no=document.getElementById('med-notiz');if(no)no.value=_currentMed.notiz||'';
+  var t1=document.getElementById('med-t1');if(t1&&_currentMed.t1)t1.value=_currentMed.t1;
+  var t2=document.getElementById('med-t2');if(t2&&_currentMed.t2)t2.value=_currentMed.t2;
+  var freq=[_currentMed.t1,_currentMed.t2,_currentMed.t3].filter(Boolean).length||1;
+  setMedFreq(freq);
+  window._medEditMode=true;window._medEditId=_currentMedId;
+  openM('m-med-neu');
+}
+
+function deleteCurrentMed(){
+  document.getElementById('del-title').textContent='Medikament löschen?';
+  document.getElementById('del-msg').textContent='"'+(_currentMed?_currentMed.name:'')+'" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick=async function(){
+    closeM('m-del');
+    // Lokal gelöscht
+    delete _medListe[_currentMedId];
+    goTo('s-med');setNav('n-gesundheit');
+    buildHeuteKarten();
+    showToast('Gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function exportAnfallBericht(){
+  var txt='TILDI LIFE – ANFALLSBERICHT\n'+'='.repeat(40)+'\n30 Tage · Matilda\n\n22.04. 03:38 – Tonisch-klonisch, 2 Min, Stärke 4/4\n→ Buccolam gegeben\n\n08.04. 14:15 – Fokal bewusst, 45 Sek, Stärke 2/4\n→ Stress';
+  var blob=new Blob([txt],{type:'text/plain;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='anfallsbericht.txt';a.click();showToast('Exportiert ✓');
+}
+
+// ══════════════════════════════════════════════
+// KAMERA
+// ══════════════════════════════════════════════
+var _camStream=null,_camFacing='environment',_camMode=null,_lastFoto=null,_dokFoto=null;
+
+async function openCamera(){
+  document.getElementById('cam-overlay').classList.add('open');
+  try{
+    if(_camStream)_camStream.getTracks().forEach(function(t){t.stop();});
+    _camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:_camFacing}});
+    document.getElementById('cam-video').srcObject=_camStream;
+  }catch(e){
+    document.getElementById('cam-overlay').classList.remove('open');
+    if(_camMode==='dok')openM('m-dok');else openM('m-rezept');
+    showToast('Kamera nicht verfügbar – Galerie nutzen');
+  }
+}
+
+function openDokCam(){_camMode='dok';closeM('m-dok');openCamera();}
+function openGallery(){document.getElementById('gallery-input').click();}
+function openDokGallery(){document.getElementById('dok-gallery-input').click();}
+
+function camClose(){
+  if(_camStream)_camStream.getTracks().forEach(function(t){t.stop();});_camStream=null;
+  document.getElementById('cam-overlay').classList.remove('open');
+  if(_camMode==='dok')openM('m-dok');else openM('m-rezept');
+  _camMode=null;
+}
+
+async function camSwitch(){
+  _camFacing=_camFacing==='environment'?'user':'environment';
+  if(_camStream)_camStream.getTracks().forEach(function(t){t.stop();});
+  try{_camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:_camFacing}});document.getElementById('cam-video').srcObject=_camStream;}catch(e){}
+}
+
+function camShoot(){
+  var v=document.getElementById('cam-video'),c=document.getElementById('cam-canvas');
+  c.width=v.videoWidth||1280;c.height=v.videoHeight||720;
+  c.getContext('2d').drawImage(v,0,0);
+  var src=c.toDataURL('image/jpeg',.8);
+  if(_camStream)_camStream.getTracks().forEach(function(t){t.stop();});_camStream=null;
+  document.getElementById('cam-overlay').classList.remove('open');
+  document.getElementById('cam-preview-img').src=src;
+  document.getElementById('cam-preview').classList.add('open');
+}
+
+function camRetake(){document.getElementById('cam-preview').classList.remove('open');openCamera();}
+
+function camUse(){
+  var src=document.getElementById('cam-preview-img').src;
+  document.getElementById('cam-preview').classList.remove('open');
+  if(_camMode==='dok'){
+    _dokFoto=src;document.getElementById('dok-camzone').style.display='none';
+    document.getElementById('dok-foto-img').src=src;document.getElementById('dok-foto-strip').style.display='block';
+    _camMode=null;openM('m-dok');showToast('Foto aufgenommen ✓');
+  }else{
+    _lastFoto=src;document.getElementById('camzone').style.display='none';
+    document.getElementById('foto-img').src=src;document.getElementById('foto-strip').style.display='block';
+    document.getElementById('scananim').classList.add('vis');
+    setTimeout(function(){
+      document.getElementById('scananim').classList.remove('vis');
+      document.getElementById('aibox').classList.add('vis');
+      var ab=document.getElementById('ai-bez');if(ab)ab.textContent='Physiotherapie';
+      var aa=document.getElementById('ai-arzt');if(aa)aa.textContent='Dr. Fischer';
+      document.getElementById('rez-titel').value='Physiotherapie';
+      document.getElementById('rez-arzt').value='Dr. Fischer';
+    },2000);
+    openM('m-rezept');
+  }
+}
+
+function handleGallery(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(ev){
+    _lastFoto=ev.target.result;
+    document.getElementById('camzone').style.display='none';
+    document.getElementById('foto-img').src=ev.target.result;
+    document.getElementById('foto-strip').style.display='block';
+    document.getElementById('scananim').classList.add('vis');
+    setTimeout(function(){document.getElementById('scananim').classList.remove('vis');document.getElementById('aibox').classList.add('vis');},2000);
+  };r.readAsDataURL(f);
+}
+
+function handleDokGallery(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(ev){
+    _dokFoto=ev.target.result;
+    document.getElementById('dok-camzone').style.display='none';
+    document.getElementById('dok-foto-img').src=ev.target.result;
+    document.getElementById('dok-foto-strip').style.display='block';
+    showToast('Foto hochgeladen ✓');
+  };r.readAsDataURL(f);
+}
+
+function resetCamera(){_lastFoto=null;document.getElementById('foto-strip').style.display='none';document.getElementById('camzone').style.display='block';document.getElementById('aibox').classList.remove('vis');document.getElementById('scananim').classList.remove('vis');}
+function resetRezeptForm(){resetCamera();['rez-titel','rez-arzt','rez-datum','rez-bis'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});document.getElementById('aibox').classList.remove('vis');}
+function resetDokCam(){_dokFoto=null;document.getElementById('dok-foto-strip').style.display='none';document.getElementById('dok-camzone').style.display='block';}
+function resetDokForm(){resetDokCam();['dok-bez','dok-absender','dok-datum','dok-frist'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
+
+// ══════════════════════════════════════════════
+// FILTER & TABS
+// ══════════════════════════════════════════════
+function filtT(cat,el){document.querySelectorAll('.fbar .fpill').forEach(function(p){p.classList.remove('fp-act');});el.classList.add('fp-act');document.querySelectorAll('[data-tcat]').forEach(function(c){c.style.display=(cat==='all'||c.dataset.tcat===cat)?'block':'none';});}
+function filtDok(cat,el){document.querySelectorAll('#s-dok .fbar .fpill').forEach(function(p){p.classList.remove('fp-act');});el.classList.add('fp-act');document.querySelectorAll('[data-dkat]').forEach(function(c){c.style.display=(cat==='all'||c.dataset.dkat===cat)?'block':'none';});}
+function switchRTab(tab){['t','h','m'].forEach(function(k){document.getElementById('rtab-'+k).classList.remove('active');});var map={therapie:'t',hilfsmittel:'h',medikament:'m'};document.getElementById('rtab-'+map[tab]).classList.add('active');['rez-therapie','rez-hilfsmittel','rez-medikament'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('rez-'+tab).style.display='block';}
+function switchTbTab(tab){['list','stat','bericht'].forEach(function(t){document.getElementById('tbtab-'+t).classList.toggle('active',t===tab);document.getElementById('tb-view-'+t).style.display=t===tab?'block':'none';});}
+
+// ══════════════════════════════════════════════
+// FORM HELPERS
+// ══════════════════════════════════════════════
+function selCat(el,cat){el.closest('.catsel').querySelectorAll('.cbtn').forEach(function(b){b.className='cbtn';});el.className='cbtn s-'+cat;}
+function selType(el){el.closest('div').querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');}
+function selTag(el){document.querySelectorAll('#m-uebergabe .tbtn').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');}
+function togRecur(){var t=document.getElementById('tog-recur');t.classList.toggle('on');document.getElementById('recur-opts').style.display=t.classList.contains('on')?'block':'none';}
+
+// ══════════════════════════════════════════════
+// SUCHE
+// ══════════════════════════════════════════════
+function globalSearch(q){
+  var r=document.getElementById('search-results');
+  if(!q||q.length<2){r.innerHTML='';return;}
+  var data=[{t:'Physiotherapie Rezept',s:'Dr. Fischer · 8 Tage',sc:'s-rez',n:'n-verwaltung'},{t:'Neurologe Kontrolltermin',s:'12.05. · LMU',sc:'s-td',n:'n-verwaltung'},{t:'Widerspruch Rollstuhl',s:'Frist 30.05.',sc:'s-hm-detail',n:'n-verwaltung'},{t:'Baclofen 10mg',s:'3× täglich',sc:'s-med',n:'n-gesundheit'},{t:'Buccolam 5mg',s:'Notfallmedikament',sc:'s-med',n:'n-gesundheit'},{t:'Anfallstagebuch',s:'Verlauf & Bericht',sc:'s-tagebuch',n:'n-gesundheit'},{t:'Tobii Kommunikationsgerät',s:'Lieferung 08.05.',sc:'s-hm',n:'n-verwaltung'}];
+  var hits=data.filter(function(d){return d.t.toLowerCase().includes(q.toLowerCase())||d.s.toLowerCase().includes(q.toLowerCase());});
+  r.innerHTML=hits.slice(0,5).map(function(h){return'<div class="card" style="margin-bottom:8px;cursor:pointer" onclick="goTo(\''+h.sc+'\');setNav(\''+h.n+'\')"><div class="ct"><span class="cti">'+h.t+'</span><span style="color:#4A7A5A;font-size:12px">→</span></div><div class="cme">'+h.s+'</div></div>';}).join('');
+}
+
+// ══════════════════════════════════════════════
+// UTILITY
+// ══════════════════════════════════════════════
+function callNumber(tel,name){
+  window.location.href='tel:'+tel;
+  showToast('Anruf wird gestartet: '+tel);
+}
+function mailTo(addr){
+  window.location.href='mailto:'+addr;
+  showToast('E-Mail wird geöffnet...');
+}
+function confirmDel(type, sourceScreen){
+  var msgs={
+    termin:'Dieser Termin wird endgültig gelöscht.',
+    rezept:'Dieses Rezept wird endgültig gelöscht.',
+    hm:'Dieser Eintrag wird endgültig gelöscht.',
+    dokument:'Dieses Dokument wird endgültig gelöscht.',
+    anfall:'Dieser Eintrag wird endgültig gelöscht.'
+  };
+  document.getElementById('del-title').textContent=type.charAt(0).toUpperCase()+type.slice(1)+' löschen?';
+  document.getElementById('del-msg').textContent=msgs[type]||'Wird gelöscht.';
+  document.getElementById('del-btn').onclick=function(){
+    closeM('m-del');
+    // Zurück zum übergeordneten Screen
+    var backScreens={termin:'s-termine',rezept:'s-rez',hm:'s-hm',dokument:'s-dok',anfall:'s-tagebuch'};
+    var back=sourceScreen||backScreens[type]||'s-dash';
+    goTo(back);
+    setNavFromScreen(back);
+    showToast('Gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function setNavFromScreen(screen){
+  var map={
+    's-dash':'n-dash','s-termine':'n-verwaltung','s-td':'n-verwaltung',
+    's-rez':'n-verwaltung','s-rez-detail':'n-verwaltung',
+    's-hm':'n-verwaltung','s-hm-detail':'n-verwaltung',
+    's-med':'n-gesundheit','s-tagebuch':'n-gesundheit',
+    's-dok':'n-verwaltung','s-mehr':'n-mehr'
+  };
+  setNav(map[screen]||'n-dash');
+}
+function exportData(){var blob=new Blob([JSON.stringify({med:_md,user:_cu,ts:Date.now()},null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tildi-export.json';a.click();showToast('Exportiert ✓');}
+
+async function requestPush(){
+  if(!('Notification' in window)){showToast('Nicht verfügbar');return;}
+  var p=await Notification.requestPermission();
+  showToast(p==='granted'?'Benachrichtigungen aktiviert ✓':'Nicht erlaubt');
+}
+function sendTestNotif(){if(Notification.permission==='granted'){try{new Notification('Tildi Life','Test ✓');}catch(e){}}else{requestPush();}}
+
+
+// ── TERMIN DETAIL ──
+function openTerminDetail(id) {
+  var data = _termineCache[id] || {};
+  if(!data.bez){showToast("Termin nicht gefunden");return;}
+  _currentTermin = data;
+  _currentTerminId = id;
+
+  // Header
+  var title = document.getElementById('td-fb-title');
+  if (title) title.textContent = data.bez || 'Termin';
+
+  var sub = document.getElementById('td-fb-sub');
+  if (sub) sub.textContent = (data.ort || '') + (data.datum ? ' · ' + formatDatum(data.datum) : '');
+
+  // Details aufbauen
+  var det = document.getElementById('td-fb-details');
+  if (det) {
+    var html = '<div class="dstitle">Termin</div>';
+    if (data.datum) html += '<div class="drow"><span class="dl">Datum</span><span class="dv">' + formatDatum(data.datum) + '</span></div>';
+    if (data.zeit) html += '<div class="drow"><span class="dl">Uhrzeit</span><span class="dv">' + data.zeit + ' Uhr</span></div>';
+    if (data.ort) html += '<div class="drow"><span class="dl">Ort</span><span class="dv">' + data.ort + '</span></div>';
+    if (data.kat) html += '<div class="drow"><span class="dl">Kategorie</span><span class="dv">' + data.kat + '</span></div>';
+    if (data.erin) html += '<div class="drow"><span class="dl">Erinnerung</span><span class="dv">' + data.erin + '</span></div>';
+    if (data.by) html += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">' + data.by + '</span></div>';
+    det.innerHTML = html;
+  }
+
+  // Notizen
+  var notizSec = document.getElementById('td-fb-notiz-sec');
+  var notizEl = document.getElementById('td-fb-notiz');
+  if (data.notiz && notizEl) {
+    notizEl.textContent = data.notiz;
+    if (notizSec) notizSec.style.display = 'block';
+  } else {
+    if (notizSec) notizSec.style.display = 'none';
+  }
+
+  goTo('s-td-fb');
+  setNav('n-verwaltung');
+}
+
+function formatDatum(datum) {
+  if (!datum) return '';
+  try {
+    var d = new Date(datum + 'T00:00');
+    var tage = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    var monate = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    return tage[d.getDay()] + ', ' + d.getDate() + '. ' + monate[d.getMonth()] + ' ' + d.getFullYear();
+  } catch(e) { return datum; }
+}
+
+function deleteCurrentTermin() {
+  if (!_currentTerminId) { showToast('Kein Termin ausgewählt'); return; }
+  document.getElementById('del-title').textContent = 'Termin löschen?';
+  document.getElementById('del-msg').textContent = '"' + (_currentTermin?.bez || 'Termin') + '" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick = async function() {
+    closeM('m-del');
+    if (_fbReady && _db && _currentTerminId) {
+      try {
+        await _fs.deleteDoc(_fs.doc(_db, 'tildi_termine', _currentTerminId));
+        showToast('Termin gelöscht ✓');
+      } catch(e) { showToast('Fehler beim Löschen'); return; }
+    }
+    goTo('s-termine');
+    setNav('n-verwaltung');
+    _currentTermin = null;
+    _currentTerminId = null;
+  };
+  openM('m-del');
+}
+
+function openTerminEdit() {
+  if (!_currentTermin) return;
+  // Formular vorausfüllen
+  var bez = document.getElementById('t-bez');
+  var datum = document.getElementById('t-datum');
+  var zeit = document.getElementById('t-zeit');
+  var ort = document.getElementById('t-ort');
+  if (bez) bez.value = _currentTermin.bez || '';
+  if (datum) datum.value = _currentTermin.datum || '';
+  if (zeit) zeit.value = _currentTermin.zeit || '';
+  if (ort) ort.value = _currentTermin.ort || '';
+  // Beim Speichern: alten Eintrag löschen, neuen erstellen
+  window._editMode = true;
+  window._editId = _currentTerminId;
+  openM('m-termin');
+}
+
+// ══════════════════════════════════════════════
+// START – NUR EIN DOMContentLoaded
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  // Alle Screens ausblenden
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+
+  // Nutzer prüfen
+  try{
+    var saved=sessionStorage.getItem('tl_su');
+    if(saved){
+      _cu=JSON.parse(saved);
+      applyUser();
+      goTo('s-dash');setNav('n-dash');
+    }else{
+      goTo('s-login');
+      renderUserList();
+    }
+  }catch(e){
+    goTo('s-login');
+    renderUserList();
+  }
+
+  // Lokale Daten laden und anzeigen
+  loadLocalData();
+  loadMedData();
+  renderAll();
+
+  // Event-Delegation für Karten
+  document.addEventListener('click', function(e) {
+    // Termine
+    var tcard = e.target.closest('[data-tid]');
+    if (tcard) {
+      var tid = tcard.getAttribute('data-tid');
+      if (tid && _termineCache[tid]) { openTerminDetail(tid); return; }
+    }
+    // Medikamente
+    var mcard = e.target.closest('[data-mid]');
+    if (mcard && !e.target.closest('.med-check-btn')) {
+      var mid = mcard.getAttribute('data-mid');
+      if (mid && _medListe[mid]) { openMedDetail(mid); return; }
+    }
+  });
+  setTimeout(updateHeuteCounter,100);
+
+  // Sync-Status setzen
+  setSyncStatus(true);
+});
+</script>
+</div>
+</body>
+</html>
