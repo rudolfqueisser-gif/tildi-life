@@ -355,6 +355,31 @@ textarea.finp{resize:none}
   </div>
 </div>
 
+
+<!-- REZEPT DETAIL (lokal) -->
+<div id="s-rez-fb" class="screen">
+  <div class="hdr">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-rez');setNav('n-verwaltung')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+      <button class="hdr-act" onclick="editCurrentRez()">✏️</button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px" id="rez-fb-title">Rezept</div>
+    <div class="hdr-sub" id="rez-fb-sub"></div>
+  </div>
+  <div class="dcont">
+    <div id="rez-fb-foto" style="display:none;margin-bottom:12px">
+      <img id="rez-fb-foto-img" style="width:100%;border-radius:12px;max-height:200px;object-fit:cover" alt="">
+      <div style="font-size:11px;color:#6B7C6D;margin-top:4px;text-align:center">Gespeichertes Foto</div>
+    </div>
+    <div class="dsec" id="rez-fb-info"></div>
+    <button class="abtn p" onclick="showToast('Erinnerung gesetzt ✓')">Erinnerung aktivieren</button>
+    <button class="abtn s" onclick="exportRezPDF()">📄 Als PDF exportieren</button>
+    <button class="abtn s" onclick="exportAllRezPDF()">📊 Alle Rezepte exportieren</button>
+    <button class="abtn u" onclick="deleteCurrentRez()">Rezept löschen</button>
+  </div>
+</div>
 <!-- REZEPT DETAIL -->
 <div id="s-rez-detail" class="screen">
   <div class="hdr"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-rez')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Physiotherapie</div><div class="hdr-sub">Dr. Fischer · noch 8 Tage</div></div>
@@ -630,12 +655,73 @@ textarea.finp{resize:none}
     </div>
     <div class="stitle">Konto</div>
     <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);overflow:hidden;margin-bottom:14px">
-      <div class="mehr-row" onclick="goTo('s-einstellungen')"><div class="mehr-icon" style="background:#F4F7F4">⚙️</div><div><div class="mehr-title">Einstellungen</div><div class="mehr-sub">Push, Sync, Profil</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" onclick="goTo('s-export');setNav('n-mehr');prepareExportScreen()"><div class="mehr-icon" style="background:#EAF3EC">📤</div><div><div class="mehr-title">Export</div><div class="mehr-sub">Daten als PDF oder JSON exportieren</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-einstellungen')"><div class="mehr-icon" style="background:#F4F7F4">⚙️</div><div><div class="mehr-title">Einstellungen</div><div class="mehr-sub">Push, Sync, Profil</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
       <div class="mehr-row" onclick="switchUser()"><div class="mehr-icon" style="background:#F4F7F4">👤</div><div><div class="mehr-title">Nutzer wechseln</div><div class="mehr-sub" id="mehr-user-sub">Aktuell: –</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
     </div>
   </div>
 </div>
 
+
+<!-- EXPORT -->
+<div id="s-export" class="screen">
+  <div class="hdr">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-mehr');setNav('n-mehr')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px">Export</div>
+    <div class="hdr-sub">Wähle was du exportieren möchtest</div>
+  </div>
+  <div class="pc">
+    <div class="stitle">Bereiche auswählen</div>
+    <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);overflow:hidden;margin-bottom:14px">
+      <div class="mehr-row" style="cursor:default">
+        <div class="mehr-icon" style="background:#E8F1FB">📅</div>
+        <div style="flex:1"><div class="mehr-title">Termine</div><div class="mehr-sub" id="exp-termine-count">0 Einträge</div></div>
+        <div class="tog" id="exp-tog-termine" onclick="this.classList.toggle('on')"><div class="togthumb"></div></div>
+      </div>
+      <div class="mehr-row" style="cursor:default">
+        <div class="mehr-icon" style="background:#EEEDFE">💊</div>
+        <div style="flex:1"><div class="mehr-title">Medikamente</div><div class="mehr-sub" id="exp-med-count">0 Einträge</div></div>
+        <div class="tog" id="exp-tog-med" onclick="this.classList.toggle('on')"><div class="togthumb"></div></div>
+      </div>
+      <div class="mehr-row" style="cursor:default">
+        <div class="mehr-icon" style="background:#EAF3EC">📋</div>
+        <div style="flex:1"><div class="mehr-title">Rezepte</div><div class="mehr-sub" id="exp-rez-count">0 Einträge</div></div>
+        <div class="tog" id="exp-tog-rez" onclick="this.classList.toggle('on')"><div class="togthumb"></div></div>
+      </div>
+      <div class="mehr-row" style="cursor:default">
+        <div class="mehr-icon" style="background:#FEF3E2">♿</div>
+        <div style="flex:1"><div class="mehr-title">Hilfsmittel</div><div class="mehr-sub" id="exp-hm-count">0 Einträge</div></div>
+        <div class="tog" id="exp-tog-hm" onclick="this.classList.toggle('on')"><div class="togthumb"></div></div>
+      </div>
+      <div class="mehr-row" style="cursor:default">
+        <div class="mehr-icon" style="background:#EEEDFE">📄</div>
+        <div style="flex:1"><div class="mehr-title">Dokumente</div><div class="mehr-sub" id="exp-dok-count">0 Einträge</div></div>
+        <div class="tog" id="exp-tog-dok" onclick="this.classList.toggle('on')"><div class="togthumb"></div></div>
+      </div>
+      <div class="mehr-row" style="cursor:default">
+        <div class="mehr-icon" style="background:#FDECEA">📓</div>
+        <div style="flex:1"><div class="mehr-title">Anfallstagebuch</div><div class="mehr-sub" id="exp-anfall-count">0 Einträge</div></div>
+        <div class="tog" id="exp-tog-anfall" onclick="this.classList.toggle('on')"><div class="togthumb"></div></div>
+      </div>
+      <div class="mehr-row" style="cursor:default">
+        <div class="mehr-icon" style="background:#EAF3EC">💊</div>
+        <div style="flex:1"><div class="mehr-title">Einnahme-Statistik</div><div class="mehr-sub">14-Tage-Verlauf</div></div>
+        <div class="tog" id="exp-tog-einnahme" onclick="this.classList.toggle('on')"><div class="togthumb"></div></div>
+      </div>
+    </div>
+    <div class="stitle">Zeitraum</div>
+    <div class="f2col" style="margin-bottom:14px">
+      <div><span class="flbl">Von</span><input class="finp" id="exp-von" type="date" style="margin:0"></div>
+      <div><span class="flbl">Bis</span><input class="finp" id="exp-bis" type="date" style="margin:0"></div>
+    </div>
+    <button class="abtn p" onclick="exportGesamtPDF()">📄 Als PDF exportieren</button>
+    <button class="abtn s" onclick="exportGesamtJSON()">💾 Alle Daten sichern (JSON)</button>
+    <div class="info-box ok" style="margin-top:10px"><p>PDF öffnet sich im Browser – tippe dann auf "Teilen" und wähle "Als PDF sichern" oder drucke direkt.</p></div>
+  </div>
+</div>
 <!-- EINSTELLUNGEN -->
 <div id="s-einstellungen" class="screen">
   <div class="hdr"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-mehr')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Einstellungen</div></div>
@@ -683,18 +769,71 @@ textarea.finp{resize:none}
   <div class="msheet">
     <div class="mhandle"></div>
     <div class="mtitle">Person hinzufügen</div>
+
+    <!-- Foto-Upload -->
+    <div style="display:flex;justify-content:center;margin-bottom:16px">
+      <div id="nu-foto-preview" onclick="document.getElementById('nu-foto-input').click()" style="width:80px;height:80px;border-radius:50%;background:#EAF3EC;border:2px dashed rgba(74,122,90,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative">
+        <img id="nu-foto-img" style="width:100%;height:100%;object-fit:cover;display:none;border-radius:50%" alt="">
+        <div id="nu-foto-placeholder" style="text-align:center">
+          <div style="font-size:24px">📷</div>
+          <div style="font-size:10px;color:#6B7C6D;margin-top:2px">Foto</div>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="nu-foto-input" accept="image/*" style="display:none" onchange="handleNuFoto(event)">
+
     <span class="flbl">Vorname</span>
     <input class="finp" id="nu-name" type="text" placeholder="z.B. Rudolf oder Iris">
+
+    <span class="flbl">Rolle</span>
+    <select class="finp" id="nu-rolle">
+      <option>Elternteil</option>
+      <option>Betreuer/in</option>
+      <option>Pflegeperson</option>
+      <option>Arzt/Ärztin</option>
+      <option>Sonstiges</option>
+    </select>
+
     <span class="flbl">Farbe</span>
     <div style="display:flex;gap:10px;margin-bottom:14px" id="nu-colors">
       <div onclick="selColor(this,'#7BAE8A')" style="width:40px;height:40px;border-radius:50%;background:#7BAE8A;cursor:pointer;border:3px solid #4A7A5A"></div>
       <div onclick="selColor(this,'#F0A882')" style="width:40px;height:40px;border-radius:50%;background:#F0A882;cursor:pointer;border:2px solid transparent"></div>
       <div onclick="selColor(this,'#378ADD')" style="width:40px;height:40px;border-radius:50%;background:#378ADD;cursor:pointer;border:2px solid transparent"></div>
       <div onclick="selColor(this,'#B07ACF')" style="width:40px;height:40px;border-radius:50%;background:#B07ACF;cursor:pointer;border:2px solid transparent"></div>
+      <div onclick="selColor(this,'#E88040')" style="width:40px;height:40px;border-radius:50%;background:#E88040;cursor:pointer;border:2px solid transparent"></div>
     </div>
     <div class="fbtns">
       <button class="fcnc" onclick="closeM('m-newuser')">Abbrechen</button>
       <button class="fsav" onclick="saveNewUser()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: KIND/PERSON EINRICHTEN -->
+<div class="movl" id="m-kind-setup">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Betreute Person</div>
+    <div style="font-size:13px;color:#6B7C6D;margin-bottom:14px;line-height:1.6">Um wen geht es in dieser App? Das Foto erscheint im Übergabe-Protokoll.</div>
+
+    <div style="display:flex;justify-content:center;margin-bottom:16px">
+      <div id="kind-foto-preview" onclick="document.getElementById('kind-foto-input').click()" style="width:90px;height:90px;border-radius:50%;background:#EAF3EC;border:2px dashed rgba(74,122,90,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden">
+        <img id="kind-foto-img" style="width:100%;height:100%;object-fit:cover;display:none;border-radius:50%" alt="">
+        <div id="kind-foto-ph" style="text-align:center"><div style="font-size:28px">🌿</div><div style="font-size:10px;color:#6B7C6D;margin-top:2px">Foto</div></div>
+      </div>
+    </div>
+    <input type="file" id="kind-foto-input" accept="image/*" style="display:none" onchange="handleKindFoto(event)">
+
+    <span class="flbl">Name</span>
+    <input class="finp" id="kind-name" type="text" placeholder="z.B. Matilda">
+    <span class="flbl">Geburtsjahr</span>
+    <input class="finp" id="kind-jahr" type="number" placeholder="z.B. 2015" min="1900" max="2030">
+    <span class="flbl">Diagnose / Besonderheit</span>
+    <input class="finp" id="kind-diagnose" type="text" placeholder="z.B. Rett-Syndrom">
+
+    <div class="fbtns">
+      <button class="fcnc" onclick="closeM('m-kind-setup')">Überspringen</button>
+      <button class="fsav" onclick="saveKindSetup()">Speichern</button>
     </div>
   </div>
 </div>
@@ -934,7 +1073,9 @@ textarea.finp{resize:none}
 <div class="movl" id="m-uebergabe">
   <div class="msheet">
     <div class="mhandle"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><div style="font-size:32px">🤝</div><div><div style="font-size:17px;font-weight:800;color:#1E2D20">Übergabe</div><div style="font-size:12px;color:#6B7C6D" id="uebergabe-von-zu">Rudolf → Iris</div></div></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><div style="font-size:32px">🤝</div><div style="flex:1"><div style="font-size:17px;font-weight:800;color:#1E2D20">Übergabe</div><div style="font-size:12px;color:#6B7C6D" id="uebergabe-von-zu">–</div></div></div>
+    <span class="flbl">Übergabe an</span>
+    <div id="uebergabe-empfaenger-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
     <div style="background:#EAF3EC;border-radius:12px;padding:12px 14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#4A7A5A;margin-bottom:8px">Heute (automatisch)</div>
       <div style="font-size:13px;color:#1E2D20;line-height:1.7" id="uebergabe-auto">Wird geladen...</div>
@@ -1106,6 +1247,91 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 // NUTZER
 // ══════════════════════════════════════════════
 var _cu=null,_sc='#7BAE8A';
+
+// ── NUTZER FOTO ──
+var _nuFotoData = null;
+var _kindFotoData = null;
+var _uebergabeEmpfaenger = null;
+
+function handleNuFoto(e) {
+  var f=e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    _nuFotoData=ev.target.result;
+    document.getElementById('nu-foto-img').src=ev.target.result;
+    document.getElementById('nu-foto-img').style.display='block';
+    document.getElementById('nu-foto-placeholder').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+
+function handleKindFoto(e) {
+  var f=e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    _kindFotoData=ev.target.result;
+    document.getElementById('kind-foto-img').src=ev.target.result;
+    document.getElementById('kind-foto-img').style.display='block';
+    document.getElementById('kind-foto-ph').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+
+function saveKindSetup() {
+  var kind={
+    name: document.getElementById('kind-name').value||'Matilda',
+    jahr: document.getElementById('kind-jahr').value,
+    diagnose: document.getElementById('kind-diagnose').value,
+    foto: _kindFotoData
+  };
+  localStorage.setItem('tl_kind', JSON.stringify(kind));
+  closeM('m-kind-setup');
+  showToast(kind.name+' gespeichert ✓');
+}
+
+function loadKind() {
+  try { return JSON.parse(localStorage.getItem('tl_kind')||'{}'); } catch(e) { return {}; }
+}
+
+// ── ÜBERGABE: Empfänger auswählen ──
+function prepareUebergabeEmpfaenger() {
+  var users = loadUsers();
+  var current = getCurrentUser();
+  var list = document.getElementById('uebergabe-empfaenger-list');
+  if (!list) return;
+  list.innerHTML = '';
+  _uebergabeEmpfaenger = null;
+
+  var andere = users.filter(function(u) { return u.name !== current; });
+  if (andere.length === 0) {
+    list.innerHTML = '<div style="font-size:13px;color:#6B7C6D;padding:8px">Keine anderen Nutzer vorhanden. Bitte zuerst weitere Personen anlegen.</div>';
+    return;
+  }
+
+  andere.forEach(function(u) {
+    var btn = document.createElement('div');
+    btn.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;border:2px solid rgba(74,122,90,.15);cursor:pointer;background:white';
+    btn.innerHTML = '<div style="width:40px;height:40px;border-radius:50%;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0;overflow:hidden">'
+      +(u.foto?'<img src="'+u.foto+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">':getInitials(u.name))
+      +'</div>'
+      +'<div><div style="font-size:14px;font-weight:700;color:#1E2D20">'+u.name+'</div>'
+      +'<div style="font-size:11px;color:#6B7C6D">'+(u.rolle||'Betreuer')+'</div></div>';
+    btn.addEventListener('click', function() {
+      list.querySelectorAll('div').forEach(function(b){ b.style.borderColor='rgba(74,122,90,.15)';b.style.background='white'; });
+      btn.style.borderColor='#7BAE8A'; btn.style.background='#EAF3EC';
+      _uebergabeEmpfaenger = u.name;
+      var el=document.getElementById('uebergabe-von-zu');
+      if(el)el.textContent=current+' → '+u.name;
+    });
+    list.appendChild(btn);
+
+    // Ersten automatisch auswählen
+    if (!_uebergabeEmpfaenger) {
+      btn.click();
+    }
+  });
+}
+
 function loadUsers(){try{return JSON.parse(localStorage.getItem('tl_users')||'[]');}catch(e){return[];}}
 function saveUsers(u){localStorage.setItem('tl_users',JSON.stringify(u));}
 function getInitials(n){var p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.substring(0,2).toUpperCase();}
@@ -1121,7 +1347,10 @@ function renderUserList(){
   users.forEach(function(u,i){
     var btn=document.createElement('button');
     btn.className='user-card';
-    btn.innerHTML='<div style="width:52px;height:52px;border-radius:50%;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;flex-shrink:0">'+getInitials(u.name)+'</div><div><div style="font-size:17px;font-weight:700;color:#1E2D20">'+u.name+'</div><div style="font-size:12px;color:#6B7C6D;margin-top:2px">Tippen zum Anmelden</div></div><span style="margin-left:auto;font-size:20px;color:#6B7C6D">›</span>';
+    var avatarHtml = u.foto
+      ? '<div style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0"><img src="'+u.foto+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>'
+      : '<div style="width:52px;height:52px;border-radius:50%;background:'+u.color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;flex-shrink:0">'+getInitials(u.name)+'</div>';
+    btn.innerHTML=avatarHtml+'<div><div style="font-size:17px;font-weight:700;color:#1E2D20">'+u.name+'</div><div style="font-size:12px;color:#6B7C6D;margin-top:2px">'+(u.rolle||'Betreuer')+'</div></div><span style="margin-left:auto;font-size:20px;color:#6B7C6D">›</span>';
     btn.addEventListener('click',function(){loginAs(i);});
     list.appendChild(btn);
   });
@@ -1156,12 +1385,18 @@ function selColor(el,c){
 function saveNewUser(){
   var name=document.getElementById('nu-name').value.trim();
   if(!name){showToast('Bitte Namen eingeben');return;}
+  var rolle=document.getElementById('nu-rolle')?document.getElementById('nu-rolle').value:'Betreuer';
   var users=loadUsers();
-  users.push({name:name,color:_sc});
+  users.push({name:name,color:_sc,rolle:rolle,foto:_nuFotoData||null});
   saveUsers(users);
   document.getElementById('nu-name').value='';
+  _nuFotoData=null;
+  var img=document.getElementById('nu-foto-img');if(img){img.src='';img.style.display='none';}
+  var ph=document.getElementById('nu-foto-placeholder');if(ph)ph.style.display='block';
   closeM('m-newuser');
   renderUserList();
+  // Nach erstem Nutzer: Kind einrichten
+  if(users.length===1) setTimeout(function(){openM('m-kind-setup');},300);
   showToast(name+' hinzugefügt ✓');
 }
 
@@ -1216,8 +1451,13 @@ async function saveRezept(){
     datum:document.getElementById('rez-datum').value,
     bis:document.getElementById('rez-bis').value,
     erin:document.getElementById('rez-erin').value,
-    foto:_lastFoto?'ja':'nein'
+    foto:_lastFoto?'ja':'nein',
+    fotoData:_lastFoto||null
   };
+  if(window._rezEditMode&&window._rezEditId){
+    removeLocalEntry('rezepte',window._rezEditId);
+    window._rezEditMode=false; window._rezEditId=null;
+  }
   addLocalEntry('rezepte', entry);
   renderRezepte();
   resetRezeptForm();
@@ -1346,8 +1586,10 @@ async function schnellAnfall(mitBucc){
 }
 
 async function saveUebergabe(){
+  var von=getCurrentUser();
+  var an=_uebergabeEmpfaenger||'Alle';
   var entry={
-    von: getCurrentUser(),
+    von: von,
     notiz: document.getElementById('uebergabe-notiz').value,
     aufgabe: document.getElementById('uebergabe-aufgabe').value,
     datum: new Date().toISOString().split('T')[0],
@@ -1362,14 +1604,14 @@ async function saveUebergabe(){
   document.getElementById('uebergabe-notiz').value='';
   document.getElementById('uebergabe-aufgabe').value='';
   closeM('m-uebergabe');
-  showToast('Übergabe gespeichert ✓ – '+entry.von+' → '+(entry.von==='Rudolf'?'Iris':'Rudolf'));
+  showToast('Übergabe gespeichert ✓ – '+von+' → '+an);
 }
 
 function prepareUebergabe(){
   var n=getCurrentUser();
-  var other=n==='Rudolf'?'Iris':'Rudolf';
+  prepareUebergabeEmpfaenger();
   var el=document.getElementById('uebergabe-von-zu');
-  if(el)el.textContent=n+' → '+other;
+  if(el)el.textContent=n+' → ...';
 
   loadMedData();
   var today=new Date().toISOString().split('T')[0];
@@ -1497,6 +1739,8 @@ function updateDashboard() {
 
 
 // ── REZEPTE ANZEIGEN ──
+var _currentRez=null,_currentRezId=null;
+
 function renderRezepte() {
   var cont = document.getElementById('firebase-rezepte');
   var leer = document.getElementById('rez-therapie-leer');
@@ -1511,8 +1755,12 @@ function renderRezepte() {
   if (leer) leer.style.display = 'none';
 
   alle.forEach(function(r) {
-    var card = '<div class="card">'
-      +'<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">'
+    var div = document.createElement('div');
+    div.className = 'card';
+    div.style.cursor = 'pointer';
+    div.setAttribute('data-rezid', r.id);
+    div.innerHTML =
+      '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">'
       +'<div style="width:36px;height:46px;border-radius:6px;background:#EAF3EC;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">'+(r.foto==='ja'?'📷':'📋')+'</div>'
       +'<div style="flex:1">'
       +'<div class="ct" style="margin-bottom:2px"><span class="cti">'+r.titel+'</span>'
@@ -1524,17 +1772,131 @@ function renderRezepte() {
       +(r.typ?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+r.typ+'</span>':'')
       +(r.foto==='ja'?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">Foto ✓</span>':'')
       +(r.by?'<span class="tag" style="background:'+(r.byColor||'#7BAE8A')+';color:white">'+r.by+'</span>':'')
-      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-rezid="'+r.id+'" onclick="deleteRezEntry(this.dataset.rezid)">✕</span>'
-      +'</div></div>';
-    cont.insertAdjacentHTML('beforeend', card);
+      +'</div>';
+    div.addEventListener('click', function(e) {
+      if (!e.target.closest('[data-del]')) openRezDetail(r.id);
+    });
+    cont.appendChild(div);
   });
+}
+
+function openRezDetail(id) {
+  var alle = _localData.rezepte || [];
+  var r = alle.find(function(x){ return x.id===id; });
+  if (!r) { showToast('Nicht gefunden'); return; }
+  _currentRez = r; _currentRezId = id;
+
+  var t = document.getElementById('rez-fb-title');
+  if (t) t.textContent = r.titel || 'Rezept';
+  var s = document.getElementById('rez-fb-sub');
+  if (s) s.textContent = (r.typ||'') + (r.arzt?' · '+r.arzt:'');
+
+  // Foto anzeigen
+  var fotoDiv = document.getElementById('rez-fb-foto');
+  var fotoImg = document.getElementById('rez-fb-foto-img');
+  if (r.fotoData && fotoImg) {
+    fotoImg.src = r.fotoData;
+    if (fotoDiv) fotoDiv.style.display = 'block';
+  } else {
+    if (fotoDiv) fotoDiv.style.display = 'none';
+  }
+
+  var info = document.getElementById('rez-fb-info');
+  if (info) {
+    var h = '<div class="dstitle">Details</div>';
+    if (r.titel)  h += '<div class="drow"><span class="dl">Bezeichnung</span><span class="dv">'+r.titel+'</span></div>';
+    if (r.typ)    h += '<div class="drow"><span class="dl">Typ</span><span class="dv">'+r.typ+'</span></div>';
+    if (r.arzt)   h += '<div class="drow"><span class="dl">Arzt</span><span class="dv">'+r.arzt+'</span></div>';
+    if (r.datum)  h += '<div class="drow"><span class="dl">Ausgestellt</span><span class="dv">'+formatDatumKurz(r.datum)+'</span></div>';
+    if (r.bis)    h += '<div class="drow"><span class="dl">Gültig bis</span><span class="dv warn">'+formatDatumKurz(r.bis)+'</span></div>';
+    if (r.erin)   h += '<div class="drow"><span class="dl">Erinnerung</span><span class="dv">'+r.erin+'</span></div>';
+    if (r.foto)   h += '<div class="drow"><span class="dl">Foto</span><span class="dv">'+(r.foto==='ja'?'✓ Vorhanden':'Kein Foto')+'</span></div>';
+    if (r.by)     h += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">'+r.by+'</span></div>';
+    info.innerHTML = h;
+  }
+  goTo('s-rez-fb'); setNav('n-verwaltung');
+}
+
+function editCurrentRez() {
+  if (!_currentRez) return;
+  var fields = {'rez-titel':_currentRez.titel,'rez-arzt':_currentRez.arzt,'rez-datum':_currentRez.datum,'rez-bis':_currentRez.bis};
+  Object.keys(fields).forEach(function(id){var el=document.getElementById(id);if(el&&fields[id])el.value=fields[id];});
+  window._rezEditMode=true; window._rezEditId=_currentRezId;
+  openM('m-rezept');
+}
+
+function deleteCurrentRez() {
+  var name = _currentRez ? _currentRez.titel : 'Rezept';
+  document.getElementById('del-title').textContent='Rezept löschen?';
+  document.getElementById('del-msg').textContent='"'+name+'" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick=function(){
+    closeM('m-del');
+    removeLocalEntry('rezepte',_currentRezId);
+    renderRezepte(); updateDashboard();
+    goTo('s-rez'); setNav('n-verwaltung');
+    showToast('"'+name+'" gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function exportRezPDF() {
+  if (!_currentRez) return;
+  var w=window.open('','_blank');
+  w.document.write(buildRezPDFHTML([_currentRez],'Rezept-Detail'));
+  w.document.close(); setTimeout(function(){w.print();},500);
+  showToast('PDF wird geöffnet ✓');
+}
+
+function exportAllRezPDF() {
+  var alle=_localData.rezepte||[];
+  if(alle.length===0){showToast('Keine Rezepte vorhanden');return;}
+  var w=window.open('','_blank');
+  w.document.write(buildRezPDFHTML(alle,'Alle Rezepte'));
+  w.document.close(); setTimeout(function(){w.print();},500);
+  showToast('PDF mit '+alle.length+' Einträgen ✓');
+}
+
+function buildRezPDFHTML(liste, titel) {
+  var today=new Date().toLocaleDateString('de-DE');
+  var html='<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>'+titel+'</title>'
+    +'<style>body{font-family:Arial,sans-serif;max-width:750px;margin:20px auto;color:#1E2D20;font-size:13px}'
+    +'h1{color:#4A7A5A;border-bottom:2px solid #7BAE8A;padding-bottom:8px}'
+    +'h2{color:#4A7A5A;font-size:14px;margin:18px 0 6px;border-left:3px solid #7BAE8A;padding-left:10px}'
+    +'.meta{color:#6B7C6D;font-size:12px;margin-bottom:16px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{background:#7BAE8A;color:white;padding:6px 10px;text-align:left;font-size:12px}'
+    +'td{padding:5px 10px;border-bottom:.5px solid #ddd;font-size:12px}'
+    +'.label{color:#6B7C6D;width:35%}'
+    +'tr:nth-child(even){background:#f9fdf9}'
+    +'.footer{margin-top:24px;padding-top:8px;border-top:.5px solid #ddd;font-size:11px;color:#aaa;text-align:center}'
+    +'</style></head><body>'
+    +'<h1>Tildi Life – '+titel+'</h1>'
+    +'<div class="meta">Patient: Matilda &nbsp;|&nbsp; Erstellt: '+today+' &nbsp;|&nbsp; Einträge: '+liste.length+'</div>';
+  if(liste.length>1){
+    html+='<h2>Übersicht</h2><table><tr><th>Bezeichnung</th><th>Typ</th><th>Arzt</th><th>Ausgestellt</th><th>Gültig bis</th></tr>';
+    liste.forEach(function(r){
+      html+='<tr><td><strong>'+(r.titel||'–')+'</strong></td><td>'+(r.typ||'–')+'</td><td>'+(r.arzt||'–')+'</td><td>'+(r.datum?formatDatumKurz(r.datum):'–')+'</td><td>'+(r.bis?formatDatumKurz(r.bis):'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+  liste.forEach(function(r,i){
+    html+='<h2>'+(liste.length>1?(i+1)+'. ':'')+r.titel+'</h2><table>';
+    [['Bezeichnung',r.titel],['Typ',r.typ],['Arzt',r.arzt],
+     ['Ausgestellt',r.datum?formatDatumKurz(r.datum):''],
+     ['Gültig bis',r.bis?formatDatumKurz(r.bis):''],
+     ['Erinnerung',r.erin],['Foto',r.foto==='ja'?'Vorhanden':'Nicht vorhanden'],
+     ['Eingetragen von',r.by],['Eingetragen am',r.ts?new Date(r.ts).toLocaleDateString('de-DE'):'']
+    ].forEach(function(f){if(f[1])html+='<tr><td class="label">'+f[0]+'</td><td>'+f[1]+'</td></tr>';});
+    html+='</table>';
+  });
+  html+='<div class="footer">Tildi Life – Vertraulich · nur für medizinische Zwecke</div></body></html>';
+  return html;
 }
 
 function deleteRezEntry(id) {
   if (!confirm('Rezept löschen?')) return;
   removeLocalEntry('rezepte', id);
-  renderRezepte();
-  showToast('Gelöscht ✓');
+  renderRezepte(); showToast('Gelöscht ✓');
 }
 
 // ── HILFSMITTEL ANZEIGEN ──
@@ -1818,6 +2180,8 @@ function updateDashboard() {
 
 
 // ── REZEPTE ANZEIGEN ──
+var _currentRez=null,_currentRezId=null;
+
 function renderRezepte() {
   var cont = document.getElementById('firebase-rezepte');
   var leer = document.getElementById('rez-therapie-leer');
@@ -1832,8 +2196,12 @@ function renderRezepte() {
   if (leer) leer.style.display = 'none';
 
   alle.forEach(function(r) {
-    var card = '<div class="card">'
-      +'<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">'
+    var div = document.createElement('div');
+    div.className = 'card';
+    div.style.cursor = 'pointer';
+    div.setAttribute('data-rezid', r.id);
+    div.innerHTML =
+      '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">'
       +'<div style="width:36px;height:46px;border-radius:6px;background:#EAF3EC;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">'+(r.foto==='ja'?'📷':'📋')+'</div>'
       +'<div style="flex:1">'
       +'<div class="ct" style="margin-bottom:2px"><span class="cti">'+r.titel+'</span>'
@@ -1845,17 +2213,131 @@ function renderRezepte() {
       +(r.typ?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">'+r.typ+'</span>':'')
       +(r.foto==='ja'?'<span class="tag" style="background:#EAF3EC;color:#1E5C2A">Foto ✓</span>':'')
       +(r.by?'<span class="tag" style="background:'+(r.byColor||'#7BAE8A')+';color:white">'+r.by+'</span>':'')
-      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-rezid="'+r.id+'" onclick="deleteRezEntry(this.dataset.rezid)">✕</span>'
-      +'</div></div>';
-    cont.insertAdjacentHTML('beforeend', card);
+      +'</div>';
+    div.addEventListener('click', function(e) {
+      if (!e.target.closest('[data-del]')) openRezDetail(r.id);
+    });
+    cont.appendChild(div);
   });
+}
+
+function openRezDetail(id) {
+  var alle = _localData.rezepte || [];
+  var r = alle.find(function(x){ return x.id===id; });
+  if (!r) { showToast('Nicht gefunden'); return; }
+  _currentRez = r; _currentRezId = id;
+
+  var t = document.getElementById('rez-fb-title');
+  if (t) t.textContent = r.titel || 'Rezept';
+  var s = document.getElementById('rez-fb-sub');
+  if (s) s.textContent = (r.typ||'') + (r.arzt?' · '+r.arzt:'');
+
+  // Foto anzeigen
+  var fotoDiv = document.getElementById('rez-fb-foto');
+  var fotoImg = document.getElementById('rez-fb-foto-img');
+  if (r.fotoData && fotoImg) {
+    fotoImg.src = r.fotoData;
+    if (fotoDiv) fotoDiv.style.display = 'block';
+  } else {
+    if (fotoDiv) fotoDiv.style.display = 'none';
+  }
+
+  var info = document.getElementById('rez-fb-info');
+  if (info) {
+    var h = '<div class="dstitle">Details</div>';
+    if (r.titel)  h += '<div class="drow"><span class="dl">Bezeichnung</span><span class="dv">'+r.titel+'</span></div>';
+    if (r.typ)    h += '<div class="drow"><span class="dl">Typ</span><span class="dv">'+r.typ+'</span></div>';
+    if (r.arzt)   h += '<div class="drow"><span class="dl">Arzt</span><span class="dv">'+r.arzt+'</span></div>';
+    if (r.datum)  h += '<div class="drow"><span class="dl">Ausgestellt</span><span class="dv">'+formatDatumKurz(r.datum)+'</span></div>';
+    if (r.bis)    h += '<div class="drow"><span class="dl">Gültig bis</span><span class="dv warn">'+formatDatumKurz(r.bis)+'</span></div>';
+    if (r.erin)   h += '<div class="drow"><span class="dl">Erinnerung</span><span class="dv">'+r.erin+'</span></div>';
+    if (r.foto)   h += '<div class="drow"><span class="dl">Foto</span><span class="dv">'+(r.foto==='ja'?'✓ Vorhanden':'Kein Foto')+'</span></div>';
+    if (r.by)     h += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">'+r.by+'</span></div>';
+    info.innerHTML = h;
+  }
+  goTo('s-rez-fb'); setNav('n-verwaltung');
+}
+
+function editCurrentRez() {
+  if (!_currentRez) return;
+  var fields = {'rez-titel':_currentRez.titel,'rez-arzt':_currentRez.arzt,'rez-datum':_currentRez.datum,'rez-bis':_currentRez.bis};
+  Object.keys(fields).forEach(function(id){var el=document.getElementById(id);if(el&&fields[id])el.value=fields[id];});
+  window._rezEditMode=true; window._rezEditId=_currentRezId;
+  openM('m-rezept');
+}
+
+function deleteCurrentRez() {
+  var name = _currentRez ? _currentRez.titel : 'Rezept';
+  document.getElementById('del-title').textContent='Rezept löschen?';
+  document.getElementById('del-msg').textContent='"'+name+'" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick=function(){
+    closeM('m-del');
+    removeLocalEntry('rezepte',_currentRezId);
+    renderRezepte(); updateDashboard();
+    goTo('s-rez'); setNav('n-verwaltung');
+    showToast('"'+name+'" gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function exportRezPDF() {
+  if (!_currentRez) return;
+  var w=window.open('','_blank');
+  w.document.write(buildRezPDFHTML([_currentRez],'Rezept-Detail'));
+  w.document.close(); setTimeout(function(){w.print();},500);
+  showToast('PDF wird geöffnet ✓');
+}
+
+function exportAllRezPDF() {
+  var alle=_localData.rezepte||[];
+  if(alle.length===0){showToast('Keine Rezepte vorhanden');return;}
+  var w=window.open('','_blank');
+  w.document.write(buildRezPDFHTML(alle,'Alle Rezepte'));
+  w.document.close(); setTimeout(function(){w.print();},500);
+  showToast('PDF mit '+alle.length+' Einträgen ✓');
+}
+
+function buildRezPDFHTML(liste, titel) {
+  var today=new Date().toLocaleDateString('de-DE');
+  var html='<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>'+titel+'</title>'
+    +'<style>body{font-family:Arial,sans-serif;max-width:750px;margin:20px auto;color:#1E2D20;font-size:13px}'
+    +'h1{color:#4A7A5A;border-bottom:2px solid #7BAE8A;padding-bottom:8px}'
+    +'h2{color:#4A7A5A;font-size:14px;margin:18px 0 6px;border-left:3px solid #7BAE8A;padding-left:10px}'
+    +'.meta{color:#6B7C6D;font-size:12px;margin-bottom:16px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{background:#7BAE8A;color:white;padding:6px 10px;text-align:left;font-size:12px}'
+    +'td{padding:5px 10px;border-bottom:.5px solid #ddd;font-size:12px}'
+    +'.label{color:#6B7C6D;width:35%}'
+    +'tr:nth-child(even){background:#f9fdf9}'
+    +'.footer{margin-top:24px;padding-top:8px;border-top:.5px solid #ddd;font-size:11px;color:#aaa;text-align:center}'
+    +'</style></head><body>'
+    +'<h1>Tildi Life – '+titel+'</h1>'
+    +'<div class="meta">Patient: Matilda &nbsp;|&nbsp; Erstellt: '+today+' &nbsp;|&nbsp; Einträge: '+liste.length+'</div>';
+  if(liste.length>1){
+    html+='<h2>Übersicht</h2><table><tr><th>Bezeichnung</th><th>Typ</th><th>Arzt</th><th>Ausgestellt</th><th>Gültig bis</th></tr>';
+    liste.forEach(function(r){
+      html+='<tr><td><strong>'+(r.titel||'–')+'</strong></td><td>'+(r.typ||'–')+'</td><td>'+(r.arzt||'–')+'</td><td>'+(r.datum?formatDatumKurz(r.datum):'–')+'</td><td>'+(r.bis?formatDatumKurz(r.bis):'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+  liste.forEach(function(r,i){
+    html+='<h2>'+(liste.length>1?(i+1)+'. ':'')+r.titel+'</h2><table>';
+    [['Bezeichnung',r.titel],['Typ',r.typ],['Arzt',r.arzt],
+     ['Ausgestellt',r.datum?formatDatumKurz(r.datum):''],
+     ['Gültig bis',r.bis?formatDatumKurz(r.bis):''],
+     ['Erinnerung',r.erin],['Foto',r.foto==='ja'?'Vorhanden':'Nicht vorhanden'],
+     ['Eingetragen von',r.by],['Eingetragen am',r.ts?new Date(r.ts).toLocaleDateString('de-DE'):'']
+    ].forEach(function(f){if(f[1])html+='<tr><td class="label">'+f[0]+'</td><td>'+f[1]+'</td></tr>';});
+    html+='</table>';
+  });
+  html+='<div class="footer">Tildi Life – Vertraulich · nur für medizinische Zwecke</div></body></html>';
+  return html;
 }
 
 function deleteRezEntry(id) {
   if (!confirm('Rezept löschen?')) return;
   removeLocalEntry('rezepte', id);
-  renderRezepte();
-  showToast('Gelöscht ✓');
+  renderRezepte(); showToast('Gelöscht ✓');
 }
 
 // ── HILFSMITTEL ANZEIGEN ──
@@ -2412,12 +2894,9 @@ function camUse(){
     document.getElementById('scananim').classList.add('vis');
     setTimeout(function(){
       document.getElementById('scananim').classList.remove('vis');
-      document.getElementById('aibox').classList.add('vis');
-      var ab=document.getElementById('ai-bez');if(ab)ab.textContent='Physiotherapie';
-      var aa=document.getElementById('ai-arzt');if(aa)aa.textContent='Dr. Fischer';
-      document.getElementById('rez-titel').value='Physiotherapie';
-      document.getElementById('rez-arzt').value='Dr. Fischer';
-    },2000);
+      // Kein automatisches Ausfüllen - Nutzer trägt selbst ein
+      showToast('Foto gespeichert ✓ – bitte Felder ausfüllen');
+    },1500);
     openM('m-rezept');
   }
 }
@@ -2430,7 +2909,7 @@ function handleGallery(e){
     document.getElementById('foto-img').src=ev.target.result;
     document.getElementById('foto-strip').style.display='block';
     document.getElementById('scananim').classList.add('vis');
-    setTimeout(function(){document.getElementById('scananim').classList.remove('vis');document.getElementById('aibox').classList.add('vis');},2000);
+    setTimeout(function(){document.getElementById('scananim').classList.remove('vis');showToast('Foto gespeichert ✓');},1500);
   };r.readAsDataURL(f);
 }
 
@@ -2445,8 +2924,8 @@ function handleDokGallery(e){
   };r.readAsDataURL(f);
 }
 
-function resetCamera(){_lastFoto=null;document.getElementById('foto-strip').style.display='none';document.getElementById('camzone').style.display='block';document.getElementById('aibox').classList.remove('vis');document.getElementById('scananim').classList.remove('vis');}
-function resetRezeptForm(){resetCamera();['rez-titel','rez-arzt','rez-datum','rez-bis'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});document.getElementById('aibox').classList.remove('vis');}
+function resetCamera(){_lastFoto=null;document.getElementById('foto-strip').style.display='none';document.getElementById('camzone').style.display='block';var ab=document.getElementById('aibox');if(ab)ab.classList.remove('vis');document.getElementById('scananim').classList.remove('vis');}
+function resetRezeptForm(){resetCamera();['rez-titel','rez-arzt','rez-datum','rez-bis'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});var ab=document.getElementById('aibox');if(ab)ab.classList.remove('vis');}
 function resetDokCam(){_dokFoto=null;document.getElementById('dok-foto-strip').style.display='none';document.getElementById('dok-camzone').style.display='block';}
 function resetDokForm(){resetDokCam();['dok-bez','dok-absender','dok-datum','dok-frist'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
 
@@ -2689,6 +3168,155 @@ function buildHMPDFHTML(liste, titel) {
   html += '<div class="footer">Erstellt mit Tildi Life &nbsp;|&nbsp; Vertraulich – nur für medizinische Zwecke</div>';
   html += '</body></html>';
   return html;
+}
+
+// ── GESAMT-EXPORT ──
+function prepareExportScreen() {
+  var counts = {
+    termine: (_localData.termine||[]).length,
+    medikamente: (_localData.medikamente||[]).length,
+    rezepte: (_localData.rezepte||[]).length,
+    hm: (_localData.hm||[]).length,
+    dokumente: (_localData.dokumente||[]).length,
+    anfaelle: (_localData.anfaelle||[]).length
+  };
+  var map = {termine:'exp-termine-count',medikamente:'exp-med-count',rezepte:'exp-rez-count',hm:'exp-hm-count',dokumente:'exp-dok-count',anfaelle:'exp-anfall-count'};
+  Object.keys(map).forEach(function(k){
+    var el=document.getElementById(map[k]);
+    if(el)el.textContent=counts[k]+' Einträge';
+  });
+  // Zeitraum: letztes Jahr bis heute
+  var heute = new Date().toISOString().split('T')[0];
+  var vorJahr = new Date();vorJahr.setFullYear(vorJahr.getFullYear()-1);
+  var vonEl=document.getElementById('exp-von');if(vonEl)vonEl.value=vorJahr.toISOString().split('T')[0];
+  var bisEl=document.getElementById('exp-bis');if(bisEl)bisEl.value=heute;
+}
+
+function isToggleOn(id){var el=document.getElementById(id);return el&&el.classList.contains('on');}
+
+function exportGesamtPDF() {
+  var today=new Date().toLocaleDateString('de-DE');
+  var kind=loadKind();
+  var html='<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Tildi Life Export</title>'
+    +'<style>body{font-family:Arial,sans-serif;max-width:750px;margin:20px auto;color:#1E2D20;font-size:12px}'
+    +'h1{color:#4A7A5A;border-bottom:3px solid #7BAE8A;padding-bottom:10px;font-size:22px}'
+    +'h2{color:#4A7A5A;font-size:15px;margin:24px 0 8px;border-left:4px solid #7BAE8A;padding-left:12px;page-break-before:auto}'
+    +'.meta{color:#6B7C6D;font-size:12px;margin-bottom:20px;background:#f5f9f5;padding:10px;border-radius:6px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:11px}'
+    +'th{background:#7BAE8A;color:white;padding:6px 8px;text-align:left}'
+    +'td{padding:5px 8px;border-bottom:.5px solid #e0e8e0}'
+    +'tr:nth-child(even){background:#f9fdf9}'
+    +'.label{color:#6B7C6D;width:35%;font-size:11px}'
+    +'.section{margin-bottom:20px;border:.5px solid #d0e8d0;border-radius:8px;overflow:hidden}'
+    +'.footer{margin-top:30px;padding-top:10px;border-top:.5px solid #ccc;font-size:10px;color:#aaa;text-align:center}'
+    +'@media print{h2{page-break-before:always}h2:first-of-type{page-break-before:auto}}'
+    +'</style></head><body>';
+
+  html+='<h1>Tildi Life – Gesamtbericht</h1>';
+  html+='<div class="meta"><strong>Patient:</strong> '+(kind.name||'Matilda');
+  if(kind.diagnose)html+=' &nbsp;|&nbsp; <strong>Diagnose:</strong> '+kind.diagnose;
+  html+=' &nbsp;|&nbsp; <strong>Erstellt:</strong> '+today+' &nbsp;|&nbsp; <strong>von:</strong> '+getCurrentUser()+'</div>';
+
+  // Termine
+  if(isToggleOn('exp-tog-termine')&&(_localData.termine||[]).length>0){
+    html+='<h2>📅 Termine</h2><table><tr><th>Datum</th><th>Bezeichnung</th><th>Ort</th><th>Kategorie</th><th>Eingetragen von</th></tr>';
+    (_localData.termine||[]).sort(function(a,b){return a.datum>b.datum?1:-1;}).forEach(function(t){
+      html+='<tr><td>'+(t.datum?formatDatumKurz(t.datum):'–')+'</td><td><strong>'+t.bez+'</strong></td><td>'+(t.ort||'–')+'</td><td>'+(t.kat||'–')+'</td><td>'+(t.by||'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+
+  // Medikamente
+  if(isToggleOn('exp-tog-med')&&(_localData.medikamente||[]).length>0){
+    html+='<h2>💊 Medikamente</h2><table><tr><th>Name</th><th>Kategorie</th><th>Arzt</th><th>Zeiten</th><th>Hinweis</th></tr>';
+    (_localData.medikamente||[]).forEach(function(m){
+      var z=[m.t1,m.t2,m.t3].filter(Boolean).join(', ');
+      html+='<tr><td><strong>'+m.name+'</strong></td><td>'+(m.kat||'–')+'</td><td>'+(m.arzt||'–')+'</td><td>'+z+' Uhr</td><td>'+(m.hinweis||'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+
+  // Einnahme-Statistik
+  if(isToggleOn('exp-tog-einnahme')){
+    html+='<h2>📊 Einnahme letzte 14 Tage</h2>';
+    loadMedData();
+    var meds=_localData.medikamente||[];
+    if(meds.length>0){
+      html+='<table><tr><th>Datum</th>';
+      meds.forEach(function(m){[m.t1,m.t2,m.t3].filter(Boolean).forEach(function(z){html+='<th>'+m.name+' '+z+'</th>';});});
+      html+='</tr>';
+      for(var i=13;i>=0;i--){
+        var d=new Date();d.setDate(d.getDate()-i);
+        var k=d.toISOString().split('T')[0];
+        html+='<tr><td>'+d.toLocaleDateString('de-DE')+'</td>';
+        meds.forEach(function(m){[m.t1,m.t2,m.t3].filter(Boolean).forEach(function(z){
+          var done=!!_md[k+'_'+m.id+'_'+z];
+          html+='<td style="color:'+(done?'#1E5C2A':'#C43030')+'">'+(done?'✓':'○')+'</td>';
+        });});
+        html+='</tr>';
+      }
+      html+='</table>';
+    }
+  }
+
+  // Rezepte
+  if(isToggleOn('exp-tog-rez')&&(_localData.rezepte||[]).length>0){
+    html+='<h2>📋 Rezepte</h2><table><tr><th>Bezeichnung</th><th>Typ</th><th>Arzt</th><th>Ausgestellt</th><th>Gültig bis</th></tr>';
+    (_localData.rezepte||[]).forEach(function(r){
+      html+='<tr><td><strong>'+r.titel+'</strong></td><td>'+(r.typ||'–')+'</td><td>'+(r.arzt||'–')+'</td><td>'+(r.datum?formatDatumKurz(r.datum):'–')+'</td><td>'+(r.bis?formatDatumKurz(r.bis):'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+
+  // Hilfsmittel
+  if(isToggleOn('exp-tog-hm')&&(_localData.hm||[]).length>0){
+    html+='<h2>♿ Hilfsmittel</h2><table><tr><th>Bezeichnung</th><th>Kategorie</th><th>Arzt</th><th>Lieferant</th><th>Krankenkasse</th><th>KV</th></tr>';
+    (_localData.hm||[]).forEach(function(h){
+      html+='<tr><td><strong>'+h.bez+'</strong></td><td>'+(h.kat||'–')+'</td><td>'+(h.arzt||'–')+'</td><td>'+(h.lief||'–')+'</td><td>'+(h.kk||'–')+'</td><td>'+(h.kv||'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+
+  // Dokumente
+  if(isToggleOn('exp-tog-dok')&&(_localData.dokumente||[]).length>0){
+    html+='<h2>📄 Dokumente</h2><table><tr><th>Bezeichnung</th><th>Typ</th><th>Absender</th><th>Eingegangen</th><th>Frist</th></tr>';
+    (_localData.dokumente||[]).forEach(function(d){
+      html+='<tr><td><strong>'+d.bez+'</strong></td><td>'+(d.typ||'–')+'</td><td>'+(d.absender||'–')+'</td><td>'+(d.datum?formatDatumKurz(d.datum):'–')+'</td><td>'+(d.frist?formatDatumKurz(d.frist):'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+
+  // Anfälle
+  if(isToggleOn('exp-tog-anfall')&&(_localData.anfaelle||[]).length>0){
+    html+='<h2>📓 Anfallstagebuch</h2><table><tr><th>Datum</th><th>Zeit</th><th>Art</th><th>Dauer</th><th>Intensität</th><th>Buccolam</th><th>Auslöser</th></tr>';
+    (_localData.anfaelle||[]).sort(function(a,b){return a.datum>b.datum?1:-1;}).forEach(function(a){
+      html+='<tr><td>'+(a.datum?formatDatumKurz(a.datum):'–')+'</td><td>'+(a.zeit||'–')+' Uhr</td><td>'+a.art+'</td><td>'+(a.dauer||'–')+'</td><td>'+(a.intensitaet||'–')+'/4</td><td>'+(a.midazolam?'✓ Ja':'Nein')+'</td><td>'+(a.ausloser||'–')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+
+  html+='<div class="footer">Tildi Life · Erstellt: '+today+' · Vertraulich – nur für medizinische Zwecke</div></body></html>';
+
+  var w=window.open('','_blank');
+  w.document.write(html); w.document.close();
+  setTimeout(function(){w.print();},500);
+  showToast('PDF wird geöffnet ✓');
+}
+
+function exportGesamtJSON() {
+  var data={
+    export_datum: new Date().toISOString(),
+    von: getCurrentUser(),
+    kind: loadKind(),
+    daten: _localData,
+    einnahmen: _md
+  };
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='tildi-backup-'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();
+  showToast('Backup exportiert ✓');
 }
 // ── TERMIN DETAIL ──
 function openTerminDetail(id) {
