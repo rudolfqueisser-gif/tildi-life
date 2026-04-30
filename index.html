@@ -255,7 +255,19 @@ textarea.finp{resize:none}
       <div style="font-size:13px;color:#6B7C6D;line-height:1.6">Trage deinen ersten Termin, ein Rezept oder ein Medikament ein – alles erscheint dann hier auf einen Blick.</div>
     </div>
     <div id="dash-fristen"></div>
-    <button class="abtn s" style="margin-top:4px" onclick="prepareUebergabe();openM('m-uebergabe')">🤝 Übergabe starten</button>
+    <!-- Schnell-Aktionen -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;margin-bottom:14px">
+      <button onclick="openM('m-anfall-neu')" style="background:#FDECEA;border:1.5px solid #E88080;border-radius:14px;padding:14px 10px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:24px;margin-bottom:4px">📓</div>
+        <div style="font-size:13px;font-weight:700;color:#8B1A1A">Anfall dokumentieren</div>
+        <div style="font-size:11px;color:#C43030;margin-top:2px">Mit/ohne Buccolam</div>
+      </button>
+      <button onclick="prepareUebergabe();openM('m-uebergabe')" style="background:#EAF3EC;border:1.5px solid #A0CCA0;border-radius:14px;padding:14px 10px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:24px;margin-bottom:4px">🤝</div>
+        <div style="font-size:13px;font-weight:700;color:#1E5C2A">Übergabe starten</div>
+        <div style="font-size:11px;color:#4A7A5A;margin-top:2px">An Iris / Betreuer</div>
+      </button>
+    </div>
     <div id="dash-firebase"></div>
   </div>
 </div>
@@ -635,16 +647,49 @@ textarea.finp{resize:none}
   </div>
 </div>
 
+
+<!-- ANFALL DETAIL (lokal) -->
+<div id="s-anfall-fb" class="screen">
+  <div class="hdr" style="background:#8B1A1A">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-tagebuch');setNav('n-gesundheit')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+      <button class="hdr-act" onclick="deleteCurrentAnfall()">🗑</button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px" id="anfall-fb-title">Anfall</div>
+    <div class="hdr-sub" id="anfall-fb-sub"></div>
+  </div>
+  <div class="dcont">
+    <div class="dsec" id="anfall-fb-info"></div>
+    <div class="dsec" id="anfall-fb-buccolam" style="display:none">
+      <div class="dstitle" style="color:#8B1A1A">Buccolam-Gabe</div>
+      <div id="anfall-fb-buccolam-info"></div>
+    </div>
+    <div class="dsec" id="anfall-fb-notiz-sec" style="display:none">
+      <div class="dstitle">Notizen</div>
+      <p id="anfall-fb-notiz" style="font-size:13px;color:#6B7C6D;line-height:1.6"></p>
+    </div>
+    <button class="abtn s" onclick="exportAnfallEintragPDF()">📄 Diesen Eintrag exportieren</button>
+    <button class="abtn u" onclick="deleteCurrentAnfall()">Eintrag löschen</button>
+  </div>
+</div>
 <!-- ANFALL DETAIL -->
 <div id="s-anfall-detail" class="screen">
-  <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-tagebuch')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button><button class="hdr-act">✏️</button></div><div class="hdr-title" style="margin-top:6px">Tonisch-klonisch · 22.04.2025</div><div class="hdr-sub">03:38 Uhr · 2 Min · Intensität 4/4</div></div>
+  <div class="hdr" style="background:#8B1A1A">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-tagebuch');setNav('n-gesundheit')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+      <button class="hdr-act" onclick="shareAnfall()">⬆️</button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px">Anfall</div>
+    <div class="hdr-sub"></div>
+  </div>
   <div class="dcont">
-    <div class="dsec" style="border-color:#E88080"><div class="dstitle" style="color:#8B1A1A">Anfall</div><div class="drow"><span class="dl">Art</span><span class="dv">Tonisch-klonisch</span></div><div class="drow"><span class="dl">Datum</span><span class="dv">22.04.2025, 03:38</span></div><div class="drow"><span class="dl">Dauer</span><span class="dv">ca. 2 Minuten</span></div><div class="drow"><span class="dl">Intensität</span><span class="dv urg">4/4 (stark)</span></div><div class="drow"><span class="dl">Auslöser</span><span class="dv">Schlafmangel</span></div><div class="drow"><span class="dl">Notiert von</span><span class="dv">Iris</span></div></div>
-    <div class="dsec" style="border-color:#E88080"><div class="dstitle" style="color:#8B1A1A">Buccolam-Gabe</div><div class="drow"><span class="dl">Gegeben um</span><span class="dv urg">03:40 Uhr</span></div><div class="drow"><span class="dl">Wirkung</span><span class="dv">Anfall gestoppt</span></div></div>
-    <div class="info-box"><p>Buccolam-Vorrat wurde als "Verwendet" markiert. Ersatz nötig.</p></div>
-    <button class="abtn p" onclick="goTo('s-bucc-detail')">→ Buccolam-Eintrag öffnen</button>
-    <button class="abtn s" onclick="showToast('Eintrag geteilt ✓')">Eintrag teilen</button>
-    <button class="abtn u" onclick="confirmDel('anfall','s-tagebuch')">Löschen</button>
+    <div id="anfall-detail-content"></div>
+    <button class="abtn s" onclick="shareAnfall()">Eintrag teilen</button>
+    <button class="abtn u" onclick="deleteCurrentAnfall()">Eintrag löschen</button>
   </div>
 </div>
 
@@ -706,7 +751,7 @@ textarea.finp{resize:none}
     </div>
     <div class="stitle">Konto</div>
     <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);overflow:hidden;margin-bottom:14px">
-      <div class="mehr-row" onclick="goTo('s-export');setNav('n-mehr');prepareExportScreen()"><div class="mehr-icon" style="background:#EAF3EC">📤</div><div><div class="mehr-title">Export</div><div class="mehr-sub">Daten als PDF oder JSON exportieren</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-einstellungen')"><div class="mehr-icon" style="background:#F4F7F4">⚙️</div><div><div class="mehr-title">Einstellungen</div><div class="mehr-sub">Push, Sync, Profil</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" onclick="buildSyncQR();openM('m-sync')"><div class="mehr-icon" style="background:#EAF3EC">🔄</div><div><div class="mehr-title">Sync mit Iris</div><div class="mehr-sub">Daten per Link teilen</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-export');setNav('n-mehr');prepareExportScreen()"><div class="mehr-icon" style="background:#EAF3EC">📤</div><div><div class="mehr-title">Export</div><div class="mehr-sub">Daten als PDF oder JSON exportieren</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-einstellungen')"><div class="mehr-icon" style="background:#F4F7F4">⚙️</div><div><div class="mehr-title">Einstellungen</div><div class="mehr-sub">Push, Sync, Profil</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
       <div class="mehr-row" onclick="switchUser()"><div class="mehr-icon" style="background:#F4F7F4">👤</div><div><div class="mehr-title">Nutzer wechseln</div><div class="mehr-sub" id="mehr-user-sub">Aktuell: –</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
     </div>
   </div>
@@ -1145,6 +1190,35 @@ textarea.finp{resize:none}
 </div>
 
 
+
+<!-- MODAL: SYNC -->
+<div class="movl" id="m-sync">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">🔄 Sync mit Iris / anderen</div>
+    
+    <div class="info-box ok" style="margin-bottom:14px">
+      <p><strong>So funktioniert der Sync:</strong><br>
+      Tippe auf "Link teilen" → schick den Link per WhatsApp an Iris → Iris öffnet den Link → ihre App wird mit deinen Daten aktualisiert.</p>
+    </div>
+
+    <div style="background:#F4F7F4;border-radius:12px;padding:14px;margin-bottom:12px;text-align:center">
+      <img id="sync-qr-img" style="display:none;width:160px;height:160px;border-radius:8px;margin:0 auto 10px" alt="QR Code">
+      <div style="font-size:12px;color:#6B7C6D;margin-bottom:6px" id="sync-data-count">Wird geladen...</div>
+      <div style="font-size:10px;color:#6B7C6D;word-break:break-all;display:none" id="sync-url-display"></div>
+    </div>
+
+    <button class="abtn p" onclick="shareSyncLink()" style="margin-bottom:8px">⬆️ Link teilen (WhatsApp / AirDrop)</button>
+    <button class="abtn s" onclick="copySyncLink()" style="margin-bottom:8px">📋 Link kopieren</button>
+    <button class="abtn s" onclick="exportGesamtJSON()" style="margin-bottom:8px">💾 Backup als JSON exportieren</button>
+    
+    <div class="info-box warn" style="margin-bottom:8px">
+      <p>⚠️ Der Sync-Link enthält alle deine Daten. Teile ihn nur mit vertrauenswürdigen Personen.</p>
+    </div>
+    
+    <div class="fbtns"><button class="fcnc" onclick="closeM('m-sync')">Schließen</button></div>
+  </div>
+</div>
 <!-- MODAL: NOTIZ HINZUFÜGEN -->
 <div class="movl" id="m-notiz">
   <div class="msheet">
@@ -1188,9 +1262,15 @@ function setSyncStatus(ok){
   var dot=document.getElementById('sync-dot');
   var txt=document.getElementById('sync-txt');
   var fb=document.getElementById('fb-status-detail');
-  if(dot)dot.style.background='#3B6D11';
-  if(txt)txt.textContent='Daten gespeichert ✓';
-  if(fb)fb.textContent='Lokal gespeichert ✓';
+  if(ok){
+    if(dot)dot.style.background='#3B6D11';
+    if(txt)txt.textContent=_fbReady?'Sync aktiv ✓':'Lokal gespeichert';
+    if(fb)fb.textContent=_fbReady?'Firebase verbunden ✓':'Lokal';
+  } else {
+    if(dot)dot.style.background='#D4900A';
+    if(txt)txt.textContent='Lokal gespeichert';
+    if(fb)fb.textContent='Offline';
+  }
 }
 
 async function fbSave(col,data){
@@ -1647,9 +1727,19 @@ async function schnellAnfall(mitBucc){
   var now=new Date();
   var zeit=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   var datum=now.toISOString().split('T')[0];
-  await fbSave('tildi_anfaelle',{art:mitBucc?'Tonisch-klonisch':'Unbekannt',datum:datum,zeit:zeit,dauer:'unbekannt',intensitaet:mitBucc?4:2,midazolam:mitBucc,notfall:mitBucc,notiz:'Schnelleintrag'});
+  var entry={art:mitBucc?'Tonisch-klonisch':'Unbekannt',datum:datum,zeit:zeit,dauer:'unbekannt',intensitaet:mitBucc?4:2,midazolam:mitBucc,notfall:mitBucc,notiz:'Schnelleintrag – bitte Details ergänzen'};
+  if(!_localData.anfaelle)_localData.anfaelle=[];
+  addLocalEntry('anfaelle',entry);
+  renderAnfaelle();
+  updateDashboard();
   closeM('m-notfall');
   showToast('Dokumentiert ✓'+(mitBucc?' · Buccolam eingetragen':''));
+  // Detail-Formular öffnen zum Ergänzen
+  setTimeout(function(){
+    if(confirm('Möchtest du den Eintrag jetzt vervollständigen?')){
+      openM('m-anfall-neu');
+    }
+  }, 1000);
 }
 
 async function saveUebergabe(){
@@ -1765,12 +1855,17 @@ function addLocalEntry(key, entry) {
   entry.byColor = getCurrentColor();
   _localData[key].push(entry);
   saveLocalData(key);
+  // Sync auslösen
+  broadcastUpdate();
+  setTimeout(pushToFirebase, 500);
   return entry.id;
 }
 
 function removeLocalEntry(key, id) {
   _localData[key] = _localData[key].filter(function(e) { return e.id !== id; });
   saveLocalData(key);
+  broadcastUpdate();
+  setTimeout(pushToFirebase, 500);
 }
 
 function renderAll() {
@@ -1779,28 +1874,64 @@ function renderAll() {
   renderRezepte();
   renderHM();
   renderDokumente();
+  renderAnfaelle();
+  renderAnfaelle();
   updateDashboard();
 }
 
 function updateDashboard() {
-  // Zähler aktualisieren
   var t = (_localData.termine||[]).length;
   var m = (_localData.medikamente||[]).length;
   var r = (_localData.rezepte||[]).length;
   var a = (_localData.anfaelle||[]).length;
 
   var el;
-  el=document.getElementById('dash-termine-count');   if(el)el.textContent=t;
-  el=document.getElementById('dash-rez-count');       if(el)el.textContent=r;
-  el=document.getElementById('dash-med-count');       if(el)el.textContent=m;
-  el=document.getElementById('dash-anfall-count');    if(el)el.textContent=a;
+  el=document.getElementById('dash-termine-count'); if(el)el.textContent=t;
+  el=document.getElementById('dash-rez-count');     if(el)el.textContent=r;
+  el=document.getElementById('dash-med-count');     if(el)el.textContent=m;
+  el=document.getElementById('dash-anfall-count');  if(el)el.textContent=a;
 
-  // Leer-Hinweis nur zeigen wenn wirklich alles leer
-  var leer = document.getElementById('dash-leer');
-  if (leer) {
-    var hatDaten = t > 0 || m > 0 || r > 0 || a > 0;
-    leer.style.display = hatDaten ? 'none' : 'block';
-  }
+  var leer=document.getElementById('dash-leer');
+  if(leer)leer.style.display=(t>0||m>0||r>0||a>0)?'none':'block';
+
+  // Medikamenten-Heute im Dashboard
+  updateDashMedHeute();
+}
+
+function updateDashMedHeute() {
+  loadMedData();
+  var meds = _localData.medikamente || [];
+  var dashMed = document.getElementById('dash-med-heute');
+  var dashList = document.getElementById('dash-med-heute-list');
+  var dashFort = document.getElementById('dash-med-heute-fort');
+  if (!dashMed || !dashList) return;
+
+  if (meds.length === 0) { dashMed.style.display='none'; return; }
+  dashMed.style.display = 'block';
+  dashList.innerHTML = '';
+
+  var today = new Date().toISOString().split('T')[0];
+  var gesamt=0, genommen=0;
+
+  meds.forEach(function(m) {
+    var zeiten=[m.t1,m.t2,m.t3].filter(Boolean);
+    zeiten.forEach(function(z) {
+      gesamt++;
+      var key=today+'_'+m.id+'_'+z;
+      var ok=!!_md[key];
+      if(ok) genommen++;
+      dashList.insertAdjacentHTML('beforeend',
+        '<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:'+(ok?'#EAF3EC':'#F4F7F4')+';border-radius:10px">'
+        +'<span style="font-size:15px">'+(ok?'✅':'⏰')+'</span>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1E2D20">'+m.name+'</div>'
+        +'<div style="font-size:11px;color:#6B7C6D">'+z+' Uhr'+(m.hinweis?' · '+m.hinweis:'')+'</div></div>'
+        +(ok?'<div style="font-size:11px;font-weight:700;color:#4A7A5A">✓ Genommen</div>':'<div style="font-size:11px;font-weight:700;color:#7BAE8A">Tippen zum Bestätigen</div>')
+        +'</div>'
+      );
+    });
+  });
+
+  if(dashFort) dashFort.textContent = genommen+'/'+gesamt+' heute';
 }
 
 
@@ -2224,12 +2355,17 @@ function addLocalEntry(key, entry) {
   entry.byColor = getCurrentColor();
   _localData[key].push(entry);
   saveLocalData(key);
+  // Sync auslösen
+  broadcastUpdate();
+  setTimeout(pushToFirebase, 500);
   return entry.id;
 }
 
 function removeLocalEntry(key, id) {
   _localData[key] = _localData[key].filter(function(e) { return e.id !== id; });
   saveLocalData(key);
+  broadcastUpdate();
+  setTimeout(pushToFirebase, 500);
 }
 
 function renderAll() {
@@ -2238,28 +2374,64 @@ function renderAll() {
   renderRezepte();
   renderHM();
   renderDokumente();
+  renderAnfaelle();
+  renderAnfaelle();
   updateDashboard();
 }
 
 function updateDashboard() {
-  // Zähler aktualisieren
   var t = (_localData.termine||[]).length;
   var m = (_localData.medikamente||[]).length;
   var r = (_localData.rezepte||[]).length;
   var a = (_localData.anfaelle||[]).length;
 
   var el;
-  el=document.getElementById('dash-termine-count');   if(el)el.textContent=t;
-  el=document.getElementById('dash-rez-count');       if(el)el.textContent=r;
-  el=document.getElementById('dash-med-count');       if(el)el.textContent=m;
-  el=document.getElementById('dash-anfall-count');    if(el)el.textContent=a;
+  el=document.getElementById('dash-termine-count'); if(el)el.textContent=t;
+  el=document.getElementById('dash-rez-count');     if(el)el.textContent=r;
+  el=document.getElementById('dash-med-count');     if(el)el.textContent=m;
+  el=document.getElementById('dash-anfall-count');  if(el)el.textContent=a;
 
-  // Leer-Hinweis nur zeigen wenn wirklich alles leer
-  var leer = document.getElementById('dash-leer');
-  if (leer) {
-    var hatDaten = t > 0 || m > 0 || r > 0 || a > 0;
-    leer.style.display = hatDaten ? 'none' : 'block';
-  }
+  var leer=document.getElementById('dash-leer');
+  if(leer)leer.style.display=(t>0||m>0||r>0||a>0)?'none':'block';
+
+  // Medikamenten-Heute im Dashboard
+  updateDashMedHeute();
+}
+
+function updateDashMedHeute() {
+  loadMedData();
+  var meds = _localData.medikamente || [];
+  var dashMed = document.getElementById('dash-med-heute');
+  var dashList = document.getElementById('dash-med-heute-list');
+  var dashFort = document.getElementById('dash-med-heute-fort');
+  if (!dashMed || !dashList) return;
+
+  if (meds.length === 0) { dashMed.style.display='none'; return; }
+  dashMed.style.display = 'block';
+  dashList.innerHTML = '';
+
+  var today = new Date().toISOString().split('T')[0];
+  var gesamt=0, genommen=0;
+
+  meds.forEach(function(m) {
+    var zeiten=[m.t1,m.t2,m.t3].filter(Boolean);
+    zeiten.forEach(function(z) {
+      gesamt++;
+      var key=today+'_'+m.id+'_'+z;
+      var ok=!!_md[key];
+      if(ok) genommen++;
+      dashList.insertAdjacentHTML('beforeend',
+        '<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:'+(ok?'#EAF3EC':'#F4F7F4')+';border-radius:10px">'
+        +'<span style="font-size:15px">'+(ok?'✅':'⏰')+'</span>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1E2D20">'+m.name+'</div>'
+        +'<div style="font-size:11px;color:#6B7C6D">'+z+' Uhr'+(m.hinweis?' · '+m.hinweis:'')+'</div></div>'
+        +(ok?'<div style="font-size:11px;font-weight:700;color:#4A7A5A">✓ Genommen</div>':'<div style="font-size:11px;font-weight:700;color:#7BAE8A">Tippen zum Bestätigen</div>')
+        +'</div>'
+      );
+    });
+  });
+
+  if(dashFort) dashFort.textContent = genommen+'/'+gesamt+' heute';
 }
 
 
@@ -3291,6 +3463,33 @@ function buildHMPDFHTML(liste, titel) {
   return html;
 }
 
+
+function shareSyncLink() {
+  var urlEl = document.getElementById('sync-url-display');
+  var url = urlEl ? urlEl.textContent : '';
+  if (!url || url.includes('zu groß')) {
+    exportGesamtJSON();
+    showToast('Daten zu groß – JSON wird exportiert');
+    return;
+  }
+  if (navigator.share) {
+    navigator.share({title: 'Tildi Life Sync', text: 'Tildi Life Daten von '+getCurrentUser(), url: url});
+  } else {
+    copySyncLink();
+  }
+}
+
+function copySyncLink() {
+  var urlEl = document.getElementById('sync-url-display');
+  var url = urlEl ? urlEl.textContent : '';
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(function(){
+    showToast('Link kopiert ✓ – in WhatsApp einfügen');
+  }).catch(function(){
+    showToast('Link konnte nicht kopiert werden');
+  });
+}
+
 // ── GESAMT-EXPORT ──
 function prepareExportScreen() {
   var counts = {
@@ -3604,6 +3803,354 @@ function updateNotizAnzeige(containerId, notizen) {
   });
 }
 
+
+
+// ── ANFALLSTAGEBUCH ──
+var _currentAnfall = null;
+var _currentAnfallId = null;
+
+function renderAnfaelle() {
+  var cont = document.getElementById('firebase-tagebuch');
+  var leer = document.getElementById('tb-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = (_localData.anfaelle || []).slice().sort(function(a,b){
+    return (b.datum+b.zeit) > (a.datum+a.zeit) ? 1 : -1;
+  });
+
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    updateTbStats();
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  alle.forEach(function(a) {
+    var d = a.datum ? new Date(a.datum+'T00:00') : new Date();
+    var monate = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    var tag = d.getDate(), mo = monate[d.getMonth()];
+    var isNotfall = a.midazolam || a.intensitaet >= 4;
+    var cardClass = isNotfall ? 'urg' : a.intensitaet >= 3 ? 'warn' : '';
+    var bg = isNotfall ? '#FDECEA' : a.intensitaet >= 3 ? '#FEF3E2' : '#E8F1FB';
+    var fc = isNotfall ? '#8B1A1A' : a.intensitaet >= 3 ? '#7A4A0A' : '#0A4A8A';
+    var bdg = isNotfall ? 'urg' : a.intensitaet >= 3 ? 'warn' : 'blue';
+    var bdgTxt = isNotfall ? 'Notfall' : a.intensitaet >= 3 ? 'Schwer' : 'Leicht';
+
+    var div = document.createElement('div');
+    div.className = 'card ' + cardClass;
+    div.setAttribute('data-anfallid', a.id);
+    div.style.cursor = 'pointer';
+    div.innerHTML =
+      '<div style="display:flex;gap:10px;align-items:flex-start">'
+      +'<div style="width:44px;height:44px;border-radius:12px;background:'+bg+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">'
+      +'<span style="font-size:15px;font-weight:800;color:'+fc+';line-height:1">'+tag+'</span>'
+      +'<span style="font-size:9px;color:'+fc+'">'+mo+'</span></div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+(a.art||'Anfall')+'</span><span class="bdg '+bdg+'">'+bdgTxt+'</span></div>'
+      +'<div class="cme">'+(a.zeit?a.zeit+' Uhr · ':'')+''+(a.dauer?a.dauer+' · ':'')+'Intensität '+(a.intensitaet||'?')+'/4</div>'
+      +'<div class="tags">'
+      +(a.midazolam?'<span class="tag" style="background:#FDECEA;color:#8B1A1A">Buccolam gegeben</span>':'')
+      +(a.ausloser?'<span class="tag" style="background:#F4F7F4;color:#6B7C6D">'+a.ausloser.split(',')[0]+'</span>':'')
+      +(a.by?'<span class="tag" style="background:'+(a.byColor||'#7BAE8A')+';color:white">'+a.by+'</span>':'')
+      +'</div></div></div>';
+
+    div.addEventListener('click', function() {
+      openAnfallDetail(a.id);
+    });
+    cont.appendChild(div);
+  });
+
+  updateTbStats();
+}
+
+function updateTbStats() {
+  var alle = _localData.anfaelle || [];
+  var now = Date.now();
+  var c7  = alle.filter(function(a){ return a.datum && (now-new Date(a.datum+'T00:00').getTime()) < 7*86400000; }).length;
+  var c30 = alle.filter(function(a){ return a.datum && (now-new Date(a.datum+'T00:00').getTime()) < 30*86400000; }).length;
+  var cn  = alle.filter(function(a){ return a.midazolam; }).length;
+  var e7=document.getElementById('tb-7');   if(e7)e7.textContent=c7;
+  var e30=document.getElementById('tb-30'); if(e30)e30.textContent=c30;
+  var en=document.getElementById('tb-notfall'); if(en)en.textContent=cn;
+  var da=document.getElementById('dash-anfall-count'); if(da)da.textContent=alle.length;
+}
+
+function openAnfallDetail(id) {
+  var alle = _localData.anfaelle || [];
+  var a = alle.find(function(x){ return x.id===id; });
+  if (!a) return;
+  _currentAnfall = a;
+  _currentAnfallId = id;
+
+  var intText = ['','Leicht (1/4)','Mittel (2/4)','Schwer (3/4)','Stark (4/4)'];
+
+  var t = document.getElementById('anfall-fb-title');
+  if(t) t.textContent = (a.art||'Anfall') + ' · ' + (a.datum ? formatDatumKurz(a.datum) : '');
+  var s = document.getElementById('anfall-fb-sub');
+  if(s) s.textContent = (a.zeit?a.zeit+' Uhr · ':'') + (a.dauer||'');
+
+  var info = document.getElementById('anfall-fb-info');
+  if(info){
+    var h = '<div class="dstitle">Anfall</div>';
+    if(a.art)          h+='<div class="drow"><span class="dl">Art</span><span class="dv">'+a.art+'</span></div>';
+    if(a.datum)        h+='<div class="drow"><span class="dl">Datum</span><span class="dv">'+formatDatumKurz(a.datum)+'</span></div>';
+    if(a.zeit)         h+='<div class="drow"><span class="dl">Uhrzeit</span><span class="dv">'+a.zeit+' Uhr</span></div>';
+    if(a.dauer)        h+='<div class="drow"><span class="dl">Dauer</span><span class="dv">'+a.dauer+'</span></div>';
+    if(a.intensitaet)  h+='<div class="drow"><span class="dl">Intensität</span><span class="dv '+(a.intensitaet>=4?'urg':a.intensitaet>=3?'warn':'')+'">'+intText[a.intensitaet]+'</span></div>';
+    if(a.ausloser)     h+='<div class="drow"><span class="dl">Auslöser</span><span class="dv">'+a.ausloser+'</span></div>';
+    if(a.by)           h+='<div class="drow"><span class="dl">Dokumentiert von</span><span class="dv">'+a.by+'</span></div>';
+    info.innerHTML = h;
+  }
+
+  // Buccolam
+  var bSec = document.getElementById('anfall-fb-buccolam');
+  var bInfo = document.getElementById('anfall-fb-buccolam-info');
+  if(a.midazolam && bSec && bInfo){
+    bSec.style.display='block';
+    var bh='';
+    if(a.buccZeit) bh+='<div class="drow"><span class="dl">Gegeben um</span><span class="dv urg">'+a.buccZeit+' Uhr</span></div>';
+    if(a.buccWirkung) bh+='<div class="drow"><span class="dl">Wirkung</span><span class="dv">'+a.buccWirkung+'</span></div>';
+    bInfo.innerHTML = bh||'<div class="drow"><span class="dl">Status</span><span class="dv urg">Gegeben</span></div>';
+  } else {
+    if(bSec) bSec.style.display='none';
+  }
+
+  // Notiz
+  var nSec = document.getElementById('anfall-fb-notiz-sec');
+  var nEl  = document.getElementById('anfall-fb-notiz');
+  if(a.notiz && nEl){
+    nEl.textContent = a.notiz;
+    if(nSec) nSec.style.display='block';
+  } else {
+    if(nSec) nSec.style.display='none';
+  }
+
+  goTo('s-anfall-fb'); setNav('n-gesundheit');
+}
+
+function deleteCurrentAnfall(){
+  var art = _currentAnfall ? (_currentAnfall.art||'Anfall') : 'Anfall';
+  document.getElementById('del-title').textContent='Eintrag löschen?';
+  document.getElementById('del-msg').textContent='"'+art+'" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick=function(){
+    closeM('m-del');
+    removeLocalEntry('anfaelle',_currentAnfallId);
+    renderAnfaelle(); updateDashboard();
+    goTo('s-tagebuch'); setNav('n-gesundheit');
+    showToast('Eintrag gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function exportAnfallEintragPDF(){
+  if(!_currentAnfall) return;
+  var a = _currentAnfall;
+  var today = new Date().toLocaleDateString('de-DE');
+  var html='<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Anfallsdokumentation</title>'
+    +'<style>body{font-family:Arial,sans-serif;max-width:600px;margin:20px auto;color:#1E2D20;font-size:13px}'
+    +'h1{color:#8B1A1A;border-bottom:2px solid #C43030;padding-bottom:8px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{background:#8B1A1A;color:white;padding:6px 10px;text-align:left;font-size:12px}'
+    +'td{padding:5px 10px;border-bottom:.5px solid #ddd;font-size:12px}'
+    +'.label{color:#666;width:35%}'
+    +'</style></head><body>'
+    +'<h1>Anfallsdokumentation</h1>'
+    +'<p style="color:#666;font-size:12px;margin-bottom:16px">Patient: Matilda &nbsp;|&nbsp; Erstellt: '+today+' von '+getCurrentUser()+'</p>'
+    +'<table><tr><th colspan="2">Anfall</th></tr>';
+  [['Art',a.art],['Datum',a.datum?formatDatumKurz(a.datum):''],['Uhrzeit',a.zeit?a.zeit+' Uhr':''],
+   ['Dauer',a.dauer],['Intensität',a.intensitaet?a.intensitaet+'/4':''],['Auslöser',a.ausloser],
+   ['Dokumentiert von',a.by]
+  ].forEach(function(f){if(f[1])html+='<tr><td class="label">'+f[0]+'</td><td>'+f[1]+'</td></tr>';});
+  if(a.midazolam){
+    html+='<tr><th colspan="2" style="background:#8B1A1A">Buccolam-Gabe</th></tr>';
+    html+='<tr><td class="label">Status</td><td><strong>Gegeben</strong></td></tr>';
+    if(a.buccZeit) html+='<tr><td class="label">Uhrzeit</td><td>'+a.buccZeit+' Uhr</td></tr>';
+    if(a.buccWirkung) html+='<tr><td class="label">Wirkung</td><td>'+a.buccWirkung+'</td></tr>';
+  }
+  html+='</table>';
+  if(a.notiz) html+='<p><strong>Notizen:</strong> '+a.notiz+'</p>';
+  html+='<p style="margin-top:24px;font-size:10px;color:#aaa">Tildi Life – Vertraulich · medizinische Dokumentation</p>';
+  html+='</body></html>';
+  var w=window.open('','_blank');
+  w.document.write(html); w.document.close();
+  setTimeout(function(){w.print();},500);
+}
+
+// ── MITTERNACHTS-RESET ──
+function checkMidnightReset() {
+  var lastDate = localStorage.getItem('tl_last_date');
+  var today = new Date().toISOString().split('T')[0];
+  if (lastDate && lastDate !== today) {
+    // Neuer Tag – Heute-Karten neu aufbauen
+    buildHeuteKarten();
+    showToast('🌅 Neuer Tag – Einnahmen zurückgesetzt');
+  }
+  localStorage.setItem('tl_last_date', today);
+}
+
+function scheduleMidnightReset() {
+  var now = new Date();
+  var midnight = new Date(now);
+  midnight.setHours(24, 0, 1, 0); // 00:00:01 nächster Tag
+  var msUntilMidnight = midnight - now;
+  setTimeout(function() {
+    buildHeuteKarten();
+    showToast('🌅 Neuer Tag – Einnahmen zurückgesetzt');
+    localStorage.setItem('tl_last_date', new Date().toISOString().split('T')[0]);
+    scheduleMidnightReset(); // Nächste Nacht planen
+  }, msUntilMidnight);
+}
+
+
+// ── ANFÄLLE ANZEIGEN ──
+var _currentAnfall = null, _currentAnfallId = null;
+
+function renderAnfaelle() {
+  var cont = document.getElementById('firebase-tagebuch');
+  var leer = document.getElementById('tb-leer');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  var alle = (_localData.anfaelle||[]).slice().sort(function(a,b){
+    return (a.datum+a.zeit||'') < (b.datum+b.zeit||'') ? 1 : -1;
+  });
+
+  if (alle.length === 0) {
+    if (leer) leer.style.display = 'block';
+    updateTbStats();
+    return;
+  }
+  if (leer) leer.style.display = 'none';
+
+  var monate=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  alle.forEach(function(a) {
+    var isNotfall = a.midazolam || a.intensitaet >= 4;
+    var isMittel = a.intensitaet >= 3;
+    var cardClass = isNotfall ? 'urg' : isMittel ? 'warn' : '';
+    var dateBg = isNotfall ? '#FDECEA' : isMittel ? '#FEF3E2' : '#E8F1FB';
+    var dateC = isNotfall ? '#8B1A1A' : isMittel ? '#7A4A0A' : '#0A4A8A';
+    var bdg = isNotfall ? 'urg' : isMittel ? 'warn' : 'blue';
+    var bdgTxt = isNotfall ? 'Notfall' : isMittel ? 'Schwer' : 'Leicht';
+    var tag='',mo='';
+    if(a.datum){var d=new Date(a.datum+'T00:00');tag=d.getDate();mo=monate[d.getMonth()];}
+
+    var div = document.createElement('div');
+    div.className = 'card ' + cardClass;
+    div.style.cursor = 'pointer';
+    div.setAttribute('data-anfallid', a.id);
+    div.innerHTML =
+      '<div style="display:flex;gap:10px;align-items:flex-start">'
+      +'<div style="width:44px;height:44px;border-radius:12px;background:'+dateBg+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">'
+      +(tag?'<span style="font-size:15px;font-weight:800;color:'+dateC+';line-height:1">'+tag+'</span><span style="font-size:9px;color:'+dateC+'">'+mo+'</span>':'<span style="font-size:18px">📓</span>')
+      +'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+a.art+'</span><span class="bdg '+bdg+'">'+bdgTxt+'</span></div>'
+      +'<div class="cme">'+(a.zeit?a.zeit+' Uhr · ':'')+a.dauer+(a.intensitaet?' · Intensität '+a.intensitaet+'/4':'')+'</div>'
+      +'<div class="tags">'
+      +(a.midazolam?'<span class="tag" style="background:#FDECEA;color:#8B1A1A">Buccolam gegeben</span>':'')
+      +(a.ausloser?'<span class="tag" style="background:#F4F7F4;color:#6B7C6D">'+a.ausloser.split(',')[0]+'</span>':'')
+      +(a.by?'<span class="tag" style="background:'+(a.byColor||'#7BAE8A')+';color:white">'+a.by+'</span>':'')
+      +'</div></div></div>';
+    div.addEventListener('click', function(){ openAnfallDetail(a.id); });
+    cont.appendChild(div);
+  });
+
+  updateTbStats();
+}
+
+function updateTbStats() {
+  var alle = _localData.anfaelle || [];
+  var now = Date.now();
+  var c7 = alle.filter(function(a){ return a.datum && (now-new Date(a.datum+'T00:00').getTime())<7*864e5; }).length;
+  var c30 = alle.filter(function(a){ return a.datum && (now-new Date(a.datum+'T00:00').getTime())<30*864e5; }).length;
+  var cn = alle.filter(function(a){ return a.notfall||a.midazolam; }).length;
+  var e7=document.getElementById('tb-7');if(e7)e7.textContent=c7;
+  var e30=document.getElementById('tb-30');if(e30)e30.textContent=c30;
+  var en=document.getElementById('tb-notfall');if(en)en.textContent=cn;
+  var dc=document.getElementById('dash-anfall-count');if(dc)dc.textContent=alle.length;
+}
+
+function openAnfallDetail(id) {
+  var alle = _localData.anfaelle || [];
+  var a = alle.find(function(x){ return x.id===id; });
+  if (!a) return;
+  _currentAnfall = a; _currentAnfallId = id;
+
+  // Header
+  var hdr = document.querySelector('#s-anfall-detail .hdr');
+  if (hdr) hdr.style.background = (a.notfall||a.midazolam) ? '#8B1A1A' : '#4A7A5A';
+  var t=document.querySelector('#s-anfall-detail .hdr-title');
+  if(t)t.textContent=a.art+' · '+(a.datum?formatDatumKurz(a.datum):'');
+  var s=document.querySelector('#s-anfall-detail .hdr-sub');
+  if(s)s.textContent=(a.zeit?a.zeit+' Uhr · ':'')+a.dauer+(a.intensitaet?' · Intensität '+a.intensitaet+'/4':'');
+
+  // Detail-Inhalt dynamisch aufbauen
+  var dcont = document.getElementById('anfall-detail-content');
+  if (dcont) {
+    var html = '<div class="dsec" style="border-color:'+(a.notfall?'#E88080':'rgba(74,122,90,.15)')+'">'
+      +'<div class="dstitle" style="color:'+(a.notfall?'#8B1A1A':'#6B7C6D')+'">Anfall</div>';
+    if(a.art)    html+='<div class="drow"><span class="dl">Art</span><span class="dv">'+a.art+'</span></div>';
+    if(a.datum)  html+='<div class="drow"><span class="dl">Datum</span><span class="dv">'+formatDatumKurz(a.datum)+'</span></div>';
+    if(a.zeit)   html+='<div class="drow"><span class="dl">Uhrzeit</span><span class="dv">'+a.zeit+' Uhr</span></div>';
+    if(a.dauer)  html+='<div class="drow"><span class="dl">Dauer</span><span class="dv">'+a.dauer+'</span></div>';
+    if(a.intensitaet) html+='<div class="drow"><span class="dl">Intensität</span><span class="dv '+(a.intensitaet>=4?'urg':a.intensitaet>=3?'warn':'')+'">'+a.intensitaet+'/4</span></div>';
+    if(a.ausloser) html+='<div class="drow"><span class="dl">Auslöser</span><span class="dv">'+a.ausloser+'</span></div>';
+    if(a.by)     html+='<div class="drow"><span class="dl">Notiert von</span><span class="dv">'+a.by+'</span></div>';
+    html+='</div>';
+
+    if(a.midazolam){
+      html+='<div class="dsec" style="border-color:#E88080">'
+        +'<div class="dstitle" style="color:#8B1A1A">Buccolam-Gabe</div>';
+      if(a.buccZeit) html+='<div class="drow"><span class="dl">Gegeben um</span><span class="dv urg">'+a.buccZeit+' Uhr</span></div>';
+      if(a.buccWirkung) html+='<div class="drow"><span class="dl">Wirkung</span><span class="dv">'+a.buccWirkung+'</span></div>';
+      html+='</div>';
+      html+='<div class="info-box"><p>Buccolam-Verwendung wurde im Medikamenten-Tracker eingetragen.</p></div>';
+    }
+
+    if(a.notiz){
+      html+='<div class="dsec"><div class="dstitle">Notizen</div>'
+        +'<p style="font-size:13px;color:#6B7C6D;line-height:1.6">'+a.notiz+'</p></div>';
+    }
+
+    dcont.innerHTML = html;
+  }
+
+  goTo('s-anfall-detail'); setNav('n-gesundheit');
+}
+
+function shareAnfall() {
+  if (!_currentAnfall) return;
+  var a = _currentAnfall;
+  var text = 'Tildi Life – Anfall\n'
+    + (a.datum?formatDatumKurz(a.datum)+' ':'')+(a.zeit?a.zeit+' Uhr':'')+'\n'
+    + 'Art: '+a.art+'\n'
+    + 'Dauer: '+a.dauer+'\n'
+    + 'Intensität: '+a.intensitaet+'/4\n'
+    + (a.midazolam?'Buccolam gegeben um '+a.buccZeit+'\n':'')
+    + (a.ausloser?'Auslöser: '+a.ausloser+'\n':'')
+    + (a.notiz?'Notiz: '+a.notiz:'');
+  if (navigator.share) {
+    navigator.share({title:'Anfalls-Dokumentation', text:text});
+  } else {
+    navigator.clipboard.writeText(text).then(function(){showToast('Kopiert ✓');});
+  }
+}
+
+function deleteCurrentAnfall() {
+  if (!_currentAnfallId) return;
+  document.getElementById('del-title').textContent = 'Eintrag löschen?';
+  document.getElementById('del-msg').textContent = 'Dieser Anfalls-Eintrag wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick = function() {
+    closeM('m-del');
+    removeLocalEntry('anfaelle', _currentAnfallId);
+    renderAnfaelle(); updateDashboard();
+    goTo('s-tagebuch'); setNav('n-gesundheit');
+    showToast('Gelöscht ✓');
+  };
+  openM('m-del');
+}
+
 // ── TERMIN DETAIL ──
 function openTerminDetail(id) {
   var data = _termineCache[id] || {};
@@ -3741,11 +4288,20 @@ document.addEventListener('DOMContentLoaded', function() {
       var hmid = hcard.getAttribute('data-hmid');
       if (hmid) { openHMDetail(hmid); return; }
     }
+    // Anfälle
+    var acard = e.target.closest('[data-anfallid]');
+    if (acard) {
+      var aid = acard.getAttribute('data-anfallid');
+      if (aid) { openAnfallDetail(aid); return; }
+    }
   });
   setTimeout(updateHeuteCounter,100);
 
-  // Sync-Status setzen
-  setSyncStatus(true);
+  // Firebase Sync starten
+  setTimeout(initFB, 800);
+  // Mitternachts-Reset
+  checkMidnightReset();
+  scheduleMidnightReset();
 });
 </script>
 </div>
