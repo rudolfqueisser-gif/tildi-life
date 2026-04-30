@@ -398,6 +398,27 @@ textarea.finp{resize:none}
   </div>
 </div>
 
+
+<!-- HM DETAIL (lokal) -->
+<div id="s-hm-fb" class="screen">
+  <div class="hdr">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-hm');setNav('n-verwaltung')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+      <button class="hdr-act" onclick="editCurrentHM()">✏️</button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px" id="hm-fb-title">Hilfsmittel</div>
+    <div class="hdr-sub" id="hm-fb-sub"></div>
+  </div>
+  <div class="dcont">
+    <div class="dsec" id="hm-fb-info"></div>
+    <button class="abtn p" onclick="showToast('Lieferanten angerufen')">Lieferanten anrufen</button>
+    <button class="abtn s" onclick="exportHMPDF()">📄 Als PDF exportieren</button>
+    <button class="abtn s" onclick="exportAllHMPDF()">📊 Alle Hilfsmittel exportieren</button>
+    <button class="abtn u" onclick="deleteCurrentHM()">Hilfsmittel löschen</button>
+  </div>
+</div>
 <!-- HM WIDERSPRUCH -->
 <div id="s-hm-detail" class="screen">
   <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-hm')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button></div><div class="hdr-title" style="margin-top:6px">Elektrorollstuhl</div><div class="hdr-sub">Abgelehnt · Widerspruch bis 30.05.2025</div></div>
@@ -949,6 +970,7 @@ textarea.finp{resize:none}
 // Kein Firebase
 var _db=null,_fs=null,_fbReady=false;
 var _currentTermin=null,_currentTerminId=null;
+var _currentHM=null,_currentHMId=null;
 var _termineCache={};
 
 async function initFB(){
@@ -1222,7 +1244,14 @@ async function saveHM(){
   ['hm-bez','hm-arzt','hm-lief','hm-tel','hm-kk','hm-kv','hm-ap'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
+  // Edit-Modus: alten Eintrag entfernen
+  if (window._hmEditMode && window._hmEditId) {
+    removeLocalEntry('hm', window._hmEditId);
+    window._hmEditMode = false;
+    window._hmEditId = null;
+  }
   closeM('m-hm');
+  updateDashboard();
   showToast('"'+bez+'" gespeichert ✓');
 }
 
@@ -1317,20 +1346,78 @@ async function schnellAnfall(mitBucc){
 }
 
 async function saveUebergabe(){
-  await fbSave('tildi_uebergaben',{von:getCurrentUser(),notiz:document.getElementById('uebergabe-notiz').value,aufgabe:document.getElementById('uebergabe-aufgabe').value,datum:new Date().toISOString().split('T')[0]});
-  closeM('m-uebergabe');showToast('Übergabe abgeschlossen ✓');
+  var entry={
+    von: getCurrentUser(),
+    notiz: document.getElementById('uebergabe-notiz').value,
+    aufgabe: document.getElementById('uebergabe-aufgabe').value,
+    datum: new Date().toISOString().split('T')[0],
+    zeit: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})
+  };
+  // Lokal speichern
+  if(!_localData.uebergaben)_localData.uebergaben=[];
+  entry.id='ue_'+Date.now();
+  _localData.uebergaben.push(entry);
+  try{localStorage.setItem('tl_data_uebergaben',JSON.stringify(_localData.uebergaben));}catch(e){}
+  // Formular leeren
+  document.getElementById('uebergabe-notiz').value='';
+  document.getElementById('uebergabe-aufgabe').value='';
+  closeM('m-uebergabe');
+  showToast('Übergabe gespeichert ✓ – '+entry.von+' → '+(entry.von==='Rudolf'?'Iris':'Rudolf'));
 }
 
 function prepareUebergabe(){
   var n=getCurrentUser();
   var other=n==='Rudolf'?'Iris':'Rudolf';
-  var el=document.getElementById('uebergabe-von-zu');if(el)el.textContent=n+' → '+other;
+  var el=document.getElementById('uebergabe-von-zu');
+  if(el)el.textContent=n+' → '+other;
+
   loadMedData();
   var today=new Date().toISOString().split('T')[0];
-  var dosen=['07:30','13:00','19:00'];
-  var g=dosen.filter(function(t){return!!_md[today+'_baclofen_'+t];}).length;
+  var lines=[];
+
+  // ── Medikamente: Einnahme heute ──
+  var meds=_localData.medikamente||[];
+  if(meds.length===0){
+    lines.push('💊 Keine Medikamente eingetragen');
+  } else {
+    meds.forEach(function(m){
+      var zeiten=[m.t1,m.t2,m.t3].filter(Boolean);
+      var genommen=zeiten.filter(function(z){
+        return !!_md[today+'_'+m.id+'_'+z];
+      }).length;
+      var ok=genommen===zeiten.length;
+      lines.push((ok?'✅ ':'⚠️ ')+m.name+': '+genommen+'/'+zeiten.length+' Dosen heute');
+    });
+  }
+
+  // ── Anfälle heute ──
+  var anfaelle=(_localData.anfaelle||[]).filter(function(a){return a.datum===today;});
+  if(anfaelle.length===0){
+    lines.push('✅ Kein Anfall heute');
+  } else {
+    anfaelle.forEach(function(a){
+      lines.push('🚨 Anfall um '+(a.zeit||'?')+' Uhr – '+(a.art||'')+(a.midazolam?' · Buccolam gegeben':''));
+    });
+  }
+
+  // ── Nächster Termin ──
+  var termine=(_localData.termine||[]).filter(function(t){return t.datum>=today;});
+  termine.sort(function(a,b){return a.datum>b.datum?1:-1;});
+  if(termine.length>0){
+    var nt=termine[0];
+    lines.push('📅 Nächster Termin: '+nt.bez+(nt.datum?' · '+formatDatumKurz(nt.datum):'')+(nt.zeit?' · '+nt.zeit+' Uhr':''));
+  } else {
+    lines.push('📅 Keine bevorstehenden Termine');
+  }
+
+  // ── Offene Fristen (Dokumente) ──
+  var docs=(_localData.dokumente||[]).filter(function(d){return d.frist&&d.frist>=today;});
+  if(docs.length>0){
+    lines.push('⏰ Offene Frist: '+docs[0].bez+' bis '+formatDatumKurz(docs[0].frist));
+  }
+
   var au=document.getElementById('uebergabe-auto');
-  if(au)au.innerHTML='✅ Baclofen heute: '+g+'/3 Dosen<br>✅ Kein Anfall heute<br>📅 Neurologe 12.05.';
+  if(au)au.innerHTML=lines.join('<br>');
 }
 
 
@@ -1348,7 +1435,7 @@ var _localData = {
 
 function loadLocalData() {
   try {
-    var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle'];
+    var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle','uebergaben'];
     keys.forEach(function(k) {
       var stored = localStorage.getItem('tl_data_'+k);
       if (stored) _localData[k] = JSON.parse(stored);
@@ -1465,7 +1552,7 @@ function renderHM() {
   if (leer) leer.style.display = 'none';
 
   alle.forEach(function(h) {
-    var card = '<div class="card" data-hmid="'+h.id+'" style="cursor:pointer">'
+    var card = '<div class="card" data-hmid="'+h.id+'" style="cursor:pointer">' /* onclick via delegation */
       +'<div style="display:flex;gap:10px;align-items:flex-start">'
       +'<div style="font-size:24px;flex-shrink:0">♿</div>'
       +'<div style="flex:1">'
@@ -1669,7 +1756,7 @@ var _localData = {
 
 function loadLocalData() {
   try {
-    var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle'];
+    var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle','uebergaben'];
     keys.forEach(function(k) {
       var stored = localStorage.getItem('tl_data_'+k);
       if (stored) _localData[k] = JSON.parse(stored);
@@ -1786,7 +1873,7 @@ function renderHM() {
   if (leer) leer.style.display = 'none';
 
   alle.forEach(function(h) {
-    var card = '<div class="card" data-hmid="'+h.id+'" style="cursor:pointer">'
+    var card = '<div class="card" data-hmid="'+h.id+'" style="cursor:pointer">' /* onclick via delegation */
       +'<div style="display:flex;gap:10px;align-items:flex-start">'
       +'<div style="font-size:24px;flex-shrink:0">♿</div>'
       +'<div style="flex:1">'
@@ -2443,6 +2530,166 @@ async function requestPush(){
 function sendTestNotif(){if(Notification.permission==='granted'){try{new Notification('Tildi Life','Test ✓');}catch(e){}}else{requestPush();}}
 
 
+
+// ── HILFSMITTEL DETAIL ──
+function openHMDetail(id) {
+  var alle = _localData.hm || [];
+  var hm = alle.find(function(h) { return h.id === id; });
+  if (!hm) { showToast('Nicht gefunden'); return; }
+  _currentHM = hm;
+  _currentHMId = id;
+
+  var t = document.getElementById('hm-fb-title');
+  if (t) t.textContent = hm.bez || 'Hilfsmittel';
+
+  var s = document.getElementById('hm-fb-sub');
+  if (s) s.textContent = (hm.kat||'') + (hm.lief ? ' · ' + hm.lief : '');
+
+  var info = document.getElementById('hm-fb-info');
+  if (info) {
+    var h = '<div class="dstitle">Details</div>';
+    if (hm.bez)   h += '<div class="drow"><span class="dl">Bezeichnung</span><span class="dv">'+hm.bez+'</span></div>';
+    if (hm.kat)   h += '<div class="drow"><span class="dl">Kategorie</span><span class="dv">'+hm.kat+'</span></div>';
+    if (hm.arzt)  h += '<div class="drow"><span class="dl">Verordnet von</span><span class="dv">'+hm.arzt+'</span></div>';
+    if (hm.kk)    h += '<div class="drow"><span class="dl">Krankenkasse</span><span class="dv">'+hm.kk+'</span></div>';
+    if (hm.lief)  h += '<div class="drow"><span class="dl">Lieferant</span><span class="dv">'+hm.lief+'</span></div>';
+    if (hm.ap)    h += '<div class="drow"><span class="dl">Ansprechpartner</span><span class="dv">'+hm.ap+'</span></div>';
+    if (hm.tel)   h += '<div class="drow"><span class="dl">Telefon</span><span class="dv"><a href="tel:'+hm.tel+'" style="color:#0A4A8A">'+hm.tel+'</a></span></div>';
+    if (hm.kv)    h += '<div class="drow"><span class="dl">Kostenvoranschlag</span><span class="dv">'+hm.kv+'</span></div>';
+    if (hm.datum) h += '<div class="drow"><span class="dl">Beantragt am</span><span class="dv">'+formatDatumKurz(hm.datum)+'</span></div>';
+    if (hm.by)    h += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">'+hm.by+'</span></div>';
+    info.innerHTML = h;
+  }
+
+  goTo('s-hm-fb');
+  setNav('n-verwaltung');
+}
+
+function editCurrentHM() {
+  if (!_currentHM) return;
+  var fields = {
+    'hm-bez': _currentHM.bez,
+    'hm-arzt': _currentHM.arzt,
+    'hm-lief': _currentHM.lief,
+    'hm-tel': _currentHM.tel,
+    'hm-kk': _currentHM.kk,
+    'hm-kv': _currentHM.kv,
+    'hm-ap': _currentHM.ap
+  };
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && fields[id]) el.value = fields[id];
+  });
+  window._hmEditMode = true;
+  window._hmEditId = _currentHMId;
+  openM('m-hm');
+}
+
+function deleteCurrentHM() {
+  var name = _currentHM ? _currentHM.bez : 'Hilfsmittel';
+  document.getElementById('del-title').textContent = 'Hilfsmittel löschen?';
+  document.getElementById('del-msg').textContent = '"' + name + '" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick = function() {
+    closeM('m-del');
+    removeLocalEntry('hm', _currentHMId);
+    renderHM();
+    updateDashboard();
+    goTo('s-hm');
+    setNav('n-verwaltung');
+    showToast('"' + name + '" gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function exportHMPDF() {
+  if (!_currentHM) return;
+  var h = _currentHM;
+  var html = buildHMPDFHTML([h], 'Hilfsmittel-Detail');
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
+  showToast('PDF wird geöffnet ✓');
+}
+
+function exportAllHMPDF() {
+  var alle = _localData.hm || [];
+  if (alle.length === 0) { showToast('Keine Hilfsmittel vorhanden'); return; }
+  var html = buildHMPDFHTML(alle, 'Alle Hilfsmittel');
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
+  showToast('PDF mit ' + alle.length + ' Einträgen wird geöffnet ✓');
+}
+
+function buildHMPDFHTML(liste, titel) {
+  var today = new Date().toLocaleDateString('de-DE');
+  var html = '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">';
+  html += '<title>' + titel + '</title>';
+  html += '<style>';
+  html += 'body{font-family:Arial,sans-serif;max-width:750px;margin:20px auto;color:#1E2D20;font-size:13px}';
+  html += 'h1{color:#4A7A5A;border-bottom:2px solid #7BAE8A;padding-bottom:8px;font-size:20px}';
+  html += 'h2{color:#4A7A5A;font-size:15px;margin:20px 0 6px;border-left:3px solid #7BAE8A;padding-left:10px}';
+  html += '.meta{color:#6B7C6D;font-size:12px;margin-bottom:20px}';
+  html += 'table{width:100%;border-collapse:collapse;margin-bottom:20px}';
+  html += 'th{background:#7BAE8A;color:white;padding:7px 10px;text-align:left;font-size:12px}';
+  html += 'td{padding:6px 10px;border-bottom:0.5px solid #ddd;font-size:12px}';
+  html += 'tr:nth-child(even){background:#f9fdf9}';
+  html += '.label{color:#6B7C6D;width:35%}';
+  html += '.footer{margin-top:30px;padding-top:10px;border-top:0.5px solid #ddd;font-size:11px;color:#aaa;text-align:center}';
+  html += '@media print{body{margin:10px}.footer{position:fixed;bottom:0;left:0;right:0;text-align:center}}';
+  html += '</style></head><body>';
+
+  html += '<h1>Tildi Life – ' + titel + '</h1>';
+  html += '<div class="meta">Patient: Matilda &nbsp;|&nbsp; Erstellt: ' + today;
+  html += ' &nbsp;|&nbsp; Einträge: ' + liste.length + '</div>';
+
+  if (liste.length > 1) {
+    // Übersichtstabelle
+    html += '<h2>Übersicht</h2>';
+    html += '<table><tr><th>Bezeichnung</th><th>Kategorie</th><th>Lieferant</th><th>Krankenkasse</th><th>Status</th></tr>';
+    liste.forEach(function(h) {
+      html += '<tr>';
+      html += '<td><strong>' + (h.bez||'–') + '</strong></td>';
+      html += '<td>' + (h.kat||'–') + '</td>';
+      html += '<td>' + (h.lief||'–') + '</td>';
+      html += '<td>' + (h.kk||'–') + '</td>';
+      html += '<td>' + (h.status||'In Bearbeitung') + '</td>';
+      html += '</tr>';
+    });
+    html += '</table>';
+  }
+
+  // Detailblätter
+  liste.forEach(function(h, i) {
+    html += '<h2>' + (i+1) + '. ' + (h.bez||'Hilfsmittel') + '</h2>';
+    html += '<table>';
+    var felder = [
+      ['Bezeichnung', h.bez],
+      ['Kategorie', h.kat],
+      ['Verordnet von', h.arzt],
+      ['Krankenkasse', h.kk],
+      ['Lieferant', h.lief],
+      ['Ansprechpartner', h.ap],
+      ['Telefon', h.tel],
+      ['Kostenvoranschlag', h.kv],
+      ['Beantragt am', h.datum ? formatDatumKurz(h.datum) : ''],
+      ['Eingetragen von', h.by],
+      ['Eingetragen am', h.ts ? new Date(h.ts).toLocaleDateString('de-DE') : '']
+    ];
+    felder.forEach(function(f) {
+      if (f[1]) {
+        html += '<tr><td class="label">' + f[0] + '</td><td>' + f[1] + '</td></tr>';
+      }
+    });
+    html += '</table>';
+  });
+
+  html += '<div class="footer">Erstellt mit Tildi Life &nbsp;|&nbsp; Vertraulich – nur für medizinische Zwecke</div>';
+  html += '</body></html>';
+  return html;
+}
 // ── TERMIN DETAIL ──
 function openTerminDetail(id) {
   var data = _termineCache[id] || {};
@@ -2573,6 +2820,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mcard && !e.target.closest('.med-check-btn')) {
       var mid = mcard.getAttribute('data-mid');
       if (mid && _medListe[mid]) { openMedDetail(mid); return; }
+    }
+    // Hilfsmittel
+    var hcard = e.target.closest('[data-hmid]');
+    if (hcard && !e.target.closest('[onclick]')) {
+      var hmid = hcard.getAttribute('data-hmid');
+      if (hmid) { openHMDetail(hmid); return; }
     }
   });
   setTimeout(updateHeuteCounter,100);
