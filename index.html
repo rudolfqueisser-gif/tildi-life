@@ -370,8 +370,26 @@ textarea.finp{resize:none}
   </div>
   <div class="dcont">
     <div id="rez-fb-foto" style="display:none;margin-bottom:12px">
-      <img id="rez-fb-foto-img" style="width:100%;border-radius:12px;max-height:200px;object-fit:cover" alt="">
-      <div style="font-size:11px;color:#6B7C6D;margin-top:4px;text-align:center">Gespeichertes Foto</div>
+      <div style="position:relative;border-radius:12px;overflow:hidden;border:.5px solid rgba(74,122,90,.15)">
+        <img id="rez-fb-foto-img" style="width:100%;max-height:260px;object-fit:contain;background:#1E2D20;display:block;cursor:pointer" alt="" onclick="openFotoVollbild('rez-fb-foto-img')">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:white" id="rez-fb-foto-info">Foto</span>
+          <div style="display:flex;gap:8px">
+            <button onclick="openFotoVollbild('rez-fb-foto-img')" style="background:rgba(255,255,255,.2);border:none;color:white;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit">🔍 Vollbild</button>
+            <button onclick="downloadRezFoto()" style="background:#7BAE8A;border:none;color:white;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit">⬇️ Speichern</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vollbild Overlay -->
+    <div id="foto-vollbild-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:200;flex-direction:column;align-items:center;justify-content:center" onclick="closeFotoVollbild()">
+      <button onclick="closeFotoVollbild()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;width:40px;height:40px;border-radius:50%;cursor:pointer">✕</button>
+      <img id="foto-vollbild-img" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px" alt="">
+      <div style="margin-top:12px;display:flex;gap:10px">
+        <button onclick="downloadCurrentFoto()" style="background:#7BAE8A;border:none;color:white;font-size:13px;font-weight:700;padding:10px 20px;border-radius:10px;cursor:pointer;font-family:inherit">⬇️ Foto speichern</button>
+        <button onclick="shareCurrentFoto()" style="background:rgba(255,255,255,.15);border:none;color:white;font-size:13px;font-weight:700;padding:10px 20px;border-radius:10px;cursor:pointer;font-family:inherit">⬆️ Teilen</button>
+      </div>
     </div>
     <div class="dsec" id="rez-fb-info"></div>
     <button class="abtn p" onclick="showToast('Erinnerung gesetzt ✓')">Erinnerung aktivieren</button>
@@ -627,6 +645,18 @@ textarea.finp{resize:none}
 <div id="s-dok-detail" class="screen">
   <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-dok')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button><button class="hdr-act" onclick="showToast('Geteilt')">⬆️</button></div><div class="hdr-title" style="margin-top:6px">Ablehnungsbescheid Rollstuhl</div><div class="hdr-sub">AOK Bayern · 15.04.2025</div></div>
   <div class="dcont">
+    <div id="dok-detail-foto" style="display:none;margin-bottom:12px">
+      <div style="position:relative;border-radius:12px;overflow:hidden;border:.5px solid rgba(74,122,90,.15)">
+        <img id="dok-detail-foto-img" style="width:100%;max-height:260px;object-fit:contain;background:#1E2D20;display:block;cursor:pointer" alt="" onclick="openFotoVollbild('dok-detail-foto-img')">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:white">Gespeichertes Foto</span>
+          <div style="display:flex;gap:8px">
+            <button onclick="openFotoVollbild('dok-detail-foto-img')" style="background:rgba(255,255,255,.2);border:none;color:white;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit">🔍 Vollbild</button>
+            <button onclick="downloadDokFoto()" style="background:#7BAE8A;border:none;color:white;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit">⬇️ Speichern</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="rfoto"><div class="rmock"><div style="display:flex;justify-content:space-between"><div><div style="font-size:9px;color:#4A7A5A;font-weight:700;text-transform:uppercase">Bescheid · AOK Bayern</div><div style="font-size:15px;font-weight:800;color:#1E2D20;margin-top:2px">Ablehnung Hilfsmittel</div></div><div style="background:#C43030;color:white;font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700">Abgelehnt</div></div><div style="font-size:12px;color:#1E2D20;line-height:1.5">Ihr Antrag auf Elektrorollstuhl wird abgelehnt. §12 SGB V Wirtschaftlichkeitsgebot.</div><div style="display:flex;justify-content:space-between;padding-top:8px;border-top:.5px solid rgba(74,122,90,.2);font-size:10px;color:#4A7A5A"><span>AOK Bayern · 15.04.2025</span><span>Widerspruch bis 30.05.</span></div></div><div style="background:rgba(0,0,0,.4);padding:9px 12px;display:flex;justify-content:space-between"><span style="font-size:11px;color:white">von Rudolf · 15.04.2025</span><button onclick="showToast('Vollbild')" style="font-size:11px;font-weight:700;color:white;background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit">Vollbild</button></div></div>
     <div class="dsec"><div class="dstitle">Info</div><div class="drow"><span class="dl">Frist</span><span class="dv urg">30.05.2025</span></div><div class="drow"><span class="dl">Verknüpft</span><span class="dv" style="color:#185FA5;cursor:pointer" onclick="goTo('s-hm-detail')">→ Elektrorollstuhl</span></div></div>
     <button class="abtn u" onclick="goTo('s-hm-detail')">Zum Hilfsmittel</button>
@@ -1547,7 +1577,8 @@ async function saveDok(){
     frist:document.getElementById('dok-frist').value,
     link:document.getElementById('dok-link')?document.getElementById('dok-link').value:'',
     erin:document.getElementById('dok-erin')?document.getElementById('dok-erin').value:'',
-    foto:_dokFoto?'ja':'nein'
+    foto:_dokFoto?'ja':'nein',
+    fotoData:_dokFoto||null
   };
   addLocalEntry('dokumente', entry);
   renderDokumente();
@@ -1794,9 +1825,11 @@ function openRezDetail(id) {
   // Foto anzeigen
   var fotoDiv = document.getElementById('rez-fb-foto');
   var fotoImg = document.getElementById('rez-fb-foto-img');
+  var fotoInfo = document.getElementById('rez-fb-foto-info');
   if (r.fotoData && fotoImg) {
     fotoImg.src = r.fotoData;
     if (fotoDiv) fotoDiv.style.display = 'block';
+    if (fotoInfo) fotoInfo.textContent = 'Foto vom ' + (r.ts ? new Date(r.ts).toLocaleDateString('de-DE') : 'unbekannt') + ' · von ' + (r.by||'');
   } else {
     if (fotoDiv) fotoDiv.style.display = 'none';
   }
@@ -2235,9 +2268,11 @@ function openRezDetail(id) {
   // Foto anzeigen
   var fotoDiv = document.getElementById('rez-fb-foto');
   var fotoImg = document.getElementById('rez-fb-foto-img');
+  var fotoInfo = document.getElementById('rez-fb-foto-info');
   if (r.fotoData && fotoImg) {
     fotoImg.src = r.fotoData;
     if (fotoDiv) fotoDiv.style.display = 'block';
+    if (fotoInfo) fotoInfo.textContent = 'Foto vom ' + (r.ts ? new Date(r.ts).toLocaleDateString('de-DE') : 'unbekannt') + ' · von ' + (r.by||'');
   } else {
     if (fotoDiv) fotoDiv.style.display = 'none';
   }
@@ -3318,6 +3353,75 @@ function exportGesamtJSON() {
   a.click();
   showToast('Backup exportiert ✓');
 }
+
+// ── FOTO VOLLBILD & DOWNLOAD ──
+var _currentFotoSrc = null;
+var _currentFotoName = 'foto';
+
+function openFotoVollbild(imgId) {
+  var img = document.getElementById(imgId);
+  if (!img || !img.src) return;
+  _currentFotoSrc = img.src;
+  var overlay = document.getElementById('foto-vollbild-overlay');
+  var vbImg = document.getElementById('foto-vollbild-img');
+  if (vbImg) vbImg.src = img.src;
+  if (overlay) overlay.style.display = 'flex';
+  // Scrollen verhindern
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFotoVollbild() {
+  var overlay = document.getElementById('foto-vollbild-overlay');
+  if (overlay) overlay.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function downloadCurrentFoto() {
+  if (!_currentFotoSrc) return;
+  var a = document.createElement('a');
+  a.href = _currentFotoSrc;
+  a.download = _currentFotoName + '-' + new Date().toISOString().split('T')[0] + '.jpg';
+  a.click();
+  showToast('Foto gespeichert ✓');
+}
+
+function downloadDokFoto() {
+  var img = document.getElementById('dok-detail-foto-img');
+  if (!img || !img.src) return;
+  _currentFotoSrc = img.src;
+  _currentFotoName = 'dokument-foto';
+  downloadCurrentFoto();
+}
+
+function downloadRezFoto() {
+  var img = document.getElementById('rez-fb-foto-img');
+  if (!img || !img.src) return;
+  _currentFotoSrc = img.src;
+  _currentFotoName = 'rezept-' + (_currentRez ? (_currentRez.titel||'foto').replace(/\s+/g,'-') : 'foto');
+  downloadCurrentFoto();
+}
+
+function shareCurrentFoto() {
+  if (!_currentFotoSrc) return;
+  // Konvertiere Base64 zu Blob für Web Share API
+  try {
+    fetch(_currentFotoSrc)
+      .then(function(r){ return r.blob(); })
+      .then(function(blob) {
+        var file = new File([blob], _currentFotoName+'.jpg', {type:'image/jpeg'});
+        if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+          navigator.share({files:[file], title:'Tildi Life – Rezept'});
+        } else {
+          // Fallback: Download
+          downloadCurrentFoto();
+          showToast('Teilen nicht verfügbar – Foto wird heruntergeladen');
+        }
+      });
+  } catch(e) {
+    downloadCurrentFoto();
+  }
+}
+
 // ── TERMIN DETAIL ──
 function openTerminDetail(id) {
   var data = _termineCache[id] || {};
