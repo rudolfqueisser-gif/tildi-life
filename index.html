@@ -707,6 +707,51 @@ textarea.finp{resize:none}
   </div>
 </div>
 
+
+<!-- DOK DETAIL (lokal) -->
+<div id="s-dok-fb" class="screen">
+  <div class="hdr">
+    <div class="hdr-row">
+      <button class="hdr-back" onclick="goTo('s-dok');setNav('n-verwaltung')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück
+      </button>
+      <button class="hdr-act" onclick="editCurrentDok()">✏️</button>
+    </div>
+    <div class="hdr-title" style="margin-top:6px" id="dok-fb-title">Dokument</div>
+    <div class="hdr-sub" id="dok-fb-sub"></div>
+  </div>
+  <div class="dcont">
+    <!-- Foto -->
+    <div id="dok-fb-foto" style="display:none;margin-bottom:12px">
+      <div style="position:relative;border-radius:12px;overflow:hidden;border:.5px solid rgba(74,122,90,.15)">
+        <img id="dok-fb-foto-img" style="width:100%;max-height:260px;object-fit:contain;background:#1E2D20;display:block;cursor:pointer" alt="" onclick="openFotoVollbild('dok-fb-foto-img')">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:white">Gespeichertes Foto</span>
+          <div style="display:flex;gap:8px">
+            <button onclick="openFotoVollbild('dok-fb-foto-img')" style="background:rgba(255,255,255,.2);border:none;color:white;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit">🔍 Vollbild</button>
+            <button onclick="downloadDokFBFoto()" style="background:#7BAE8A;border:none;color:white;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit">⬇️ Speichern</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="dsec" id="dok-fb-info"></div>
+
+    <!-- Notizen -->
+    <div class="dsec">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="dstitle" style="margin:0">Verlauf & Notizen</div>
+        <button id="dok-notiz-btn" style="background:#7BAE8A;border:none;color:white;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit">+ Notiz</button>
+      </div>
+      <div id="dok-notiz-anzeige"><div style="font-size:13px;color:#6B7C6D;font-style:italic">Noch keine Notizen.</div></div>
+    </div>
+
+    <button class="abtn s" onclick="exportDokPDF()">📄 Als PDF exportieren</button>
+    <button class="abtn s" onclick="exportAllDokPDF()">📊 Alle Dokumente exportieren</button>
+    <button class="abtn u" onclick="deleteCurrentDok()">Dokument löschen</button>
+  </div>
+</div>
 <!-- DOK DETAIL -->
 <div id="s-dok-detail" class="screen">
   <div class="hdr" style="background:#8B1A1A"><div class="hdr-row"><button class="hdr-back" onclick="goTo('s-dok')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/></svg> Zurück</button><button class="hdr-act" onclick="showToast('Geteilt')">⬆️</button></div><div class="hdr-title" style="margin-top:6px">Ablehnungsbescheid Rollstuhl</div><div class="hdr-sub">AOK Bayern · 15.04.2025</div></div>
@@ -751,7 +796,7 @@ textarea.finp{resize:none}
     </div>
     <div class="stitle">Konto</div>
     <div style="background:white;border-radius:16px;border:.5px solid rgba(74,122,90,.15);overflow:hidden;margin-bottom:14px">
-      <div class="mehr-row" onclick="buildSyncQR();openM('m-sync')"><div class="mehr-icon" style="background:#EAF3EC">🔄</div><div><div class="mehr-title">Sync mit Iris</div><div class="mehr-sub">Daten per Link teilen</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-export');setNav('n-mehr');prepareExportScreen()"><div class="mehr-icon" style="background:#EAF3EC">📤</div><div><div class="mehr-title">Export</div><div class="mehr-sub">Daten als PDF oder JSON exportieren</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-einstellungen')"><div class="mehr-icon" style="background:#F4F7F4">⚙️</div><div><div class="mehr-title">Einstellungen</div><div class="mehr-sub">Push, Sync, Profil</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
+      <div class="mehr-row" id="sync-mehr-row"><div class="mehr-icon" style="background:#EAF3EC">🔄</div><div><div class="mehr-title">Sync mit Iris</div><div class="mehr-sub">Daten per Link teilen</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-export');setNav('n-mehr');prepareExportScreen()"><div class="mehr-icon" style="background:#EAF3EC">📤</div><div><div class="mehr-title">Export</div><div class="mehr-sub">Daten als PDF oder JSON exportieren</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div><div class="mehr-row" onclick="goTo('s-einstellungen')"><div class="mehr-icon" style="background:#F4F7F4">⚙️</div><div><div class="mehr-title">Einstellungen</div><div class="mehr-sub">Push, Sync, Profil</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
       <div class="mehr-row" onclick="switchUser()"><div class="mehr-icon" style="background:#F4F7F4">👤</div><div><div class="mehr-title">Nutzer wechseln</div><div class="mehr-sub" id="mehr-user-sub">Aktuell: –</div></div><span style="margin-left:auto;color:#6B7C6D;font-size:18px">›</span></div>
     </div>
   </div>
@@ -1698,8 +1743,13 @@ async function saveDok(){
   };
   addLocalEntry('dokumente', entry);
   renderDokumente();
+  if (window._dokEditMode && window._dokEditId) {
+    removeLocalEntry('dokumente', window._dokEditId);
+    window._dokEditMode = false; window._dokEditId = null;
+  }
   resetDokForm();
   closeM('m-dok');
+  updateDashboard();
   showToast('"'+bez+'" gespeichert ✓');
 }
 
@@ -2143,6 +2193,8 @@ function deleteHMEntry(id) {
 }
 
 // ── DOKUMENTE ANZEIGEN ──
+var _currentDok = null, _currentDokId = null;
+
 function renderDokumente() {
   var cont = document.getElementById('firebase-dokumente');
   var leer = document.getElementById('dok-leer');
@@ -2156,23 +2208,24 @@ function renderDokumente() {
   }
   if (leer) leer.style.display = 'none';
 
+  var typColor = {'Behörde':'#EEEDFE','Arztbrief':'#E8F1FB','Bescheid':'#FDECEA','Sonstiges':'#F4F7F4'};
+  var typTxt   = {'Behörde':'#3C3489','Arztbrief':'#0A4A8A','Bescheid':'#8B1A1A','Sonstiges':'#6B7C6D'};
+
   alle.forEach(function(d) {
     var hatFrist = d.frist && d.frist !== '';
-    var typColor = {
-      'Behörde':'#EEEDFE','Arztbrief':'#E8F1FB','Bescheid':'#FDECEA','Sonstiges':'#F4F7F4'
-    };
-    var typTxt = {
-      'Behörde':'#3C3489','Arztbrief':'#0A4A8A','Bescheid':'#8B1A1A','Sonstiges':'#6B7C6D'
-    };
     var tc = typColor[d.typ]||'#F4F7F4';
     var tt = typTxt[d.typ]||'#6B7C6D';
 
-    var card = '<div class="card'+(hatFrist?' warn':'')+'" style="cursor:pointer">'
-      +'<div style="display:flex;gap:12px;align-items:flex-start">'
-      +'<div style="font-size:24px;flex-shrink:0">'+(d.foto==='ja'?'📷':'📄')+'</div>'
+    var div = document.createElement('div');
+    div.className = 'card' + (hatFrist?' warn':'');
+    div.style.cursor = 'pointer';
+    div.setAttribute('data-dokid', d.id);
+    div.innerHTML =
+      '<div style="display:flex;gap:12px;align-items:flex-start">'
+      +'<div style="font-size:24px;flex-shrink:0">'+(d.fotoData?'📷':'📄')+'</div>'
       +'<div style="flex:1">'
       +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+d.bez+'</span>'
-      +(hatFrist?'<span class="bdg warn">Frist!</span>':'')
+      +(hatFrist?'<span class="bdg warn">Frist!</span>':'<span class="bdg gray">'+(d.typ||'Dokument')+'</span>')
       +'</div>'
       +(d.absender?'<div class="cme">'+(d.absender)+(d.datum?' · '+formatDatumKurz(d.datum):'')+'</div>':'')
       +'<div class="tags">'
@@ -2180,19 +2233,170 @@ function renderDokumente() {
       +(hatFrist?'<span class="tag" style="background:#FEF3E2;color:#7A4A0A">bis '+formatDatumKurz(d.frist)+'</span>':'')
       +(d.link?'<span class="tag" style="background:#EEEDFE;color:#3C3489">→ '+d.link+'</span>':'')
       +(d.by?'<span class="tag" style="background:'+(d.byColor||'#7BAE8A')+';color:white">'+d.by+'</span>':'')
-      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-dokid="'+d.id+'" onclick="event.stopPropagation();deleteDokEntry(this.dataset.dokid)">✕</span>'
       +'</div></div></div>'
-      +(hatFrist?'<div class="cbottom"><div class="cdot" style="background:#D4900A"></div><span class="cst">Frist: '+formatDatumKurz(d.frist)+'</span></div>':'')
-      +'</div>';
-    cont.insertAdjacentHTML('beforeend', card);
+      +(hatFrist?'<div class="cbottom"><div class="cdot" style="background:#D4900A"></div><span class="cst">Frist: '+formatDatumKurz(d.frist)+'</span></div>':'');
+
+    div.addEventListener('click', function() { openDokDetail(d.id); });
+    cont.appendChild(div);
   });
+}
+
+function openDokDetail(id) {
+  var alle = _localData.dokumente || [];
+  var d = alle.find(function(x){ return x.id===id; });
+  if (!d) { showToast('Nicht gefunden'); return; }
+  _currentDok = d; _currentDokId = id;
+
+  var t = document.getElementById('dok-fb-title');
+  if (t) t.textContent = d.bez || 'Dokument';
+  var s = document.getElementById('dok-fb-sub');
+  if (s) s.textContent = (d.typ||'') + (d.absender?' · '+d.absender:'');
+
+  // Header-Farbe je nach Typ
+  var hdr = document.querySelector('#s-dok-fb .hdr');
+  if (hdr) hdr.style.background = (d.typ==='Bescheid'?'#8B1A1A':d.typ==='Behörde'?'#3C3489':'#4A7A5A');
+
+  // Foto
+  var fotoDiv = document.getElementById('dok-fb-foto');
+  var fotoImg = document.getElementById('dok-fb-foto-img');
+  if (d.fotoData && fotoImg) {
+    fotoImg.src = d.fotoData;
+    if (fotoDiv) fotoDiv.style.display = 'block';
+    _currentFotoSrc = d.fotoData;
+    _currentFotoName = 'dokument-'+(d.bez||'foto').replace(/\s+/g,'-');
+  } else {
+    if (fotoDiv) fotoDiv.style.display = 'none';
+  }
+
+  // Info
+  var info = document.getElementById('dok-fb-info');
+  if (info) {
+    var h = '<div class="dstitle">Details</div>';
+    if (d.bez)       h += '<div class="drow"><span class="dl">Bezeichnung</span><span class="dv">'+d.bez+'</span></div>';
+    if (d.typ)       h += '<div class="drow"><span class="dl">Typ</span><span class="dv">'+d.typ+'</span></div>';
+    if (d.absender)  h += '<div class="drow"><span class="dl">Absender</span><span class="dv">'+d.absender+'</span></div>';
+    if (d.datum)     h += '<div class="drow"><span class="dl">Eingegangen</span><span class="dv">'+formatDatumKurz(d.datum)+'</span></div>';
+    if (d.frist)     h += '<div class="drow"><span class="dl">Frist</span><span class="dv warn">'+formatDatumKurz(d.frist)+'</span></div>';
+    if (d.link)      h += '<div class="drow"><span class="dl">Verknüpft mit</span><span class="dv">'+d.link+'</span></div>';
+    if (d.erin)      h += '<div class="drow"><span class="dl">Erinnerung</span><span class="dv">'+d.erin+'</span></div>';
+    if (d.by)        h += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">'+d.by+'</span></div>';
+    info.innerHTML = h;
+  }
+
+  // Notizen
+  setTimeout(function(){
+    updateNotizAnzeige('dok-notiz-anzeige', d.notizen||[]);
+  }, 50);
+
+  // Notiz-Button Event
+  var notizBtn = document.getElementById('dok-notiz-btn');
+  if (notizBtn) {
+    notizBtn.onclick = function() { openNotiz('dokumente', id); };
+  }
+
+  goTo('s-dok-fb'); setNav('n-verwaltung');
+}
+
+function editCurrentDok() {
+  if (!_currentDok) return;
+  var fields = {'dok-bez':_currentDok.bez,'dok-absender':_currentDok.absender,'dok-datum':_currentDok.datum,'dok-frist':_currentDok.frist};
+  Object.keys(fields).forEach(function(fid){var el=document.getElementById(fid);if(el&&fields[fid])el.value=fields[fid];});
+  window._dokEditMode = true; window._dokEditId = _currentDokId;
+  openM('m-dok');
+}
+
+function deleteCurrentDok() {
+  var name = _currentDok ? _currentDok.bez : 'Dokument';
+  document.getElementById('del-title').textContent = 'Dokument löschen?';
+  document.getElementById('del-msg').textContent = '"'+name+'" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick = function() {
+    closeM('m-del');
+    removeLocalEntry('dokumente', _currentDokId);
+    renderDokumente(); updateDashboard();
+    goTo('s-dok'); setNav('n-verwaltung');
+    showToast('"'+name+'" gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function downloadDokFBFoto() {
+  var img = document.getElementById('dok-fb-foto-img');
+  if (!img || !img.src) return;
+  _currentFotoSrc = img.src;
+  _currentFotoName = 'dokument-'+((_currentDok&&_currentDok.bez)||'foto').replace(/\s+/g,'-');
+  downloadCurrentFoto();
 }
 
 function deleteDokEntry(id) {
   if (!confirm('Dokument löschen?')) return;
   removeLocalEntry('dokumente', id);
-  renderDokumente();
-  showToast('Gelöscht ✓');
+  renderDokumente(); showToast('Gelöscht ✓');
+}
+
+function exportDokPDF() {
+  if (!_currentDok) return;
+  var w = window.open('', '_blank');
+  w.document.write(buildDokPDFHTML([_currentDok], 'Dokument-Detail'));
+  w.document.close(); setTimeout(function(){w.print();}, 500);
+  showToast('PDF wird geöffnet ✓');
+}
+
+function exportAllDokPDF() {
+  var alle = _localData.dokumente || [];
+  if (alle.length === 0) { showToast('Keine Dokumente vorhanden'); return; }
+  var w = window.open('', '_blank');
+  w.document.write(buildDokPDFHTML(alle, 'Alle Dokumente'));
+  w.document.close(); setTimeout(function(){w.print();}, 500);
+  showToast('PDF mit '+alle.length+' Einträgen ✓');
+}
+
+function buildDokPDFHTML(liste, titel) {
+  var today = new Date().toLocaleDateString('de-DE');
+  var html = '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>'+titel+'</title>'
+    +'<style>body{font-family:Arial,sans-serif;max-width:750px;margin:20px auto;color:#1E2D20;font-size:13px}'
+    +'h1{color:#4A7A5A;border-bottom:2px solid #7BAE8A;padding-bottom:8px}'
+    +'h2{color:#4A7A5A;font-size:14px;margin:18px 0 6px;border-left:3px solid #7BAE8A;padding-left:10px}'
+    +'.meta{color:#6B7C6D;font-size:12px;margin-bottom:16px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{background:#7BAE8A;color:white;padding:6px 10px;text-align:left;font-size:12px}'
+    +'td{padding:5px 10px;border-bottom:.5px solid #ddd;font-size:12px}'
+    +'.label{color:#6B7C6D;width:35%}'
+    +'tr:nth-child(even){background:#f9fdf9}'
+    +'.footer{margin-top:24px;padding-top:8px;border-top:.5px solid #ddd;font-size:11px;color:#aaa;text-align:center}'
+    +'</style></head><body>'
+    +'<h1>Tildi Life – '+titel+'</h1>'
+    +'<div class="meta">Patient: Matilda &nbsp;|&nbsp; Erstellt: '+today+' &nbsp;|&nbsp; Einträge: '+liste.length+'</div>';
+
+  if (liste.length > 1) {
+    html += '<h2>Übersicht</h2><table><tr><th>Bezeichnung</th><th>Typ</th><th>Absender</th><th>Eingegangen</th><th>Frist</th></tr>';
+    liste.forEach(function(d){
+      html += '<tr><td><strong>'+(d.bez||'–')+'</strong></td><td>'+(d.typ||'–')+'</td><td>'+(d.absender||'–')+'</td>'
+        +'<td>'+(d.datum?formatDatumKurz(d.datum):'–')+'</td>'
+        +'<td style="color:'+(d.frist?'#B02020':'inherit')+'">'+(d.frist?formatDatumKurz(d.frist):'–')+'</td></tr>';
+    });
+    html += '</table>';
+  }
+
+  liste.forEach(function(d, i) {
+    html += '<h2>'+(liste.length>1?(i+1)+'. ':'')+d.bez+'</h2><table>';
+    [['Bezeichnung',d.bez],['Typ',d.typ],['Absender',d.absender],
+     ['Eingegangen',d.datum?formatDatumKurz(d.datum):''],
+     ['Frist',d.frist?formatDatumKurz(d.frist):''],
+     ['Verknüpft mit',d.link],['Erinnerung',d.erin],
+     ['Foto',d.fotoData?'Vorhanden':'Nicht vorhanden'],
+     ['Eingetragen von',d.by],
+     ['Eingetragen am',d.ts?new Date(d.ts).toLocaleDateString('de-DE'):'']
+    ].forEach(function(f){if(f[1])html+='<tr><td class="label">'+f[0]+'</td><td>'+f[1]+'</td></tr>';});
+    html += '</table>';
+    if (d.notizen && d.notizen.length > 0) {
+      html += '<div style="margin-top:6px"><strong style="font-size:12px;color:#4A7A5A">Verlauf & Notizen:</strong><ul style="margin:6px 0 0 16px">';
+      d.notizen.forEach(function(n){html+='<li style="font-size:11px;margin-bottom:3px"><strong>'+n.datum+' '+n.uhrzeit+'</strong> ('+n.by+'): '+n.text+'</li>';});
+      html += '</ul></div>';
+    }
+  });
+
+  html += '<div class="footer">Tildi Life – Vertraulich · nur für medizinische Zwecke</div></body></html>';
+  return html;
 }
 
 function formatDatumKurz(datum) {
@@ -2638,6 +2842,8 @@ function deleteHMEntry(id) {
 }
 
 // ── DOKUMENTE ANZEIGEN ──
+var _currentDok = null, _currentDokId = null;
+
 function renderDokumente() {
   var cont = document.getElementById('firebase-dokumente');
   var leer = document.getElementById('dok-leer');
@@ -2651,23 +2857,24 @@ function renderDokumente() {
   }
   if (leer) leer.style.display = 'none';
 
+  var typColor = {'Behörde':'#EEEDFE','Arztbrief':'#E8F1FB','Bescheid':'#FDECEA','Sonstiges':'#F4F7F4'};
+  var typTxt   = {'Behörde':'#3C3489','Arztbrief':'#0A4A8A','Bescheid':'#8B1A1A','Sonstiges':'#6B7C6D'};
+
   alle.forEach(function(d) {
     var hatFrist = d.frist && d.frist !== '';
-    var typColor = {
-      'Behörde':'#EEEDFE','Arztbrief':'#E8F1FB','Bescheid':'#FDECEA','Sonstiges':'#F4F7F4'
-    };
-    var typTxt = {
-      'Behörde':'#3C3489','Arztbrief':'#0A4A8A','Bescheid':'#8B1A1A','Sonstiges':'#6B7C6D'
-    };
     var tc = typColor[d.typ]||'#F4F7F4';
     var tt = typTxt[d.typ]||'#6B7C6D';
 
-    var card = '<div class="card'+(hatFrist?' warn':'')+'" style="cursor:pointer">'
-      +'<div style="display:flex;gap:12px;align-items:flex-start">'
-      +'<div style="font-size:24px;flex-shrink:0">'+(d.foto==='ja'?'📷':'📄')+'</div>'
+    var div = document.createElement('div');
+    div.className = 'card' + (hatFrist?' warn':'');
+    div.style.cursor = 'pointer';
+    div.setAttribute('data-dokid', d.id);
+    div.innerHTML =
+      '<div style="display:flex;gap:12px;align-items:flex-start">'
+      +'<div style="font-size:24px;flex-shrink:0">'+(d.fotoData?'📷':'📄')+'</div>'
       +'<div style="flex:1">'
       +'<div class="ct" style="margin-bottom:3px"><span class="cti">'+d.bez+'</span>'
-      +(hatFrist?'<span class="bdg warn">Frist!</span>':'')
+      +(hatFrist?'<span class="bdg warn">Frist!</span>':'<span class="bdg gray">'+(d.typ||'Dokument')+'</span>')
       +'</div>'
       +(d.absender?'<div class="cme">'+(d.absender)+(d.datum?' · '+formatDatumKurz(d.datum):'')+'</div>':'')
       +'<div class="tags">'
@@ -2675,19 +2882,170 @@ function renderDokumente() {
       +(hatFrist?'<span class="tag" style="background:#FEF3E2;color:#7A4A0A">bis '+formatDatumKurz(d.frist)+'</span>':'')
       +(d.link?'<span class="tag" style="background:#EEEDFE;color:#3C3489">→ '+d.link+'</span>':'')
       +(d.by?'<span class="tag" style="background:'+(d.byColor||'#7BAE8A')+';color:white">'+d.by+'</span>':'')
-      +'<span class="tag" style="background:#FDECEA;color:#8B1A1A;cursor:pointer" data-dokid="'+d.id+'" onclick="event.stopPropagation();deleteDokEntry(this.dataset.dokid)">✕</span>'
       +'</div></div></div>'
-      +(hatFrist?'<div class="cbottom"><div class="cdot" style="background:#D4900A"></div><span class="cst">Frist: '+formatDatumKurz(d.frist)+'</span></div>':'')
-      +'</div>';
-    cont.insertAdjacentHTML('beforeend', card);
+      +(hatFrist?'<div class="cbottom"><div class="cdot" style="background:#D4900A"></div><span class="cst">Frist: '+formatDatumKurz(d.frist)+'</span></div>':'');
+
+    div.addEventListener('click', function() { openDokDetail(d.id); });
+    cont.appendChild(div);
   });
+}
+
+function openDokDetail(id) {
+  var alle = _localData.dokumente || [];
+  var d = alle.find(function(x){ return x.id===id; });
+  if (!d) { showToast('Nicht gefunden'); return; }
+  _currentDok = d; _currentDokId = id;
+
+  var t = document.getElementById('dok-fb-title');
+  if (t) t.textContent = d.bez || 'Dokument';
+  var s = document.getElementById('dok-fb-sub');
+  if (s) s.textContent = (d.typ||'') + (d.absender?' · '+d.absender:'');
+
+  // Header-Farbe je nach Typ
+  var hdr = document.querySelector('#s-dok-fb .hdr');
+  if (hdr) hdr.style.background = (d.typ==='Bescheid'?'#8B1A1A':d.typ==='Behörde'?'#3C3489':'#4A7A5A');
+
+  // Foto
+  var fotoDiv = document.getElementById('dok-fb-foto');
+  var fotoImg = document.getElementById('dok-fb-foto-img');
+  if (d.fotoData && fotoImg) {
+    fotoImg.src = d.fotoData;
+    if (fotoDiv) fotoDiv.style.display = 'block';
+    _currentFotoSrc = d.fotoData;
+    _currentFotoName = 'dokument-'+(d.bez||'foto').replace(/\s+/g,'-');
+  } else {
+    if (fotoDiv) fotoDiv.style.display = 'none';
+  }
+
+  // Info
+  var info = document.getElementById('dok-fb-info');
+  if (info) {
+    var h = '<div class="dstitle">Details</div>';
+    if (d.bez)       h += '<div class="drow"><span class="dl">Bezeichnung</span><span class="dv">'+d.bez+'</span></div>';
+    if (d.typ)       h += '<div class="drow"><span class="dl">Typ</span><span class="dv">'+d.typ+'</span></div>';
+    if (d.absender)  h += '<div class="drow"><span class="dl">Absender</span><span class="dv">'+d.absender+'</span></div>';
+    if (d.datum)     h += '<div class="drow"><span class="dl">Eingegangen</span><span class="dv">'+formatDatumKurz(d.datum)+'</span></div>';
+    if (d.frist)     h += '<div class="drow"><span class="dl">Frist</span><span class="dv warn">'+formatDatumKurz(d.frist)+'</span></div>';
+    if (d.link)      h += '<div class="drow"><span class="dl">Verknüpft mit</span><span class="dv">'+d.link+'</span></div>';
+    if (d.erin)      h += '<div class="drow"><span class="dl">Erinnerung</span><span class="dv">'+d.erin+'</span></div>';
+    if (d.by)        h += '<div class="drow"><span class="dl">Eingetragen von</span><span class="dv">'+d.by+'</span></div>';
+    info.innerHTML = h;
+  }
+
+  // Notizen
+  setTimeout(function(){
+    updateNotizAnzeige('dok-notiz-anzeige', d.notizen||[]);
+  }, 50);
+
+  // Notiz-Button Event
+  var notizBtn = document.getElementById('dok-notiz-btn');
+  if (notizBtn) {
+    notizBtn.onclick = function() { openNotiz('dokumente', id); };
+  }
+
+  goTo('s-dok-fb'); setNav('n-verwaltung');
+}
+
+function editCurrentDok() {
+  if (!_currentDok) return;
+  var fields = {'dok-bez':_currentDok.bez,'dok-absender':_currentDok.absender,'dok-datum':_currentDok.datum,'dok-frist':_currentDok.frist};
+  Object.keys(fields).forEach(function(fid){var el=document.getElementById(fid);if(el&&fields[fid])el.value=fields[fid];});
+  window._dokEditMode = true; window._dokEditId = _currentDokId;
+  openM('m-dok');
+}
+
+function deleteCurrentDok() {
+  var name = _currentDok ? _currentDok.bez : 'Dokument';
+  document.getElementById('del-title').textContent = 'Dokument löschen?';
+  document.getElementById('del-msg').textContent = '"'+name+'" wird endgültig gelöscht.';
+  document.getElementById('del-btn').onclick = function() {
+    closeM('m-del');
+    removeLocalEntry('dokumente', _currentDokId);
+    renderDokumente(); updateDashboard();
+    goTo('s-dok'); setNav('n-verwaltung');
+    showToast('"'+name+'" gelöscht ✓');
+  };
+  openM('m-del');
+}
+
+function downloadDokFBFoto() {
+  var img = document.getElementById('dok-fb-foto-img');
+  if (!img || !img.src) return;
+  _currentFotoSrc = img.src;
+  _currentFotoName = 'dokument-'+((_currentDok&&_currentDok.bez)||'foto').replace(/\s+/g,'-');
+  downloadCurrentFoto();
 }
 
 function deleteDokEntry(id) {
   if (!confirm('Dokument löschen?')) return;
   removeLocalEntry('dokumente', id);
-  renderDokumente();
-  showToast('Gelöscht ✓');
+  renderDokumente(); showToast('Gelöscht ✓');
+}
+
+function exportDokPDF() {
+  if (!_currentDok) return;
+  var w = window.open('', '_blank');
+  w.document.write(buildDokPDFHTML([_currentDok], 'Dokument-Detail'));
+  w.document.close(); setTimeout(function(){w.print();}, 500);
+  showToast('PDF wird geöffnet ✓');
+}
+
+function exportAllDokPDF() {
+  var alle = _localData.dokumente || [];
+  if (alle.length === 0) { showToast('Keine Dokumente vorhanden'); return; }
+  var w = window.open('', '_blank');
+  w.document.write(buildDokPDFHTML(alle, 'Alle Dokumente'));
+  w.document.close(); setTimeout(function(){w.print();}, 500);
+  showToast('PDF mit '+alle.length+' Einträgen ✓');
+}
+
+function buildDokPDFHTML(liste, titel) {
+  var today = new Date().toLocaleDateString('de-DE');
+  var html = '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>'+titel+'</title>'
+    +'<style>body{font-family:Arial,sans-serif;max-width:750px;margin:20px auto;color:#1E2D20;font-size:13px}'
+    +'h1{color:#4A7A5A;border-bottom:2px solid #7BAE8A;padding-bottom:8px}'
+    +'h2{color:#4A7A5A;font-size:14px;margin:18px 0 6px;border-left:3px solid #7BAE8A;padding-left:10px}'
+    +'.meta{color:#6B7C6D;font-size:12px;margin-bottom:16px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{background:#7BAE8A;color:white;padding:6px 10px;text-align:left;font-size:12px}'
+    +'td{padding:5px 10px;border-bottom:.5px solid #ddd;font-size:12px}'
+    +'.label{color:#6B7C6D;width:35%}'
+    +'tr:nth-child(even){background:#f9fdf9}'
+    +'.footer{margin-top:24px;padding-top:8px;border-top:.5px solid #ddd;font-size:11px;color:#aaa;text-align:center}'
+    +'</style></head><body>'
+    +'<h1>Tildi Life – '+titel+'</h1>'
+    +'<div class="meta">Patient: Matilda &nbsp;|&nbsp; Erstellt: '+today+' &nbsp;|&nbsp; Einträge: '+liste.length+'</div>';
+
+  if (liste.length > 1) {
+    html += '<h2>Übersicht</h2><table><tr><th>Bezeichnung</th><th>Typ</th><th>Absender</th><th>Eingegangen</th><th>Frist</th></tr>';
+    liste.forEach(function(d){
+      html += '<tr><td><strong>'+(d.bez||'–')+'</strong></td><td>'+(d.typ||'–')+'</td><td>'+(d.absender||'–')+'</td>'
+        +'<td>'+(d.datum?formatDatumKurz(d.datum):'–')+'</td>'
+        +'<td style="color:'+(d.frist?'#B02020':'inherit')+'">'+(d.frist?formatDatumKurz(d.frist):'–')+'</td></tr>';
+    });
+    html += '</table>';
+  }
+
+  liste.forEach(function(d, i) {
+    html += '<h2>'+(liste.length>1?(i+1)+'. ':'')+d.bez+'</h2><table>';
+    [['Bezeichnung',d.bez],['Typ',d.typ],['Absender',d.absender],
+     ['Eingegangen',d.datum?formatDatumKurz(d.datum):''],
+     ['Frist',d.frist?formatDatumKurz(d.frist):''],
+     ['Verknüpft mit',d.link],['Erinnerung',d.erin],
+     ['Foto',d.fotoData?'Vorhanden':'Nicht vorhanden'],
+     ['Eingetragen von',d.by],
+     ['Eingetragen am',d.ts?new Date(d.ts).toLocaleDateString('de-DE'):'']
+    ].forEach(function(f){if(f[1])html+='<tr><td class="label">'+f[0]+'</td><td>'+f[1]+'</td></tr>';});
+    html += '</table>';
+    if (d.notizen && d.notizen.length > 0) {
+      html += '<div style="margin-top:6px"><strong style="font-size:12px;color:#4A7A5A">Verlauf & Notizen:</strong><ul style="margin:6px 0 0 16px">';
+      d.notizen.forEach(function(n){html+='<li style="font-size:11px;margin-bottom:3px"><strong>'+n.datum+' '+n.uhrzeit+'</strong> ('+n.by+'): '+n.text+'</li>';});
+      html += '</ul></div>';
+    }
+  });
+
+  html += '<div class="footer">Tildi Life – Vertraulich · nur für medizinische Zwecke</div></body></html>';
+  return html;
 }
 
 function formatDatumKurz(datum) {
@@ -3776,6 +4134,9 @@ function saveNotiz() {
     } else if (_notizKategorie === 'rezepte') {
       _currentRez = alle[idx];
       updateNotizAnzeige('rez-notiz-anzeige', alle[idx].notizen);
+    } else if (_notizKategorie === 'dokumente') {
+      _currentDok = alle[idx];
+      updateNotizAnzeige('dok-notiz-anzeige', alle[idx].notizen);
     }
   }
 
