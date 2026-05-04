@@ -219,7 +219,7 @@ textarea.finp{resize:none}
       <div style="font-size:13px;color:rgba(255,255,255,.75)" id="greet-time">Guten Tag,</div>
       <div style="font-size:22px;font-weight:700;color:white" id="greet-name">...</div>
     </div>
-    <div class="sync-bar"><div class="sync-dot" id="sync-dot"></div><span style="font-size:11px;color:rgba(255,255,255,.9)" id="sync-txt">Daten werden geladen...</span></div>
+    <div class="sync-bar" id="sync-bar" style="display:none"><div class="sync-dot" id="sync-dot" style="background:#3B6D11"></div><span style="font-size:11px;color:rgba(255,255,255,.9)" id="sync-txt">Lokal gespeichert ✓</span></div>
   </div>
   <div class="pc">
     <div class="stitle">Heute im Blick</div>
@@ -482,7 +482,7 @@ textarea.finp{resize:none}
       </div>
       <div id="hm-notiz-anzeige"><div style="font-size:13px;color:#6B7C6D;font-style:italic">Noch keine Notizen.</div></div>
     </div>
-    <button class="abtn p" onclick="showToast('Lieferanten angerufen')">Lieferanten anrufen</button>
+    <button class="abtn p" id="hm-anrufen-btn" onclick="hmAnrufen()">📞 Lieferanten anrufen</button>
     <button class="abtn s" onclick="exportHMPDF()">📄 Als PDF exportieren</button>
     <button class="abtn s" onclick="exportAllHMPDF()">📊 Alle Hilfsmittel exportieren</button>
     <button class="abtn u" onclick="deleteCurrentHM()">Hilfsmittel löschen</button>
@@ -870,12 +870,20 @@ textarea.finp{resize:none}
     <div class="stitle">Profil</div>
     <div class="dsec"><div class="drow"><span class="dl">Name</span><span class="dv" id="settings-name">–</span></div><div class="drow"><span class="dl">Kind</span><span class="dv">Matilda · Rett-Syndrom</span></div></div>
     <div class="stitle">Sync</div>
-    <div class="dsec"><div class="drow"><span class="dl">Firebase</span><span class="dv" id="fb-status-detail">Wird geprüft...</span></div><div class="drow"><span class="dl">URL</span><span class="dv">tildi-life.netlify.app</span></div></div>
-    <div class="stitle">Push-Benachrichtigungen</div>
+    <div class="dsec"><div class="drow"><span class="dl">Speicherung</span><span class="dv">Lokal auf Gerät</span></div><div class="drow"><span class="dl">Multi-Gerät Sync</span><span class="dv">Über "Sync mit Iris"</span></div></div>
+    <div class="stitle">Benachrichtigungen</div>
+    <div class="info-box" style="margin-bottom:10px">
+      <p><strong>iPhone:</strong> Füge die App zum Home-Bildschirm hinzu für bessere Benachrichtigungen.<br><br>
+      In Safari: Teilen-Symbol → "Zum Home-Bildschirm" → Hinzufügen</p>
+    </div>
     <button class="abtn p" onclick="requestPush()">Benachrichtigungen aktivieren</button>
     <button class="abtn s" onclick="sendTestNotif()">Testbenachrichtigung senden</button>
+    <div id="push-status" style="font-size:12px;color:#6B7C6D;text-align:center;margin-top:6px"></div>
     <div class="stitle">Daten</div>
     <button class="abtn s" onclick="exportData()">Alle Daten exportieren</button>
+    <button class="abtn s" onclick="goTo('s-export');setNav('n-mehr');prepareExportScreen()" style="margin-top:4px">📤 Export & Backup</button>
+    <div class="stitle" style="margin-top:8px">Gefährlich</div>
+    <button class="abtn u" onclick="clearTestDaten()" style="margin-bottom:8px">🗑️ Alle Daten löschen (Reset)</button>
     <button class="abtn u" style="margin-top:4px" onclick="switchUser()">Abmelden</button>
   </div>
 </div>
@@ -1240,28 +1248,47 @@ textarea.finp{resize:none}
 <div class="movl" id="m-sync">
   <div class="msheet">
     <div class="mhandle"></div>
-    <div class="mtitle">🔄 Sync mit Iris / anderen</div>
-    
-    <div class="info-box ok" style="margin-bottom:14px">
-      <p><strong>So funktioniert der Sync:</strong><br>
-      Tippe auf "Link teilen" → schick den Link per WhatsApp an Iris → Iris öffnet den Link → ihre App wird mit deinen Daten aktualisiert.</p>
+    <div class="mtitle">🔄 Daten teilen</div>
+
+    <div class="tbar" style="margin:-4px -16px 16px">
+      <div class="titem active" id="sync-tab-export" onclick="switchSyncTab('export')">Exportieren</div>
+      <div class="titem" id="sync-tab-import" onclick="switchSyncTab('import')">Importieren</div>
     </div>
 
-    <div style="background:#F4F7F4;border-radius:12px;padding:14px;margin-bottom:12px;text-align:center">
-      <img id="sync-qr-img" style="display:none;width:160px;height:160px;border-radius:8px;margin:0 auto 10px" alt="QR Code">
-      <div style="font-size:12px;color:#6B7C6D;margin-bottom:6px" id="sync-data-count">Wird geladen...</div>
-      <div style="font-size:10px;color:#6B7C6D;word-break:break-all;display:none" id="sync-url-display"></div>
+    <!-- EXPORT TAB -->
+    <div id="sync-view-export">
+      <div class="info-box ok" style="margin-bottom:12px">
+        <p><strong>So geht Sync:</strong><br>
+        1. Tippe "Daten exportieren" → JSON-Datei wird gespeichert<br>
+        2. Schick die Datei per WhatsApp / AirDrop / iCloud an Iris<br>
+        3. Iris öffnet die App → "Importieren" → Datei auswählen</p>
+      </div>
+      <div style="background:#F4F7F4;border-radius:12px;padding:12px;margin-bottom:12px;text-align:center" id="sync-stats">
+        <div style="font-size:13px;color:#6B7C6D" id="sync-data-count">Wird geladen...</div>
+      </div>
+      <button class="abtn p" onclick="exportSyncJSON()" style="margin-bottom:8px">💾 Daten exportieren (JSON)</button>
+      <button class="abtn s" onclick="exportGesamtPDF()" style="margin-bottom:8px">📄 Als PDF exportieren</button>
     </div>
 
-    <button class="abtn p" onclick="shareSyncLink()" style="margin-bottom:8px">⬆️ Link teilen (WhatsApp / AirDrop)</button>
-    <button class="abtn s" onclick="copySyncLink()" style="margin-bottom:8px">📋 Link kopieren</button>
-    <button class="abtn s" onclick="exportGesamtJSON()" style="margin-bottom:8px">💾 Backup als JSON exportieren</button>
-    
-    <div class="info-box warn" style="margin-bottom:8px">
-      <p>⚠️ Der Sync-Link enthält alle deine Daten. Teile ihn nur mit vertrauenswürdigen Personen.</p>
+    <!-- IMPORT TAB -->
+    <div id="sync-view-import" style="display:none">
+      <div class="info-box warn" style="margin-bottom:12px">
+        <p>⚠️ Import überschreibt ALLE lokalen Daten. Zuerst eigene Daten exportieren!</p>
+      </div>
+      <div class="camzone" style="margin-bottom:12px" onclick="document.getElementById('sync-import-input').click()">
+        <div class="camico" style="background:#E8F1FB"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="#0A4A8A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div style="font-size:14px;font-weight:700;color:#1E2D20;margin-bottom:4px">JSON-Datei auswählen</div>
+        <div style="font-size:12px;color:#6B7C6D">Tippe hier um eine Backup-Datei zu importieren</div>
+      </div>
+      <input type="file" id="sync-import-input" accept=".json,application/json" style="display:none" onchange="importSyncJSON(event)">
+      <div id="sync-import-preview" style="display:none;background:#EAF3EC;border-radius:12px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:#4A7A5A;margin-bottom:6px">Vorschau</div>
+        <div id="sync-import-info" style="font-size:12px;color:#1E2D20;line-height:1.6"></div>
+        <button class="abtn p" onclick="confirmImport()" style="margin-top:10px;margin-bottom:0">✓ Importieren & übernehmen</button>
+      </div>
     </div>
-    
-    <div class="fbtns"><button class="fcnc" onclick="closeM('m-sync')">Schließen</button></div>
+
+    <div class="fbtns" style="margin-top:8px"><button class="fcnc" onclick="closeM('m-sync')">Schließen</button></div>
   </div>
 </div>
 <!-- MODAL: NOTIZ HINZUFÜGEN -->
@@ -1527,8 +1554,20 @@ function loadUsers(){try{return JSON.parse(localStorage.getItem('tl_users')||'[]
 function saveUsers(u){localStorage.setItem('tl_users',JSON.stringify(u));}
 function getInitials(n){var p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.substring(0,2).toUpperCase();}
 function getGreeting(){var h=new Date().getHours();return h<11?'Guten Morgen,':h<17?'Guten Tag,':h<21?'Guten Abend,':'Gute Nacht,';}
-function getCurrentUser(){return _cu?_cu.name:'Unbekannt';}
-function getCurrentColor(){return _cu?_cu.color:'#7BAE8A';}
+function getCurrentUser(){
+  if(_cu&&_cu.name)return _cu.name;
+  // Fallback: aus sessionStorage laden
+  try{
+    var saved=sessionStorage.getItem('tl_su');
+    if(saved){_cu=JSON.parse(saved);return _cu.name;}
+  }catch(e){}
+  return 'Unbekannt';
+}
+function getCurrentColor(){
+  if(_cu&&_cu.color)return _cu.color;
+  try{var saved=sessionStorage.getItem('tl_su');if(saved){_cu=JSON.parse(saved);return _cu.color;}}catch(e){}
+  return '#7BAE8A';
+}
 
 function renderUserList(){
   var users=loadUsers();
@@ -1887,7 +1926,17 @@ function loadLocalData() {
     var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle','uebergaben'];
     keys.forEach(function(k) {
       var stored = localStorage.getItem('tl_data_'+k);
-      if (stored) _localData[k] = JSON.parse(stored);
+      if (stored) {
+        var arr = JSON.parse(stored);
+        // Deduplizierung: gleiche ID nur einmal
+        var seen = {};
+        _localData[k] = arr.filter(function(e) {
+          if (!e || !e.id) return false;
+          if (seen[e.id]) return false;
+          seen[e.id] = true;
+          return true;
+        });
+      }
     });
   } catch(e) { console.warn('loadLocalData error:', e); }
 }
@@ -2220,6 +2269,7 @@ function renderDokumente() {
     div.className = 'card' + (hatFrist?' warn':'');
     div.style.cursor = 'pointer';
     div.setAttribute('data-dokid', d.id);
+    div.setAttribute('data-doktyp', (d.typ||'').toLowerCase().replace('ä','ae').replace('ö','oe').replace('ü','ue').replace('arztbrief','arzt').replace('behörde','behoerde').replace('behorde','behoerde'));
     div.innerHTML =
       '<div style="display:flex;gap:12px;align-items:flex-start">'
       +'<div style="font-size:24px;flex-shrink:0">'+(d.fotoData?'📷':'📄')+'</div>'
@@ -2541,7 +2591,17 @@ function loadLocalData() {
     var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle','uebergaben'];
     keys.forEach(function(k) {
       var stored = localStorage.getItem('tl_data_'+k);
-      if (stored) _localData[k] = JSON.parse(stored);
+      if (stored) {
+        var arr = JSON.parse(stored);
+        // Deduplizierung: gleiche ID nur einmal
+        var seen = {};
+        _localData[k] = arr.filter(function(e) {
+          if (!e || !e.id) return false;
+          if (seen[e.id]) return false;
+          seen[e.id] = true;
+          return true;
+        });
+      }
     });
   } catch(e) { console.warn('loadLocalData error:', e); }
 }
@@ -2869,6 +2929,7 @@ function renderDokumente() {
     div.className = 'card' + (hatFrist?' warn':'');
     div.style.cursor = 'pointer';
     div.setAttribute('data-dokid', d.id);
+    div.setAttribute('data-doktyp', (d.typ||'').toLowerCase().replace('ä','ae').replace('ö','oe').replace('ü','ue').replace('arztbrief','arzt').replace('behörde','behoerde').replace('behorde','behoerde'));
     div.innerHTML =
       '<div style="display:flex;gap:12px;align-items:flex-start">'
       +'<div style="font-size:24px;flex-shrink:0">'+(d.fotoData?'📷':'📄')+'</div>'
@@ -3579,7 +3640,18 @@ function filtT(cat,el){
   var leer=document.getElementById('termine-leer');
   if(leer)leer.style.display=(sichtbar===0&&(_localData.termine||[]).length>0)?'block':'none';
 }
-function filtDok(cat,el){document.querySelectorAll('#s-dok .fbar .fpill').forEach(function(p){p.classList.remove('fp-act');});el.classList.add('fp-act');document.querySelectorAll('[data-dkat]').forEach(function(c){c.style.display=(cat==='all'||c.dataset.dkat===cat)?'block':'none';});}
+function filtDok(cat,el){
+  document.querySelectorAll('#s-dok .fbar .fpill').forEach(function(p){p.classList.remove('fp-act');});
+  el.classList.add('fp-act');
+  // Dynamische Karten filtern
+  document.querySelectorAll('#firebase-dokumente [data-doktyp]').forEach(function(card){
+    card.style.display=(cat==='all'||card.dataset.doktyp===cat)?'block':'none';
+  });
+  // Statische Karten
+  document.querySelectorAll('[data-dkat]').forEach(function(card){
+    card.style.display=(cat==='all'||card.dataset.dkat===cat)?'block':'none';
+  });
+}
 function switchRTab(tab){['t','h','m'].forEach(function(k){document.getElementById('rtab-'+k).classList.remove('active');});var map={therapie:'t',hilfsmittel:'h',medikament:'m'};document.getElementById('rtab-'+map[tab]).classList.add('active');['rez-therapie','rez-hilfsmittel','rez-medikament'].forEach(function(id){document.getElementById(id).style.display='none';});document.getElementById('rez-'+tab).style.display='block';}
 function switchTbTab(tab){['list','stat','bericht'].forEach(function(t){document.getElementById('tbtab-'+t).classList.toggle('active',t===tab);document.getElementById('tb-view-'+t).style.display=t===tab?'block':'none';});}
 
@@ -3648,11 +3720,32 @@ function setNavFromScreen(screen){
 function exportData(){var blob=new Blob([JSON.stringify({med:_md,user:_cu,ts:Date.now()},null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tildi-export.json';a.click();showToast('Exportiert ✓');}
 
 async function requestPush(){
-  if(!('Notification' in window)){showToast('Nicht verfügbar');return;}
+  var statusEl = document.getElementById('push-status');
+  if(!('Notification' in window)){
+    if(statusEl)statusEl.textContent='Push nicht verfügbar – App zum Home-Bildschirm hinzufügen';
+    showToast('Tipp: App zum Home-Bildschirm hinzufügen');
+    return;
+  }
   var p=await Notification.requestPermission();
-  showToast(p==='granted'?'Benachrichtigungen aktiviert ✓':'Nicht erlaubt');
+  if(p==='granted'){
+    showToast('Benachrichtigungen aktiviert ✓');
+    if(statusEl)statusEl.textContent='✓ Aktiv';
+    // Test-Notification
+    try{new Notification('Tildi Life',{body:'Benachrichtigungen sind aktiv ✓',icon:'/favicon.ico'});}catch(e){}
+  } else {
+    showToast('Nicht erlaubt – bitte in iOS Einstellungen aktivieren');
+    if(statusEl)statusEl.textContent='Nicht erlaubt – in iOS Einstellungen → Safari → Mitteilungen aktivieren';
+  }
 }
-function sendTestNotif(){if(Notification.permission==='granted'){try{new Notification('Tildi Life','Test ✓');}catch(e){}}else{requestPush();}}
+function sendTestNotif(){
+  if(Notification.permission==='granted'){
+    try{new Notification('Tildi Life – Test',{body:'Benachrichtigungen funktionieren ✓'});}
+    catch(e){showToast('Testbenachrichtigung gesendet');}
+    showToast('Testbenachrichtigung gesendet ✓');
+  }else{
+    requestPush();
+  }
+}
 
 
 
@@ -3822,32 +3915,108 @@ function buildHMPDFHTML(liste, titel) {
 }
 
 
-function shareSyncLink() {
-  var urlEl = document.getElementById('sync-url-display');
-  var url = urlEl ? urlEl.textContent : '';
-  if (!url || url.includes('zu groß')) {
-    exportGesamtJSON();
-    showToast('Daten zu groß – JSON wird exportiert');
-    return;
-  }
-  if (navigator.share) {
-    navigator.share({title: 'Tildi Life Sync', text: 'Tildi Life Daten von '+getCurrentUser(), url: url});
-  } else {
-    copySyncLink();
-  }
-}
+// ══════════════════════════════════════════════
+// SYNC FUNKTIONEN (Export/Import)
+// ══════════════════════════════════════════════
+var _importData = null;
 
-function copySyncLink() {
-  var urlEl = document.getElementById('sync-url-display');
-  var url = urlEl ? urlEl.textContent : '';
-  if (!url) return;
-  navigator.clipboard.writeText(url).then(function(){
-    showToast('Link kopiert ✓ – in WhatsApp einfügen');
-  }).catch(function(){
-    showToast('Link konnte nicht kopiert werden');
+function switchSyncTab(tab) {
+  ['export','import'].forEach(function(t){
+    document.getElementById('sync-tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('sync-view-'+t).style.display = t===tab?'block':'none';
   });
 }
 
+function buildSyncQR() {
+  var t=(_localData.termine||[]).length;
+  var m=(_localData.medikamente||[]).length;
+  var a=(_localData.anfaelle||[]).length;
+  var r=(_localData.rezepte||[]).length;
+  var h=(_localData.hm||[]).length;
+  var d=(_localData.dokumente||[]).length;
+  var el=document.getElementById('sync-data-count');
+  if(el)el.textContent=t+' Termine · '+m+' Medikamente · '+a+' Anfälle · '+r+' Rezepte · '+h+' Hilfsmittel · '+d+' Dokumente';
+}
+
+function exportSyncJSON() {
+  var data = {
+    version: 2,
+    export_datum: new Date().toISOString(),
+    export_von: getCurrentUser(),
+    kind: loadKind(),
+    daten: _localData,
+    einnahmen: _md
+  };
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tildi-sync-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  showToast('Export gespeichert ✓ – Datei an Iris senden');
+}
+
+function importSyncJSON(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var data = JSON.parse(ev.target.result);
+      if (!data.daten) { showToast('Ungültige Datei'); return; }
+      _importData = data;
+      // Vorschau zeigen
+      var info = document.getElementById('sync-import-info');
+      var prev = document.getElementById('sync-import-preview');
+      if (info) {
+        var d = data.daten;
+        info.innerHTML =
+          '<strong>Von:</strong> '+(data.export_von||'Unbekannt')+'<br>'
+          +'<strong>Datum:</strong> '+(data.export_datum?new Date(data.export_datum).toLocaleString('de-DE'):'–')+'<br>'
+          +'<strong>Inhalt:</strong><br>'
+          +(d.termine||[]).length+' Termine · '+(d.medikamente||[]).length+' Medikamente<br>'
+          +(d.anfaelle||[]).length+' Anfälle · '+(d.rezepte||[]).length+' Rezepte<br>'
+          +(d.hm||[]).length+' Hilfsmittel · '+(d.dokumente||[]).length+' Dokumente';
+      }
+      if (prev) prev.style.display = 'block';
+    } catch(ex) {
+      showToast('Fehler beim Lesen der Datei');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmImport() {
+  if (!_importData) return;
+  if (!confirm('Alle lokalen Daten werden durch die importierten Daten ersetzt.\n\nFortfahren?')) return;
+
+  _localData = _importData.daten;
+  if (_importData.einnahmen) _md = _importData.einnahmen;
+
+  // Lokal speichern
+  var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle','uebergaben'];
+  keys.forEach(function(k) {
+    try { localStorage.setItem('tl_data_'+k, JSON.stringify(_localData[k]||[])); } catch(ex) {}
+  });
+  saveMedData();
+
+  // Kind-Daten übernehmen
+  if (_importData.kind) {
+    localStorage.setItem('tl_kind', JSON.stringify(_importData.kind));
+  }
+
+  _importData = null;
+  document.getElementById('sync-import-preview').style.display = 'none';
+  closeM('m-sync');
+
+  renderAll();
+  updateDashboard();
+  buildHeuteKarten();
+  showToast('Import erfolgreich ✓ – '+(_localData.termine||[]).length+' Termine, '+(_localData.medikamente||[]).length+' Medikamente übernommen');
+}
+
+function shareSyncLink() { exportSyncJSON(); }
+function copySyncLink() { exportSyncJSON(); }
 // ── GESAMT-EXPORT ──
 function prepareExportScreen() {
   var counts = {
@@ -4512,6 +4681,38 @@ function deleteCurrentAnfall() {
   openM('m-del');
 }
 
+
+function clearTestDaten() {
+  if (!confirm('ACHTUNG: Alle gespeicherten Daten werden gelöscht.\n\nDas kann nicht rückgängig gemacht werden!\n\nFortfahren?')) return;
+  if (!confirm('Wirklich alle Daten löschen?')) return;
+  
+  var keys = ['termine','medikamente','rezepte','hm','dokumente','anfaelle','uebergaben'];
+  keys.forEach(function(k) {
+    localStorage.removeItem('tl_data_'+k);
+  });
+  localStorage.removeItem('tl_med');
+  localStorage.removeItem('tl_letzter_tag');
+  
+  _localData = {termine:[],medikamente:[],rezepte:[],hm:[],dokumente:[],anfaelle:[],uebergaben:[]};
+  _md = {};
+  _medListe = {};
+  
+  renderAll();
+  updateDashboard();
+  buildHeuteKarten();
+  
+  showToast('Alle Daten gelöscht ✓ – Neustart');
+}
+
+
+function hmAnrufen() {
+  if (_currentHM && _currentHM.tel) {
+    window.location.href = 'tel:' + _currentHM.tel.replace(/\s+/g,'');
+    showToast('Anruf wird gestartet...');
+  } else {
+    showToast('Keine Telefonnummer hinterlegt');
+  }
+}
 // ── TERMIN DETAIL ──
 function openTerminDetail(id) {
   var data = _termineCache[id] || {};
