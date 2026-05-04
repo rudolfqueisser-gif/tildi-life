@@ -263,7 +263,7 @@ body {
 
 /* ===== SECTION TITLE ===== */
 .st {
-  font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+  font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
   color: var(--text-soft); margin: 20px 0 10px;
 }
 
@@ -288,8 +288,8 @@ body {
 .li-icon.red  { background: var(--red-pale); }
 .li-icon.soft { background: #F5F0F2; }
 .li-body { flex: 1; min-width: 0; }
-.li-title { font-size: 14px; font-weight: 700; color: var(--text); }
-.li-sub { font-size: 12px; color: var(--text-soft); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.li-sub { font-size: 13px; color: var(--text-soft); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .li-right { color: var(--text-soft); font-size: 16px; }
 
 .badge {
@@ -322,7 +322,7 @@ body {
 .nb:active { background: var(--blush-pale); }
 .nb-icon { font-size: 22px; transition: transform 0.2s; }
 .nb.active .nb-icon { transform: scale(1.15); }
-.nb-label { font-size: 10px; font-weight: 700; color: var(--text-soft); transition: color 0.2s; letter-spacing: 0.3px; }
+.nb-label { font-size: 11px; font-weight: 700; color: var(--text-soft); transition: color 0.2s; letter-spacing: 0.3px; }
 .nb.active .nb-label { color: var(--rose-deep); }
 
 /* ===== FAB ===== */
@@ -364,7 +364,7 @@ body {
 
 /* ===== FORMS ===== */
 .fg { margin-bottom: 14px; }
-.fl { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-soft); margin-bottom: 5px; }
+.fl { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-soft); margin-bottom: 6px; }
 .fi, .fs, .fta {
   width: 100%; padding: 13px 14px;
   border: 1.5px solid var(--border);
@@ -410,8 +410,8 @@ body {
 /* ===== DETAIL ===== */
 .dr { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .dr:last-child { border-bottom: none; }
-.dk { font-size: 13px; color: var(--text-soft); }
-.dv { font-size: 14px; font-weight: 700; color: var(--text); text-align: right; max-width: 60%; }
+.dk { font-size: 14px; color: var(--text-soft); }
+.dv { font-size: 14px; font-weight: 700; color: var(--text); text-align: right; max-width: 65%; }
 
 /* ===== NOTFALL ===== */
 .na {
@@ -439,7 +439,7 @@ body {
 /* ===== EMPTY ===== */
 .empty { text-align: center; padding: 32px 20px; color: var(--text-soft); }
 .empty .ei { font-size: 40px; margin-bottom: 8px; }
-.empty p { font-size: 13px; line-height: 1.6; }
+.empty p { font-size: 14px; line-height: 1.6; }
 
 /* ===== TOAST ===== */
 .toast {
@@ -1363,7 +1363,7 @@ function renderHealth() {
       return '<div style="padding:14px 16px;border-bottom:1px solid var(--border);">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<div><div style="font-size:14px;font-weight:700;">'+esc(m.name)+'</div>' +
-        '<div style="font-size:12px;color:var(--text-soft);">'+esc(m.dosis||'')+(m.freq?' · '+esc(m.freq):'')+(m.hinweis?' · '+esc(m.hinweis):'')+(taken?' <span style="color:var(--teal);font-weight:700;">✓ '+taken+'× heute</span>':'')+'</div></div>' +
+        '<div style="font-size:13px;color:var(--text-soft);">'+esc(m.dosis||'')+(m.freq?' · '+esc(m.freq):'')+(m.hinweis?' · '+esc(m.hinweis):'')+(taken?' <span style="color:var(--teal);font-weight:700;">✓ '+taken+'× heute</span>':'')+'</div></div>' +
         '<div style="display:flex;gap:8px;">' +
         '<button onclick="logMed(\''+m.id+'\',\'taken\')" style="width:34px;height:34px;border-radius:50%;border:none;background:var(--blush-pale);font-size:16px;cursor:pointer;">✓</button>' +
         '<button onclick="logMed(\''+m.id+'\',\'skip\')" style="width:34px;height:34px;border-radius:50%;border:none;background:var(--red-pale);font-size:16px;cursor:pointer;">✗</button>' +
@@ -1375,7 +1375,7 @@ function renderHealth() {
   var al = document.getElementById('anfall-list');
   var anf = (D.anfaelle||[]).slice().sort((a,b)=>new Date(b.zeit)-new Date(a.zeit)).slice(0,5);
   if (!anf.length) { al.innerHTML = '<div class="empty"><div class="ei">🌱</div><p>Keine Anfälle dokumentiert</p></div>'; }
-  else { al.innerHTML = '<div>'+anf.map(a=>'<div class="li"><div class="li-icon red">⚡</div><div class="li-body"><div class="li-title">'+(a.typ||'Anfall')+'</div><div class="li-sub">'+fmtDT(a.zeit)+(a.dauer?' · '+a.dauer+' Min.':'')+(a.buccolam==='ja'?' · Buccolam ✓':'')+'</div></div></div>').join('')+'</div>'; }
+  else { al.innerHTML = '<div>'+anf.map(a=>'<div class="li" onclick="showAnfallDetail(''+a.id+'')"><div class="li-icon red">⚡</div><div class="li-body"><div class="li-title">'+(a.typ||'Schnelldokumentation')+'</div><div class="li-sub">'+fmtDT(a.zeit)+(a.dauer?' · '+a.dauer+' Min.':'')+(a.buccolam==='ja'?' · Buccolam ✓':'')+'</div></div><div class="li-right">›</div></div>').join('')+'</div>'; }
 
   // Tagebuch
   var tbl = document.getElementById('tb-list');
@@ -1726,6 +1726,77 @@ function showToast(msg, isErr) {
   var t=document.getElementById('toast');
   t.textContent=msg; t.className='toast show'+(isErr?' err':'');
   clearTimeout(t._t); t._t=setTimeout(()=>{t.className='toast';},3200);
+}
+
+
+// ===== ANFALL DETAIL + EDIT =====
+function showAnfallDetail(id) {
+  var a = (D.anfaelle||[]).find(x=>x.id===id);
+  if (!a) return;
+  document.getElementById('det-header').innerHTML =
+    '<button class="back-btn" onclick="goBack()">‹ Zurück</button>' +
+    '<h1>⚡ Anfallsprotokoll</h1>' +
+    '<p>' + fmtDT(a.zeit) + '</p>';
+  document.getElementById('det-body').innerHTML =
+    '<div class="card" style="padding:4px 16px;margin-bottom:14px;">' +
+    dr('Datum & Zeit', fmtDT(a.zeit)) +
+    dr('Typ', a.typ||'Schnelldokumentation') +
+    dr('Dauer', a.dauer ? a.dauer+' Minuten' : '–') +
+    dr('Buccolam gegeben', a.buccolam==='ja'?'✓ Ja':'Nein') +
+    dr('Beobachtungen', a.notiz||'–') +
+    dr('Dokumentiert von', a.by||'–') +
+    '</div>' +
+    '<button class="btn btn-s" onclick="editAnfall(''+id+'')">✏️ Bearbeiten</button>' +
+    '<button class="btn btn-d" style="margin-top:10px;" onclick="delAnfall(''+id+'')">Eintrag löschen</button>';
+  _prev = 'health';
+  showScreen('detail');
+}
+
+function editAnfall(id) {
+  var a = (D.anfaelle||[]).find(x=>x.id===id);
+  if (!a) return;
+  // Pre-fill the edit modal
+  var isoLocal = a.zeit ? a.zeit.replace('Z','').slice(0,16) : '';
+  document.getElementById('na-z').value = isoLocal;
+  document.getElementById('na-d').value = a.dauer||'';
+  document.getElementById('na-t').value = a.typ||'Schnelldokumentation';
+  document.getElementById('na-b').value = a.buccolam||'nein';
+  document.getElementById('na-no').value = a.notiz||'';
+  // Mark as edit
+  document.querySelector('#mo-add-anfall .mo-title').textContent = '✏️ Anfall bearbeiten';
+  var saveBtn = document.querySelector('#mo-add-anfall .btn-p');
+  saveBtn.textContent = '✓ Änderungen speichern';
+  saveBtn.onclick = function() { saveAnfallEdit(id); };
+  openModal('mo-add-anfall');
+}
+
+function saveAnfallEdit(id) {
+  var idx = (D.anfaelle||[]).findIndex(x=>x.id===id);
+  if (idx === -1) return;
+  D.anfaelle[idx] = Object.assign(D.anfaelle[idx], {
+    zeit: q('na-z'),
+    dauer: q('na-d'),
+    typ: q('na-t'),
+    buccolam: q('na-b'),
+    notiz: q('na-no'),
+    ts: Date.now()
+  });
+  saveD(); closeAllMo();
+  // Reset modal title+button for future new entries
+  document.querySelector('#mo-add-anfall .mo-title').textContent = 'Anfall dokumentieren';
+  var saveBtn = document.querySelector('#mo-add-anfall .btn-p');
+  saveBtn.textContent = '✓ Dokumentieren';
+  saveBtn.onclick = saveAnfall;
+  renderHealth();
+  showToast('✓ Anfall aktualisiert');
+  syncIfCfg();
+  goBack();
+}
+
+function delAnfall(id) {
+  if (!confirm('Diesen Eintrag wirklich löschen?')) return;
+  D.anfaelle = (D.anfaelle||[]).filter(x=>x.id!==id);
+  saveD(); goBack(); renderAll(); showToast('Eintrag gelöscht'); syncIfCfg();
 }
 
 // ===== HELPERS =====
