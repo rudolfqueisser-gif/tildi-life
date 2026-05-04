@@ -59,13 +59,18 @@ body {
 /* ===== ONBOARDING ===== */
 #screen-onboarding {
   background: linear-gradient(160deg, #2D1B25 0%, var(--rose-deep) 45%, var(--rose-soft) 100%);
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
   padding: 56px 24px 40px;
   padding-bottom: env(safe-area-inset-bottom, 40px);
+  overflow-y: auto;
+  z-index: 500;
+  min-height: 100vh;
 }
 #screen-onboarding.active { display: flex; }
+#screen-onboarding:not(.active) { display: none; }
 .ob-logo {
   display: flex;
   align-items: center;
@@ -101,6 +106,8 @@ body {
   padding: 24px 20px;
   box-shadow: var(--shadow-lg);
   overflow-y: auto;
+  flex: 1;
+  max-height: calc(100vh - 200px);
 }
 .ob-card h2 {
   font-family: 'Cormorant Garamond', serif;
@@ -1054,6 +1061,9 @@ function prefillDates() {
 }
 
 function launch() {
+  // Fully hide and remove onboarding
+  var ob = document.getElementById('screen-onboarding');
+  if (ob) { ob.classList.remove('active'); ob.style.display = 'none'; }
   document.getElementById('main-nav').style.display = 'flex';
   document.getElementById('fab').style.display = 'flex';
   showScreen('home');
@@ -1686,7 +1696,11 @@ function resetApp() { if(!confirm('Wirklich alle Daten löschen?'))return; local
 // ===== NAVIGATION =====
 function showScreen(id) {
   if(id!=='detail'&&id!=='onboarding') _prev=id;
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  // Never re-show onboarding via showScreen after launch
+  document.querySelectorAll('.screen').forEach(function(s){
+    if(s.id==='screen-onboarding') return; // keep hidden
+    s.classList.remove('active');
+  });
   var s=document.getElementById('screen-'+id);
   if(s){s.classList.add('active');s.scrollTop=0;}
   var noNav=['onboarding','detail'];
