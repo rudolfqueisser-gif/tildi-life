@@ -27,7 +27,7 @@
 body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 
 /* SCREENS */
-.screen{display:none;min-height:100vh;padding-bottom:calc(var(--nav)+20px);}
+.screen{display:none;min-height:100vh;padding-bottom:calc(var(--nav) + 40px);}
 .screen.active{display:block;}
 .si{padding:0 16px;}
 
@@ -60,7 +60,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .sf.vis{display:flex;}
 
 /* DASHBOARD HEADER */
-.dh{background:linear-gradient(135deg,#2D1B25 0%,var(--rose-d) 55%,var(--rose-s) 100%);padding:env(safe-area-inset-top,12px) 20px 36px;padding-top:max(env(safe-area-inset-top,12px),12px);position:relative;overflow:hidden;}
+.dh{background:linear-gradient(135deg,#2D1B25 0%,var(--rose-d) 55%,var(--rose-s) 100%);padding:20px 20px 36px;position:relative;overflow:hidden;}
 .dh::before{content:'';position:absolute;top:-50px;right:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(232,160,180,.2) 0%,transparent 70%);border-radius:50%;}
 .dh::after{content:'';position:absolute;bottom:-20px;left:0;right:0;height:40px;background:var(--cream);border-radius:24px 24px 0 0;}
 .dh-top{display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1;}
@@ -133,7 +133,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .badge.gray{background:#EEE;color:#888;}
 
 /* NAV */
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(253,248,245,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding:0 4px;padding-bottom:env(safe-area-inset-bottom,0px);height:var(--nav);z-index:100;}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(253,248,245,.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:0 4px;padding-bottom:env(safe-area-inset-bottom,8px);height:var(--nav);z-index:200;}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:6px 2px;border:none;background:none;border-radius:14px;transition:background .15s;position:relative;}
 .nb:active{background:var(--blush-p);}
 .nb-ic{font-size:21px;transition:transform .2s;}
@@ -144,7 +144,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .nb-dot.show{display:block;}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(var(--nav)+16px);right:16px;width:56px;height:56px;background:linear-gradient(135deg,var(--rose),var(--rose-d));color:white;border:none;border-radius:50%;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(164,96,126,.6);z-index:150;transition:transform .2s;}
+.fab{position:fixed;bottom:calc(var(--nav) + 20px);right:18px;width:58px;height:58px;background:linear-gradient(135deg,var(--rose),var(--rose-d));color:white;border:none;border-radius:50%;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(164,96,126,.6);z-index:500;transition:transform .2s;}
 .fab:active{transform:scale(.88);}
 
 /* MODAL */
@@ -540,7 +540,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
     <div class="nb-ic">···</div><div class="nb-lb">Mehr</div>
   </button>
 </nav>
-<button class="fab" id="fab" onclick="openMo('mo-notfall')" style="display:none;" aria-label="Notfall">🆘</button>
+<button class="fab" id="fab" onclick="openMo('mo-notfall')" aria-label="Notfall" style="display:none;">🆘</button>
 
 <!-- HIDDEN INPUTS -->
 <input type="file" id="photo-in" accept="image/*" style="display:none;" onchange="handlePhoto(event)">
@@ -901,8 +901,8 @@ function prefillDates(){
 function launch(){
   var ob=document.getElementById('screen-ob');
   if(ob){ob.classList.remove('active');ob.style.display='none';}
-  document.getElementById('main-nav').style.display='flex';
-  document.getElementById('fab').style.display='flex';
+  var nav=document.getElementById('main-nav');if(nav)nav.style.display='flex';
+  var fab=document.getElementById('fab');if(fab){fab.style.display='flex';fab.style.visibility='visible';fab.style.opacity='1';}
   showScreen('home');
   renderAll();
   updateSyncUI();
@@ -1966,8 +1966,8 @@ function showScreen(id){
   });
   var s=document.getElementById('screen-'+id);if(s){s.classList.add('active');s.scrollTop=0;}
   var noNav=['ob','detail'];
-  document.getElementById('main-nav').style.display=noNav.includes(id)?'none':'flex';
-  document.getElementById('fab').style.display=noNav.includes(id)?'none':'flex';
+  var nav=document.getElementById('main-nav');if(nav)nav.style.display=noNav.includes(id)?'none':'flex';
+  var fab=document.getElementById('fab');if(fab)fab.style.display=noNav.includes(id)?'none':'flex';
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   var map={home:'nb-home',health:'nb-health',admin:'nb-admin',more:'nb-more'};
   if(map[id])document.getElementById(map[id]).classList.add('active');
