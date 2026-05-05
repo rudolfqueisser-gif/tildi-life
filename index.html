@@ -60,7 +60,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .sf.vis{display:flex;}
 
 /* DASHBOARD HEADER */
-.dh{background:linear-gradient(135deg,#2D1B25 0%,var(--rose-d) 55%,var(--rose-s) 100%);padding:52px 20px 44px;position:relative;overflow:hidden;}
+.dh{background:linear-gradient(135deg,#2D1B25 0%,var(--rose-d) 55%,var(--rose-s) 100%);padding:env(safe-area-inset-top,12px) 20px 36px;padding-top:max(env(safe-area-inset-top,12px),12px);position:relative;overflow:hidden;}
 .dh::before{content:'';position:absolute;top:-50px;right:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(232,160,180,.2) 0%,transparent 70%);border-radius:50%;}
 .dh::after{content:'';position:absolute;bottom:-20px;left:0;right:0;height:40px;background:var(--cream);border-radius:24px 24px 0 0;}
 .dh-top{display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1;}
@@ -69,7 +69,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .dh-sub{color:rgba(255,255,255,.55);font-size:12px;margin-top:4px;}
 .dh-av{width:50px;height:50px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);overflow:hidden;cursor:pointer;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
 .dh-av img{width:100%;height:100%;object-fit:cover;display:none;}
-.kind-strip{display:none;align-items:center;gap:10px;margin-top:10px;position:relative;z-index:1;background:rgba(255,255,255,.1);border-radius:12px;padding:8px 12px;}
+.kind-strip{display:none;align-items:center;gap:8px;margin-top:8px;position:relative;z-index:1;}
 .kind-strip img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,.4);}
 .kind-strip-text{color:rgba(255,255,255,.85);font-size:13px;font-weight:700;}
 .kind-strip-sub{color:rgba(255,255,255,.6);font-size:11px;}
@@ -90,25 +90,26 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 
 /* CARDS */
 .card{background:white;border-radius:var(--r);box-shadow:var(--sh-s);overflow:hidden;}
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-.sc{background:white;border-radius:var(--r);padding:16px;box-shadow:var(--sh-s);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.sc{background:white;border-radius:var(--r);padding:14px 14px 12px;box-shadow:var(--sh-s);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;}
 .sc:active{transform:scale(.97);}
 .sc::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;}
 .sc.rose::before{background:linear-gradient(90deg,var(--rose-s),var(--rose));}
 .sc.gold::before{background:linear-gradient(90deg,#E8C99A,var(--gold));}
 .sc.teal::before{background:linear-gradient(90deg,#90CACA,var(--teal));}
 .sc.sage::before{background:linear-gradient(90deg,#A5CEB0,var(--sage));}
-.sc .si-icon{font-size:20px;margin-bottom:6px;}
-.sc .si-num{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;color:var(--text);line-height:1;}
-.sc .si-lab{font-size:11px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;}
-.sc .si-trend{font-size:11px;margin-top:4px;}
+.sc .si-icon{font-size:26px;flex-shrink:0;}
+.sc .sc-right{flex:1;min-width:0;}
+.sc .si-num{font-family:'Nunito',sans-serif;font-size:30px;font-weight:800;color:var(--text);line-height:1;}
+.sc .si-lab{font-size:11px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sc .si-trend{font-size:10px;margin-top:2px;color:var(--rose-d);font-weight:700;}
 
 /* SECTION TITLE */
-.st{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-s);margin:20px 0 10px;}
+.st{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-s);margin:16px 0 8px;}
 
 /* LIST */
 .lc{background:white;border-radius:var(--r);box-shadow:var(--sh-s);overflow:hidden;}
-.li{display:flex;align-items:center;gap:13px;padding:14px 15px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border);}
+.li{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border);}
 .li:last-child{border-bottom:none;}
 .li:active{background:var(--blush-p);}
 .li-ic{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
@@ -143,7 +144,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .nb-dot.show{display:block;}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(var(--nav)+14px);right:18px;width:54px;height:54px;background:linear-gradient(135deg,var(--rose),var(--rose-d));color:white;border:none;border-radius:50%;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(164,96,126,.5);z-index:99;transition:transform .2s;}
+.fab{position:fixed;bottom:calc(var(--nav)+16px);right:16px;width:56px;height:56px;background:linear-gradient(135deg,var(--rose),var(--rose-d));color:white;border:none;border-radius:50%;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(164,96,126,.6);z-index:150;transition:transform .2s;}
 .fab:active{transform:scale(.88);}
 
 /* MODAL */
@@ -480,6 +481,10 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
     <div class="lc" id="hm-list"></div>
     <button class="btn btn-s" style="margin-top:10px;" onclick="openMo('mo-add-hm')">＋ Hilfsmittel / Antrag</button>
 
+    <div class="st" style="margin-top:20px;">Rezepte</div>
+    <div class="lc" id="rezept-list"></div>
+    <button class="btn btn-s" style="margin-top:10px;" onclick="openMo('mo-add-rezept')">＋ Rezept hinzufügen</button>
+
     <div class="st" style="margin-top:20px;">Dokumente</div>
     <div class="lc" id="dok-list"></div>
     <button class="btn btn-s" style="margin-top:10px;" onclick="openMo('mo-add-dok')">＋ Dokument vermerken</button>
@@ -494,7 +499,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
     <div class="lc">
       <div class="li" onclick="openNotfallblatt()"><div class="li-ic red">🆘</div><div class="li-b"><div class="li-t">Notfallblatt</div><div class="li-s">1-Seite für Rettungskräfte, Ärzte, Reisen</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openSchicht()"><div class="li-ic sage">🔄</div><div class="li-b"><div class="li-t">Schichtübergabe</div><div class="li-s">Strukturierte Checkliste für Betreuer</div></div><div class="li-r">›</div></div>
-      <div class="li" onclick="openUebergabe()"><div class="li-ic rose">🤝</div><div class="li-b"><div class="li-t">Übergabe erstellen</div><div class="li-s">Tagesbericht für Iris</div></div><div class="li-r">›</div></div>
+      <div class="li" onclick="openUebergabe()"><div class="li-ic rose">🤝</div><div class="li-b"><div class="li-t">Übergabe erstellen</div><div class="li-s">Tagesbericht & Übergabe</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openArztExport()"><div class="li-ic teal">🩺</div><div class="li-b"><div class="li-t">Arztbericht</div><div class="li-s">Inhalte auswählen → PDF erstellen</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openMo('mo-search')"><div class="li-ic soft">🔍</div><div class="li-b"><div class="li-t">Suche</div><div class="li-s">Alle Einträge durchsuchen</div></div><div class="li-r">›</div></div>
     </div>
@@ -776,7 +781,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
         <div class="fg"><label class="fl">Bin-ID</label><input class="fi" id="s-ji" placeholder="Leer = neu erstellen" aria-label="Bin ID"></div>
       </div>
       <div id="sync-id-display" style="background:var(--blush-p);border-radius:var(--rsm);padding:12px;margin-bottom:12px;display:none;">
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-s);margin-bottom:4px;">ID für Iris:</div>
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-s);margin-bottom:4px;">Sync-ID (für andere Nutzer):</div>
         <div id="sync-id-val" style="font-size:13px;font-weight:700;color:var(--rose-d);word-break:break-all;"></div>
         <button onclick="copyId()" style="margin-top:8px;padding:6px 14px;background:var(--rose);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">📋 Kopieren</button>
       </div>
@@ -820,7 +825,8 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
         </select>
       </div>
       <button class="btn btn-p" onclick="saveSettings()">✓ Speichern</button>
-      <button class="btn btn-d" style="margin-top:10px;" onclick="resetApp()">App zurücksetzen</button>
+      <button class="btn btn-g" style="margin-top:10px;" onclick="nutzerwechsel()">👤 Nutzer wechseln</button>
+      <button class="btn btn-d" style="margin-top:8px;" onclick="resetApp()">App zurücksetzen</button>
     </div>
   </div>
 </div>
@@ -837,6 +843,25 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
   </div>
 </div>
 
+
+<!-- REZEPT -->
+<div class="mo" id="mo-add-rezept" onclick="closeMoEv(event,this)">
+  <div class="mo-box">
+    <div class="mo-handle"></div>
+    <div class="mo-title">Rezept hinzufügen</div>
+    <div class="mo-body">
+      <div class="fg"><label class="fl">Medikament / Bezeichnung</label><input class="fi" id="rz-n" placeholder="Baclofen Tabletten" aria-label="Bezeichnung"></div>
+      <div class="fi-row">
+        <div class="fg"><label class="fl">Typ</label><select class="fs" id="rz-t" aria-label="Typ"><option>Medikament</option><option>Therapie</option><option>Hilfsmittel</option><option>Sonstiges</option></select></div>
+        <div class="fg"><label class="fl">Ausgestellt am</label><input class="fi" id="rz-d" type="date" aria-label="Datum"></div>
+      </div>
+      <div class="fg"><label class="fl">Gültig bis</label><input class="fi" id="rz-abl" type="date" aria-label="Ablaufdatum"></div>
+      <div class="fg"><label class="fl">Notiz</label><input class="fi" id="rz-no" placeholder="Arzt, Apotheke, Besonderheiten..." aria-label="Notiz"></div>
+      <button class="btn btn-p" onclick="saveRezept()">✓ Speichern</button>
+      <button class="btn btn-g" onclick="closeMoId('mo-add-rezept')">Abbrechen</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
 <script>
@@ -1118,7 +1143,7 @@ function renderDash(){
   document.getElementById('dash-stats').innerHTML=
     sc('📅',tTer.length,'Heute','rose','admin')+
     sc('💊',meds,'Medikamente','rose','health')+
-    sc('⚡',tAnf.length,'Anfälle heute','gold','health',tAnf.length>0?'⚠️ heute dokumentiert':'')+
+    scFn('⚡',tAnf.length,'Anfälle heute','gold',tAnf.length>0?"showAnfaelleHeute()":"showScreen('health')",tAnf.length>0?'⚠️ heute':'–')+
     sc('📋',hmPend,'Offene Anträge','sage','admin',hmPend>0?'Bearbeitung nötig':'');
 
   var hEl=document.getElementById('dash-heute');
@@ -1127,7 +1152,7 @@ function renderDash(){
   }else{
     var html='<div class="lc">';
     tTer.slice(0,3).forEach(function(t){html+=mkLi('rose','📅',esc(t.titel),(t.uhrzeit||'')+(t.ort?' · '+esc(t.ort):''),"showTerminDetail('"+t.id+"')");});
-    tAnf.forEach(function(a){html+=mkLi('red','⚡','Anfall dokumentiert',fmtT(new Date(a.zeit))+(a.buccolam==='ja'?' · Buccolam ✓':''),'');});
+    tAnf.forEach(function(a){html+=mkLi('red','⚡','Anfall dokumentiert',fmtT(new Date(a.zeit))+(a.buccolam==='ja'?' · Buccolam ✓':''),"showAnfallDetail('"+a.id+"')");});
     html+='</div>';
     hEl.innerHTML=html;
   }
@@ -1139,14 +1164,14 @@ function renderDash(){
   }else if(r.startsWith('betreuer')){
     qa.innerHTML=mkLi('rose','💊','Medikamente','Gabe dokumentieren',"showScreen('health')")+mkLi('sage','🔄','Schichtübergabe','Checkliste starten','openSchicht()')+mkLi('red','🆘','Notfall','Anfall sofort dokumentieren',"openMo('mo-notfall')");
   }else{
-    qa.innerHTML=mkLi('red','🆘','Notfallblatt','Für Rettungskräfte & Urlaub','openNotfallblatt()')+mkLi('teal','🩺','Arztbericht','PDF erstellen & teilen','openArztExport()')+mkLi('rose','🤝','Übergabe','Tagesbericht für Iris','openUebergabe()');
+    qa.innerHTML=mkLi('red','🆘','Notfallblatt','Für Rettungskräfte & Urlaub','openNotfallblatt()')+mkLi('teal','🩺','Arztbericht','PDF erstellen & teilen','openArztExport()')+mkLi('rose','🤝','Übergabe','Tagesbericht & Übergabe','openUebergabe()');
   }
 }
 
 function sc(icon,num,label,type,screen,trend){
   return '<div class="sc '+type+'" onclick="showScreen(\''+screen+'\')" role="button" aria-label="'+label+': '+num+'">' +
-    '<div class="si-icon">'+icon+'</div><div class="si-num">'+num+'</div><div class="si-lab">'+label+'</div>' +
-    (trend?'<div class="si-trend">'+trend+'</div>':'')+
+    '<div class="si-icon">'+icon+'</div>' +
+    '<div class="sc-right"><div class="si-num">'+num+'</div><div class="si-lab">'+label+'</div>'+(trend?'<div class="si-trend">'+trend+'</div>':'')+'</div>' +
     '</div>';
 }
 function mkLi(color,icon,title,sub,action){
@@ -1328,7 +1353,7 @@ function setWater(n){
 // ADMIN
 // ============================================================
 function renderAdmin(){
-  renderTerminList();renderContactList();renderHMList();renderDokList();
+  renderTerminList();renderContactList();renderHMList();renderDokList();renderRezeptList();
 }
 
 function renderTerminList(){
@@ -1636,8 +1661,10 @@ function openNotfallblatt(){
     '</div>':'') +
     '<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px;color:var(--text-s);">Erstellt: '+fmtD(toDay())+' · Tildi Life App</div>' +
     '</div>' +
-    '<button class="btn btn-p" onclick="window.print()" style="margin-bottom:10px;">🖨️ Drucken / Als PDF speichern</button>' +
-    '<button class="btn btn-t" onclick="shareNotfallblatt()">📤 Teilen</button>';
+    '<div class="btn-row" style="margin-bottom:80px;">'+
+    '<button class="btn btn-p btn-sm" onclick="printNotfallblatt()">🖨️ Drucken</button>'+
+    '<button class="btn btn-t btn-sm" onclick="shareNotfallblattPDF()">📤 Als PDF teilen</button>'+
+    '</div>';
   _prev='more';showScreen('detail');
 }
 
@@ -1705,12 +1732,12 @@ function openUebergabe(){
   var tTer=(D.termine||[]).filter(t=>t.datum===today);
   document.getElementById('ug-body')?null:null;
   // Use detail screen
-  det('🤝 Übergabe für Iris',fmtD(today));
+  det('🤝 Übergabe erstellen',fmtD(today));
   var html='<div style="background:var(--blush-p);border-radius:var(--rsm);padding:14px;margin-bottom:14px;">' +
     dr('Datum',fmtD(today))+dr('Anfälle',tAnf.length===0?'✓ Keine':'⚡ '+tAnf.length+'×')+
     dr('Medikamente',tMed.length+'× gegeben')+dr('Termine',tTer.length?tTer.map(t=>t.titel).join(', '):'Keine')+
     '</div>' +
-    '<div class="fg"><label class="fl">Notiz für Iris</label><textarea class="fta" id="ug-n" placeholder="Was ist heute passiert?"></textarea></div>' +
+    '<div class="fg"><label class="fl">Notiz & Besonderheiten</label><textarea class="fta" id="ug-n" placeholder="Was ist heute passiert?"></textarea></div>' +
     '<div class="fg"><label class="fl">Tagsbewertung</label><div class="cr" id="ug-mood"><div class="ct active" onclick="selChip(this,\'ugm\')">😊 Gut</div><div class="ct" onclick="selChip(this,\'ugm\')">😐 Mittel</div><div class="ct" onclick="selChip(this,\'ugm\')">😢 Schwierig</div></div></div>' +
     '<button class="btn btn-p" onclick="saveUG()">✓ Übergabe speichern & Sync</button>';
   document.getElementById('det-body').innerHTML=html;
@@ -1719,14 +1746,42 @@ function openUebergabe(){
 function saveUG(){
   var mood='';document.querySelectorAll('#ug-mood .ct.active').forEach(c=>{mood=c.textContent;});
   var n=document.getElementById('ug-n');
-  D.tagebuch.push({id:uid(),ts:Date.now(),notiz:n?n.value.trim():'',mood:mood,datum:toDay(),von:U.name,_typ:'uebergabe'});
+  var an=document.getElementById('ug-an');
+  D.tagebuch.push({id:uid(),ts:Date.now(),notiz:n?n.value.trim():'',mood:mood,datum:toDay(),von:U.name,an:an?an.value.trim():'',_typ:'uebergabe'});
   saveD();showToast('✓ Übergabe gespeichert');syncIfCfg();goBack();
 }
 
 // ============================================================
 // ARZTBERICHT PDF
 // ============================================================
-function openArztExport(){openMo('mo-arzt');}
+function openArztExport(){
+  det('🩺 Arztbericht',(U.kindName||'Kind')+' · '+fmtD(toDay()));
+  var meds=D.medikamente||[];
+  var anf=(D.anfaelle||[]).slice().sort((a,b)=>new Date(b.zeit)-new Date(a.zeit));
+  var last30=anf.filter(a=>{var d=new Date(a.zeit);var c=new Date();c.setDate(c.getDate()-30);return d>=c;}).length;
+  var contacts=(D.kontakte||[]);
+  var html=
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
+    dr('Kind',U.kindName||'–')+dr('Diagnose',U.kindDiagnose||'–')+
+    dr('Erstellt von',U.name||'–')+dr('Stand',fmtD(toDay()))+
+    '</div>'+
+    '<div class="st">Medikamente ('+meds.length+')</div>'+
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
+    (meds.length?meds.map(m=>'<div class="dr"><div class="dk">'+esc(m.name)+'</div><div class="dv">'+esc(m.dosis||'')+(m.freq?' · '+m.freq:'')+'</div></div>').join(''):'<div style="padding:12px 0;color:var(--text-s);font-size:13px;">Keine Medikamente</div>')+
+    '</div>'+
+    '<div class="st">Anfälle</div>'+
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
+    dr('Gesamt dokumentiert',anf.length)+
+    dr('Letzte 30 Tage',last30)+
+    dr('Letzter Anfall',anf.length?fmtD(anf[0].zeit.split("T")[0]):'–')+
+    '</div>'+
+    '<div class="st">Inhalt auswählen & exportieren</div>'+
+    '<button class="btn btn-p" onclick="openMo('mo-arzt')" style="margin-bottom:10px;">📄 Inhalte wählen & PDF erstellen</button>'+
+    '<button class="btn btn-t" onclick="window.print()">🖨️ Seite direkt drucken</button>'+
+    '<div style="height:80px;"></div>';
+  document.getElementById('det-body').innerHTML=html;
+  _prev='more';showScreen('detail');
+}
 function togPdf(el,key){el.classList.toggle('on');el.querySelector('input[type=checkbox]').checked=el.classList.contains('on');}
 
 async function generatePDF(){
@@ -1862,8 +1917,11 @@ function updateSettingsForm(){
 }
 function saveSettings(){
   var sn=q('set-name'),sk=q('set-kname'),sd=q('set-kdiag'),sr=q('set-role');
-  if(sn)U.name=sn;if(sk)U.kindName=sk;if(sd)U.kindDiagnose=sd;if(sr)U.role=sr;
-  saveU();applyPhotos();renderAll();showToast('✓ Gespeichert');closeMoId('mo-settings');
+  U.name=sn||U.name;
+  U.kindName=sk||U.kindName;
+  U.kindDiagnose=sd||U.kindDiagnose;
+  U.role=sr||U.role;
+  saveU();applyPhotos();renderAll();closeMoId('mo-settings');showToast('✓ Einstellungen gespeichert');
 }
 
 // ============================================================
@@ -1983,6 +2041,126 @@ function fmtDT(d){if(!d)return'–';var dt=new Date(d);if(isNaN(dt))return Strin
 function q(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
 function q2(id,v){var el=document.getElementById(id);if(el)el.value=v||'';}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+
+// ============================================================
+// NUTZERWECHSEL
+// ============================================================
+function nutzerwechsel(){
+  if(!confirm("Nutzer wechseln? Deine lokalen Daten bleiben erhalten."))return;
+  localStorage.removeItem('tl_u');
+  U={name:'',role:'elternteil',photo:'',kindName:U.kindName,kindDiagnose:U.kindDiagnose,kindPhoto:U.kindPhoto};
+  closeAllMo();
+  var ob=document.getElementById('screen-ob');
+  if(ob){ob.style.display='flex';ob.classList.add('active');}
+  document.getElementById('main-nav').style.display='none';
+  document.getElementById('fab').style.display='none';
+  showToast('Bitte neu einloggen');
+}
+
+// ============================================================
+// REZEPTE
+// ============================================================
+function renderRezeptList(){
+  var rl=document.getElementById('rezept-list');if(!rl)return;
+  var rezepte=(D.rezepte||[]).slice().sort((a,b)=>(b.ts||0)-(a.ts||0));
+  if(!rezepte.length){rl.innerHTML='<div class="empty"><div class="ei">📋</div><p>Keine Rezepte</p></div>';return;}
+  rl.innerHTML='<div>'+rezepte.map(r=>'<div class="li"><div class="li-ic teal">📋</div><div class="li-b"><div class="li-t">'+esc(r.name)+'</div><div class="li-s">'+(r.typ||'')+(r.datum?' · '+fmtD(r.datum):'')+(r.ablauf?' · Ablauf: '+fmtD(r.ablauf):'')+'</div></div></div>').join('')+'</div>';
+}
+
+function saveRezept(){
+  var r={id:uid(),ts:Date.now(),name:q('rz-n'),typ:q('rz-t'),datum:q('rz-d'),ablauf:q('rz-abl'),notiz:q('rz-no'),by:U.name};
+  if(!r.name){showToast('Bezeichnung ist Pflicht');return;}
+  if(!D.rezepte)D.rezepte=[];
+  D.rezepte.push(r);saveD();closeMoId('mo-add-rezept');renderAdmin();showToast('✓ Rezept gespeichert');syncIfCfg();
+}
+
+// ============================================================
+// ANFÄLLE HEUTE - detail view from dashboard
+// ============================================================
+function showAnfaelleHeute(){
+  var today=toDay();
+  var tAnf=(D.anfaelle||[]).filter(a=>a.zeit&&a.zeit.startsWith(today));
+  det('⚡ Anfälle heute',fmtD(today)+' · '+tAnf.length+' dokumentiert');
+  var html='';
+  if(!tAnf.length){html='<div class="empty"><div class="ei">🌱</div><p>Heute keine Anfälle dokumentiert</p></div>';}
+  else{
+    html=tAnf.map(a=>
+      '<div class="card" style="padding:4px 15px;margin-bottom:12px;cursor:pointer;" onclick="showAnfallDetail(''+a.id+'')">'+
+      dr('Zeit',fmtT(new Date(a.zeit)))+
+      dr('Typ',a.typ||'Schnelldokumentation')+
+      (a.dauer?dr('Dauer',a.dauer+' Min.'):'')+
+      dr('Buccolam',a.buccolam==='ja'?'✓ Ja':'Nein')+
+      (a.notiz?dr('Notiz',a.notiz):'')+
+      '<div style="padding:8px 0;color:var(--rose-d);font-size:13px;font-weight:700;">✏️ Tippen zum Bearbeiten</div>'+
+      '</div>'
+    ).join('');
+  }
+  html+='<button class="btn btn-s" onclick="openMo('mo-add-anfall')" style="margin-bottom:80px;">＋ Weiteren Anfall dokumentieren</button>';
+  document.getElementById('det-body').innerHTML=html;
+  _prev='home';showScreen('detail');
+}
+
+
+async function generateNotfallblattPDF(){
+  try{
+    var {jsPDF}=window.jspdf;
+    var doc=new jsPDF({unit:'mm',format:'a4'});
+    var ml=20,mr=190,y=20;
+    doc.setFillColor(192,57,43);doc.rect(ml,y,mr-ml,12,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(255,255,255);
+    doc.text('NOTFALLBLATT — '+(U.kindName||'Kind').toUpperCase(),ml+4,y+8);
+    y+=18;
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(45,27,37);doc.text('KIND & DIAGNOSE',ml,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setFontSize(12);
+    doc.text((U.kindName||'–')+' · '+(U.kindDiagnose||'–'),ml,y);y+=10;
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('ERZIEHUNGSBERECHTIGTE',ml,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(U.name||'–',ml,y);y+=12;
+    doc.setFillColor(253,236,234);doc.rect(ml,y,mr-ml,22,'F');
+    doc.setDrawColor(192,57,43);doc.setLineWidth(0.5);doc.rect(ml,y,mr-ml,22,'S');
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(192,57,43);
+    doc.text('BEI ANFALL — SOFORTMASSNAHMEN',ml+3,y+7);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(80,30,30);
+    doc.text('Anfall >5 Min: Buccolam Midazolam buccal applizieren. Sofort 112 anrufen!',ml+3,y+14);
+    doc.text('Kind auf die Seite legen. Ruhe bewahren. Zeit stoppen.',ml+3,y+20);
+    y+=30;
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(45,27,37);
+    doc.text('AKTUELLE MEDIKAMENTE',ml,y);y+=7;
+    var meds=D.medikamente||[];
+    if(!meds.length){doc.setFont('helvetica','normal');doc.text('Keine',ml,y);y+=6;}
+    else{meds.forEach(function(m){
+      doc.setFillColor(245,208,224);doc.rect(ml,y-4,mr-ml,9,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(164,96,126);
+      doc.text(m.name,ml+2,y+2);
+      doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(80,50,60);
+      var detail=(m.dosis||'')+(m.freq?' · '+m.freq:'')+(m.hinweis?' · '+m.hinweis:'');
+      doc.text(detail.substr(0,60),ml+55,y+2);
+      y+=11;
+    });}
+    var contacts=(D.kontakte||[]).filter(function(c){return ['Notfallkontakt','Hausarzt','Facharzt (Neuropädiater)'].includes(c.rolle);}).slice(0,4);
+    if(contacts.length){
+      y+=4;doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(45,27,37);
+      doc.text('WICHTIGE KONTAKTE',ml,y);y+=7;
+      contacts.forEach(function(ct){
+        doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(45,27,37);doc.text(ct.name,ml,y);
+        doc.setFont('helvetica','normal');doc.setTextColor(91,155,155);if(ct.tel)doc.text(ct.tel,mr-35,y);
+        doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,70,80);if(ct.rolle)doc.text(ct.rolle,ml,y+5);
+        y+=12;
+      });
+    }
+    doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(160,136,152);
+    doc.text('Erstellt: '+fmtD(toDay())+' · Tildi Life App',ml,285);
+    return doc.output('blob');
+  }catch(e){showToast('PDF-Fehler: '+e.message,true);return null;}
+}
+
+
+function scFn(icon,num,label,type,action,trend){
+  return '<div class="sc '+type+'" onclick="'+action+'" role="button" aria-label="'+label+': '+num+'">' +
+    '<div class="si-icon">'+icon+'</div>' +
+    '<div class="sc-right"><div class="si-num">'+num+'</div><div class="si-lab">'+label+'</div>'+(trend?'<div class="si-trend">'+trend+'</div>':'')+'</div>' +
+    '</div>';
+}
 
 window.addEventListener('DOMContentLoaded',init);
 </script>
