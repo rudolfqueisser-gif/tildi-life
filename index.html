@@ -302,6 +302,26 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .backup-banner{background:var(--gold-p);border:1.5px solid #E8C99A;border-radius:var(--rsm);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
 .backup-banner p{font-size:13px;font-weight:600;color:#7A5030;flex:1;}
 
+
+/* PHOTO UPLOAD IN MODALS */
+.doc-photo-area{
+  width:100%;min-height:120px;border:2px dashed var(--border);border-radius:var(--rsm);
+  background:var(--cream);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:8px;cursor:pointer;transition:border-color .2s;
+  margin-bottom:10px;position:relative;overflow:hidden;
+}
+.doc-photo-area:active{border-color:var(--rose);}
+.doc-photo-area.has-photo{border-style:solid;border-color:var(--rose);}
+.doc-photo-area img{width:100%;max-height:200px;object-fit:contain;border-radius:calc(var(--rsm) - 2px);}
+.doc-photo-area .dpa-hint{font-size:13px;color:var(--text-s);font-weight:600;}
+.doc-photo-area .dpa-icon{font-size:32px;}
+.doc-photo-actions{display:flex;gap:8px;margin-bottom:12px;}
+.doc-photo-actions button{flex:1;padding:9px;border:1.5px solid var(--border);border-radius:var(--rsm);
+  background:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s;}
+.doc-photo-actions button:active{background:var(--blush-p);}
+
 /* PRINT */
 @media print{.nav,.fab,.mo,.toast,button:not(.print-ok){display:none!important;}body{max-width:100%;background:white;}.screen{display:block!important;padding:0!important;}.screen:not(.active){display:none!important;}.ph,.dh{display:none;}}
 </style>
@@ -546,6 +566,8 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 <!-- HIDDEN INPUTS -->
 <input type="file" id="photo-in" accept="image/*" style="display:none;" onchange="handlePhoto(event)">
 <input type="file" id="import-in" accept=".json" style="display:none;" onchange="handleImport(event)">
+<input type="file" id="doc-photo-in" accept="image/*" capture="environment" style="display:none;" onchange="handleDocPhoto(event)">
+<input type="file" id="doc-gallery-in" accept="image/*" style="display:none;" onchange="handleDocPhoto(event)">
 
 <!-- ==================== MODALS ==================== -->
 
@@ -733,6 +755,21 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
         <div class="fg"><label class="fl">Typ</label><select class="fs" id="dk-t" aria-label="Typ"><option>Arztbrief</option><option>Befund</option><option>Bescheid</option><option>Rezept</option><option>Gutachten</option><option>Sonstiges</option></select></div>
       </div>
       <div class="fg"><label class="fl">Notiz</label><input class="fi" id="dk-no" placeholder="Kurze Beschreibung" aria-label="Notiz"></div>
+      <div class="fg">
+        <label class="fl">Foto des Dokuments</label>
+        <div class="doc-photo-area" id="dk-photo-area" onclick="triggerDocPhoto('dok')">
+          <img id="dk-photo-preview" src="" alt="" style="display:none;">
+          <div id="dk-photo-hint" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div class="dpa-icon">📷</div>
+            <div class="dpa-hint">Tippen zum Fotografieren oder aus Mediathek</div>
+          </div>
+        </div>
+        <div class="doc-photo-actions" id="dk-photo-actions" style="display:none;">
+          <button onclick="triggerDocPhoto('dok')">📷 Neu aufnehmen</button>
+          <button onclick="shareDocPhoto('dok')">📤 Teilen</button>
+          <button onclick="clearDocPhoto('dok')" style="color:var(--red);border-color:var(--red);">🗑️ Löschen</button>
+        </div>
+      </div>
       <button class="btn btn-p" onclick="saveDok()">✓ Speichern</button>
       <button class="btn btn-g" onclick="closeMoId('mo-add-dok')">Abbrechen</button>
     </div>
@@ -858,6 +895,21 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
       </div>
       <div class="fg"><label class="fl">Gültig bis</label><input class="fi" id="rz-abl" type="date" aria-label="Ablaufdatum"></div>
       <div class="fg"><label class="fl">Notiz</label><input class="fi" id="rz-no" placeholder="Arzt, Apotheke, Besonderheiten..." aria-label="Notiz"></div>
+      <div class="fg">
+        <label class="fl">Foto des Rezepts</label>
+        <div class="doc-photo-area" id="rz-photo-area" onclick="triggerDocPhoto('rezept')">
+          <img id="rz-photo-preview" src="" alt="" style="display:none;">
+          <div id="rz-photo-hint" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div class="dpa-icon">📷</div>
+            <div class="dpa-hint">Tippen zum Fotografieren oder aus Mediathek</div>
+          </div>
+        </div>
+        <div class="doc-photo-actions" id="rz-photo-actions" style="display:none;">
+          <button onclick="triggerDocPhoto('rezept')">📷 Neu aufnehmen</button>
+          <button onclick="shareDocPhoto('rezept')">📤 Teilen</button>
+          <button onclick="clearDocPhoto('rezept')" style="color:var(--red);border-color:var(--red);">🗑️ Löschen</button>
+        </div>
+      </div>
       <button class="btn btn-p" onclick="saveRezept()">✓ Speichern</button>
       <button class="btn btn-g" onclick="closeMoId('mo-add-rezept')">Abbrechen</button>
     </div>
@@ -1406,7 +1458,51 @@ function renderDokList(){
   var dl=document.getElementById('dok-list');
   var docs=D.dokumente||[];
   if(!docs.length){dl.innerHTML='<div class="empty"><div class="ei">📄</div><p>Keine Dokumente</p></div>';return;}
-  dl.innerHTML='<div>'+docs.slice(0,8).map(d=>'<div class="li"><div class="li-ic teal">📄</div><div class="li-b"><div class="li-t">'+esc(d.name)+'</div><div class="li-s">'+(d.typ||'')+(d.datum?' · '+fmtD(d.datum):'')+'</div></div></div>').join('')+'</div>';
+  dl.innerHTML='<div>'+docs.slice(0,10).map(function(d){
+    return '<div class="li" onclick="showDokDetail(\'"+d.id+"\')">' +
+      '<div class="li-ic teal" style="overflow:hidden;">' +
+      (d.photo ? '<img src="'+d.photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="">' : '📄') +
+      '</div>' +
+      '<div class="li-b"><div class="li-t">'+esc(d.name)+'</div>' +
+      '<div class="li-s">'+(d.typ||'')+(d.datum?' · '+fmtD(d.datum):'')+(d.photo?' · 📷 Foto':'')+'</div></div>' +
+      '<div class="li-r">›</div></div>';
+  }).join('')+'</div>';
+}
+
+function showDokDetail(id){
+  var d=(D.dokumente||[]).find(function(x){return x.id===id;});
+  if(!d) return;
+  det('📄 '+esc(d.name), (d.typ||'')+(d.datum?' · '+fmtD(d.datum):''));
+  var html =
+    (d.photo ?
+      '<div style="margin-bottom:14px;cursor:pointer;" onclick="viewCurrentEntryPhoto()">'+
+      '<img src="'+d.photo+'" alt="Dokument" style="width:100%;max-height:220px;object-fit:contain;border-radius:var(--r);box-shadow:var(--sh-s);">'+
+      '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--rose-d);font-weight:700;">Tippen zum Vergrößern & Teilen</div>'+
+      '</div>' : '') +
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
+    dr('Bezeichnung', d.name)+
+    dr('Typ', d.typ||'–')+
+    dr('Datum', d.datum?fmtD(d.datum):'–')+
+    dr('Notiz', d.notiz||'–')+
+    dr('Eingetragen von', d.by||'–')+
+    '</div>';
+  if(d.photo){
+    html += '<button class="btn btn-p" onclick="shareCurrentEntryPhoto()" style="margin-bottom:10px;">📤 Dokument teilen / weiterleiten</button>';
+  }
+  html += '<button class="btn btn-d" onclick="deleteCurrentEntry()" style="margin-bottom:80px;">Dokument löschen</button>';
+  _currentEntryPhoto = d.photo||null;
+  _currentEntryTitle = d.name||'';
+  _currentEntryId = d.id||'';
+  _currentEntryType = 'dok';
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'admin';
+  showScreen('detail');
+}
+
+function deleteDok(id){
+  if(!confirm('Dokument löschen?')) return;
+  D.dokumente=(D.dokumente||[]).filter(function(x){return x.id!==id;});
+  saveD(); goBack(); renderAdmin(); showToast('Gelöscht'); syncIfCfg();
 }
 
 // ============================================================
@@ -1473,9 +1569,15 @@ function saveHM(){
   D.hilfsmittel.push(h);saveD();resetAndClose('mo-add-hm');renderAdmin();showToast('✓ Gespeichert');syncIfCfg();
 }
 function saveDok(){
-  var d={id:uid(),ts:Date.now(),name:q('dk-n'),datum:q('dk-d'),typ:q('dk-t'),notiz:q('dk-no'),by:U.name};
+  var d={id:uid(),ts:Date.now(),name:q('dk-n'),datum:q('dk-d'),typ:q('dk-t'),notiz:q('dk-no'),photo:_docPhotos['dok']||null,by:U.name};
   if(!d.name){showToast('Bezeichnung ist Pflicht');return;}
-  D.dokumente.push(d);saveD();closeMoId('mo-add-dok');renderAdmin();showToast('✓ Dokument vermerkt');syncIfCfg();
+  D.dokumente.push(d);
+  saveD();
+  closeMoId('mo-add-dok');
+  clearDocPhoto('dok');
+  renderAdmin();
+  showToast('✓ Dokument vermerkt');
+  syncIfCfg();
 }
 
 // ============================================================
@@ -2064,16 +2166,71 @@ function nutzerwechsel(){
 // ============================================================
 function renderRezeptList(){
   var rl=document.getElementById('rezept-list');if(!rl)return;
-  var rezepte=(D.rezepte||[]).slice().sort((a,b)=>(b.ts||0)-(a.ts||0));
+  var rezepte=(D.rezepte||[]).slice().sort(function(a,b){return(b.ts||0)-(a.ts||0);});
   if(!rezepte.length){rl.innerHTML='<div class="empty"><div class="ei">📋</div><p>Keine Rezepte</p></div>';return;}
-  rl.innerHTML='<div>'+rezepte.map(r=>'<div class="li"><div class="li-ic teal">📋</div><div class="li-b"><div class="li-t">'+esc(r.name)+'</div><div class="li-s">'+(r.typ||'')+(r.datum?' · '+fmtD(r.datum):'')+(r.ablauf?' · Ablauf: '+fmtD(r.ablauf):'')+'</div></div></div>').join('')+'</div>';
+  rl.innerHTML='<div>'+rezepte.map(function(r){
+    return '<div class="li" onclick="showRezeptDetail(this.dataset.id)" data-id="'+r.id+'">' +
+      '<div class="li-ic teal" style="overflow:hidden;">' +
+      (r.photo ? '<img src="'+r.photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="">' : '📋') +
+      '</div>' +
+      '<div class="li-b">' +
+      '<div class="li-t">'+esc(r.name)+(r.typ?' <span class="badge teal">'+esc(r.typ)+'</span>':'')+'</div>' +
+      '<div class="li-s">'+(r.datum?fmtD(r.datum):'')+(r.ablauf?' · bis '+fmtD(r.ablauf):'')+(r.notiz?' · '+esc(r.notiz):'')+'</div>' +
+      '</div>' +
+      '<div class="li-r">›</div>' +
+      '</div>';
+  }).join('')+'</div>';
+}
+
+function showRezeptDetail(id){
+  var r=(D.rezepte||[]).find(function(x){return x.id===id;});
+  if(!r) return;
+  det('📋 '+esc(r.name), (r.typ||'')+(r.datum?' · '+fmtD(r.datum):''));
+  var html =
+    (r.photo ?
+      '<div style="margin-bottom:14px;cursor:pointer;" onclick="viewCurrentEntryPhoto()">'+
+      '<img src="'+r.photo+'" alt="Rezept" style="width:100%;max-height:220px;object-fit:contain;border-radius:var(--r);box-shadow:var(--sh-s);">'+
+      '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--rose-d);font-weight:700;">Tippen zum Vergrößern & Teilen</div>'+
+      '</div>' : '') +
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
+    dr('Bezeichnung', r.name)+
+    dr('Typ', r.typ||'–')+
+    dr('Ausgestellt', r.datum?fmtD(r.datum):'–')+
+    dr('Gültig bis', r.ablauf?fmtD(r.ablauf):'–')+
+    dr('Notiz', r.notiz||'–')+
+    dr('Eingetragen von', r.by||'–')+
+    '</div>';
+
+  if(r.photo){
+    html += '<button class="btn btn-p" onclick="shareCurrentEntryPhoto()" style="margin-bottom:10px;">📤 Rezept teilen / weiterleiten</button>';
+  }
+  html += '<button class="btn btn-d" onclick="deleteCurrentEntry()" style="margin-bottom:80px;">Rezept löschen</button>';
+  _currentEntryPhoto = r.photo||null;
+  _currentEntryTitle = r.name||'';
+  _currentEntryId = r.id||'';
+  _currentEntryType = 'rezept';
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'admin';
+  showScreen('detail');
+}
+
+function deleteRezept(id){
+  if(!confirm('Rezept löschen?')) return;
+  D.rezepte=(D.rezepte||[]).filter(function(x){return x.id!==id;});
+  saveD(); goBack(); renderAdmin(); showToast('Gelöscht'); syncIfCfg();
 }
 
 function saveRezept(){
-  var r={id:uid(),ts:Date.now(),name:q('rz-n'),typ:q('rz-t'),datum:q('rz-d'),ablauf:q('rz-abl'),notiz:q('rz-no'),by:U.name};
+  var r={id:uid(),ts:Date.now(),name:q('rz-n'),typ:q('rz-t'),datum:q('rz-d'),ablauf:q('rz-abl'),notiz:q('rz-no'),photo:_docPhotos['rezept']||null,by:U.name};
   if(!r.name){showToast('Bezeichnung ist Pflicht');return;}
   if(!D.rezepte)D.rezepte=[];
-  D.rezepte.push(r);saveD();closeMoId('mo-add-rezept');renderAdmin();showToast('✓ Rezept gespeichert');syncIfCfg();
+  D.rezepte.push(r);
+  saveD();
+  closeMoId('mo-add-rezept');
+  clearDocPhoto('rezept');
+  renderAdmin();
+  showToast('✓ Rezept gespeichert');
+  syncIfCfg();
 }
 
 // ============================================================
@@ -2448,6 +2605,204 @@ function openArzt(){ openMo('mo-arzt'); }
 function openAddAnfall(){ openMo('mo-add-anfall'); }
 function saveUG(){ saveUebergabeKombiniert(); }
 
+
+
+// ============================================================
+// DOCUMENT & REZEPT PHOTO HANDLING
+// ============================================================
+var _docPhotoTarget = 'dok'; // 'dok' or 'rezept'
+var _docPhotos = {}; // temporary storage: {dok: 'base64...', rezept: 'base64...'}
+
+function triggerDocPhoto(target){
+  _docPhotoTarget = target;
+  // Show choice: camera or gallery
+  var choice = confirm('Foto aufnehmen?\nOK = Kamera\nAbbrechen = Aus Mediathek wählen');
+  if(choice){
+    // Camera
+    var inp = document.getElementById('doc-photo-in');
+    if(inp){ inp.value=''; inp.click(); }
+  } else {
+    // Gallery
+    var inp2 = document.getElementById('doc-gallery-in');
+    if(inp2){ inp2.value=''; inp2.click(); }
+  }
+}
+
+function handleDocPhoto(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var dataUrl = ev.target.result;
+    _docPhotos[_docPhotoTarget] = dataUrl;
+    updateDocPhotoPreview(_docPhotoTarget, dataUrl);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function updateDocPhotoPreview(target, dataUrl){
+  var prefix = target === 'rezept' ? 'rz' : 'dk';
+  var preview = document.getElementById(prefix+'-photo-preview');
+  var hint = document.getElementById(prefix+'-photo-hint');
+  var area = document.getElementById(prefix+'-photo-area');
+  var actions = document.getElementById(prefix+'-photo-actions');
+  if(preview){ preview.src = dataUrl; preview.style.display = 'block'; }
+  if(hint) hint.style.display = 'none';
+  if(area) area.classList.add('has-photo');
+  if(actions) actions.style.display = 'flex';
+  showToast('Foto gespeichert');
+}
+
+function clearDocPhoto(target){
+  _docPhotos[target] = null;
+  var prefix = target === 'rezept' ? 'rz' : 'dk';
+  var preview = document.getElementById(prefix+'-photo-preview');
+  var hint = document.getElementById(prefix+'-photo-hint');
+  var area = document.getElementById(prefix+'-photo-area');
+  var actions = document.getElementById(prefix+'-photo-actions');
+  if(preview){ preview.src=''; preview.style.display='none'; }
+  if(hint) hint.style.display='flex';
+  if(area) area.classList.remove('has-photo');
+  if(actions) actions.style.display='none';
+}
+
+async function shareDocPhoto(target){
+  var dataUrl = _docPhotos[target];
+  if(!dataUrl){ showToast('Kein Foto vorhanden'); return; }
+  // Convert base64 to blob
+  var arr = dataUrl.split(',');
+  var mime = arr[0].match(/:(.*?);/)[1];
+  var bstr = atob(arr[1]);
+  var n = bstr.length;
+  var u8arr = new Uint8Array(n);
+  while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+  var blob = new Blob([u8arr], {type: mime});
+  var filename = (target==='rezept'?'Rezept':'Dokument')+'-'+toDay()+'.jpg';
+  if(navigator.share && navigator.canShare){
+    try{
+      var file = new File([blob], filename, {type: mime});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({
+          title: target==='rezept' ? 'Rezept' : 'Dokument',
+          files: [file]
+        });
+        showToast('Foto geteilt');
+        return;
+      }
+    }catch(e){ /* fall through */ }
+  }
+  // Fallback: download
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  showToast('Foto heruntergeladen');
+}
+
+// View stored photo for a doc/rezept entry
+function viewEntryPhoto(dataUrl, title){
+  det('🖼️ '+esc(title), 'Foto des Dokuments');
+  var html =
+    '<div style="text-align:center;margin-bottom:14px;">' +
+    '<img src="'+dataUrl+'" alt="'+esc(title)+'" style="max-width:100%;border-radius:var(--r);box-shadow:var(--sh-m);">' +
+    '</div>' +
+    '<button class="btn btn-p" onclick="sharePhotoFromView(\''+encodeURIComponent(dataUrl)+'\',\''+esc(title)+'\')" style="margin-bottom:10px;">📤 Teilen / Weiterleiten</button>' +
+    '<button class="btn btn-s" onclick="window.print()">🖨️ Drucken</button>' +
+    '<div style="height:80px;"></div>';
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'admin';
+  showScreen('detail');
+}
+
+async function sharePhotoFromView(encodedUrl, title){
+  var dataUrl = decodeURIComponent(encodedUrl);
+  var arr = dataUrl.split(',');
+  var mime = arr[0].match(/:(.*?);/)[1];
+  var bstr = atob(arr[1]);
+  var n = bstr.length;
+  var u8arr = new Uint8Array(n);
+  while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+  var blob = new Blob([u8arr], {type:mime});
+  var filename = title+'-'+toDay()+'.jpg';
+  if(navigator.share && navigator.canShare){
+    try{
+      var file = new File([blob], filename, {type:mime});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({title:title, files:[file]});
+        showToast('Foto geteilt');
+        return;
+      }
+    }catch(e){}
+  }
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  showToast('Foto heruntergeladen');
+}
+
+
+
+var _currentEntryPhoto = null;
+var _currentEntryTitle = '';
+
+function viewCurrentEntryPhoto(){
+  if(!_currentEntryPhoto){ showToast('Kein Foto vorhanden'); return; }
+  det('🖼️ '+_currentEntryTitle, 'Foto des Dokuments');
+  var html =
+    '<div style="text-align:center;margin-bottom:14px;">' +
+    '<img src="'+_currentEntryPhoto+'" alt="'+esc(_currentEntryTitle)+'" style="max-width:100%;border-radius:var(--r);box-shadow:var(--sh-m);">' +
+    '</div>' +
+    '<button class="btn btn-p" onclick="shareCurrentEntryPhoto()" style="margin-bottom:10px;">📤 Teilen / Weiterleiten</button>' +
+    '<button class="btn btn-s" onclick="window.print()">🖨️ Drucken</button>' +
+    '<div style="height:80px;"></div>';
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'admin';
+  showScreen('detail');
+}
+
+async function shareCurrentEntryPhoto(){
+  if(!_currentEntryPhoto){ showToast('Kein Foto vorhanden'); return; }
+  var dataUrl = _currentEntryPhoto;
+  var arr = dataUrl.split(',');
+  var mime = arr[0].match(/:(.*?);/)[1];
+  var bstr = atob(arr[1]);
+  var n = bstr.length;
+  var u8arr = new Uint8Array(n);
+  while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+  var blob = new Blob([u8arr], {type:mime});
+  var filename = (_currentEntryTitle||'Dokument')+'-'+toDay()+'.jpg';
+  if(navigator.share && navigator.canShare){
+    try{
+      var file = new File([blob], filename, {type:mime});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({title:_currentEntryTitle, files:[file]});
+        showToast('Foto geteilt');
+        return;
+      }
+    }catch(e){}
+  }
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download=filename; a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  showToast('Foto heruntergeladen');
+}
+
+
+var _currentEntryId = '';
+var _currentEntryType = '';
+
+function deleteCurrentEntry(){
+  var msg = _currentEntryType==='rezept' ? 'Rezept' : 'Dokument';
+  if(!confirm(msg+' löschen?')) return;
+  if(_currentEntryType==='rezept'){
+    D.rezepte=(D.rezepte||[]).filter(function(x){return x.id!==_currentEntryId;});
+  } else {
+    D.dokumente=(D.dokumente||[]).filter(function(x){return x.id!==_currentEntryId;});
+  }
+  saveD(); goBack(); renderAdmin(); showToast('Gelöscht'); syncIfCfg();
+}
 
 window.addEventListener('DOMContentLoaded',init);
 </script>
