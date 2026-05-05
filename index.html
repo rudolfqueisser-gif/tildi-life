@@ -498,8 +498,9 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
     <div class="st">Aktionen</div>
     <div class="lc">
       <div class="li" onclick="openNotfallblatt()"><div class="li-ic red">🆘</div><div class="li-b"><div class="li-t">Notfallblatt</div><div class="li-s">1-Seite für Rettungskräfte, Ärzte, Reisen</div></div><div class="li-r">›</div></div>
-      <div class="li" onclick="openSchicht()"><div class="li-ic sage">🔄</div><div class="li-b"><div class="li-t">Schichtübergabe</div><div class="li-s">Strukturierte Checkliste für Betreuer</div></div><div class="li-r">›</div></div>
-      <div class="li" onclick="openUebergabe()"><div class="li-ic rose">🤝</div><div class="li-b"><div class="li-t">Übergabe erstellen</div><div class="li-s">Tagesbericht & Übergabe</div></div><div class="li-r">›</div></div>
+      <div class="li" onclick="openUebergabeKombiniert()"><div class="li-ic rose">🤝</div><div class="li-b"><div class="li-t">Übergabe erstellen</div><div class="li-s">Für Eltern, Betreuer, Arzt, Schicht</div></div><div class="li-r">›</div></div>
+      <div class="li" onclick="showUebergabeHistory()"><div class="li-ic soft">📋</div><div class="li-b"><div class="li-t">Übergabe-Verlauf</div><div class="li-s">Wer hat wann an wen übergeben</div></div><div class="li-r">›</div></div>
+      <div class="li" onclick="openTodos()"><div class="li-ic gold">📌</div><div class="li-b"><div class="li-t">Offene Themen & To-dos</div><div class="li-s">Klärungsbedarf & Aufgaben</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openArztExport()"><div class="li-ic teal">🩺</div><div class="li-b"><div class="li-t">Arztbericht</div><div class="li-s">Inhalte auswählen → PDF erstellen</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openMo('mo-search')"><div class="li-ic soft">🔍</div><div class="li-b"><div class="li-t">Suche</div><div class="li-s">Alle Einträge durchsuchen</div></div><div class="li-r">›</div></div>
     </div>
@@ -868,7 +869,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 // ============================================================
 // STATE
 // ============================================================
-var D={termine:[],medikamente:[],anfaelle:[],tagebuch:[],hilfsmittel:[],dokumente:[],medlog:[],kontakte:[],mahlzeiten:[],wasser:{}};
+var D={termine:[],medikamente:[],anfaelle:[],tagebuch:[],hilfsmittel:[],dokumente:[],medlog:[],kontakte:[],mahlzeiten:[],wasser:{},todos:[],rezepte:[]};
 var U={name:'',role:'elternteil',photo:'',kindName:'Matilda',kindDiagnose:'Rett-Syndrom',kindPhoto:''};
 var S={method:'local',token:'',gistId:'',jbKey:'',jbId:''};
 var _prev='home',_syncInt=null,_photoTarget='user',_obSync='none',_syncMethod2='none',_online=navigator.onLine;
@@ -1033,7 +1034,7 @@ async function syncJB(){
 }
 
 function merge(local,remote){
-  var keys=['termine','medikamente','anfaelle','tagebuch','hilfsmittel','dokumente','medlog','kontakte','mahlzeiten'];
+  var keys=['termine','medikamente','anfaelle','tagebuch','hilfsmittel','dokumente','medlog','kontakte','mahlzeiten','todos','rezepte'];
   var out=Object.assign({},local);
   keys.forEach(function(k){
     var m={};
@@ -1162,7 +1163,7 @@ function renderDash(){
   if(r==='arzt'){
     qa.innerHTML=mkLi('teal','🩺','Arztbericht erstellen','Anfallshistorie & Medikamente','openArztExport()')+mkLi('red','🆘','Notfallblatt','1-Seite druckbar','openNotfallblatt()')+mkLi('rose','📞','Kontakte','Ärzte & Dienste',"showScreen('admin')");
   }else if(r.startsWith('betreuer')){
-    qa.innerHTML=mkLi('rose','💊','Medikamente','Gabe dokumentieren',"showScreen('health')")+mkLi('sage','🔄','Schichtübergabe','Checkliste starten','openSchicht()')+mkLi('red','🆘','Notfall','Anfall sofort dokumentieren',"openMo('mo-notfall')");
+    qa.innerHTML=mkLi('rose','💊','Medikamente','Gabe dokumentieren',"showScreen('health')")+mkLi('rose','🤝','Übergabe','Schicht & Tagesbericht','openUebergabeKombiniert()')+mkLi('red','🆘','Notfall','Anfall sofort dokumentieren',"openMo('mo-notfall')");
   }else{
     qa.innerHTML=mkLi('red','🆘','Notfallblatt','Für Rettungskräfte & Urlaub','openNotfallblatt()')+mkLi('teal','🩺','Arztbericht','PDF erstellen & teilen','openArztExport()')+mkLi('rose','🤝','Übergabe','Tagesbericht & Übergabe','openUebergabe()');
   }
@@ -1354,7 +1355,7 @@ function setWater(n){
 // ============================================================
 function renderAdmin(){
   renderTerminList();renderContactList();renderHMList();renderDokList();renderRezeptList();
-}
+renderRezeptList();}
 
 function renderTerminList(){
   var tl=document.getElementById('termin-list');
@@ -2165,6 +2166,288 @@ function scFn(icon,num,label,type,action,trend){
 
 function openArzt(){openMo('mo-arzt');}
 function openAddAnfall(){openMo('mo-add-anfall');}
+
+
+// ============================================================
+// NOTFALLBLATT PRINT + PDF
+// ============================================================
+function printNotfallblatt(){
+  window.print();
+}
+
+async function shareNotfallblattPDF(){
+  showToast('PDF wird erstellt...');
+  try {
+    var blob = await generateNotfallblattPDF();
+    if(!blob){ showToast('PDF-Erstellung fehlgeschlagen', true); return; }
+    var filename = 'Notfallblatt-'+(U.kindName||'Kind')+'-'+toDay()+'.pdf';
+    if(navigator.share && navigator.canShare){
+      try{
+        var file = new File([blob], filename, {type:'application/pdf'});
+        if(navigator.canShare({files:[file]})){
+          await navigator.share({title:'Notfallblatt '+(U.kindName||'Kind'), files:[file]});
+          showToast('Notfallblatt geteilt');
+          return;
+        }
+      }catch(e){ /* fall through to download */ }
+    }
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    showToast('PDF heruntergeladen');
+  } catch(e){
+    showToast('Fehler: '+e.message, true);
+  }
+}
+
+// ============================================================
+// COMBINED ÜBERGABE (replaces separate Schicht + Übergabe)
+// ============================================================
+function openUebergabeKombiniert(){
+  var today = toDay();
+  var tAnf = (D.anfaelle||[]).filter(function(a){ return a.zeit && a.zeit.startsWith(today); });
+  var tMed = (D.medlog||[]).filter(function(l){ return l.datum===today && l.action==='taken'; });
+  var tMedSkip = (D.medlog||[]).filter(function(l){ return l.datum===today && l.action==='skip'; });
+  var tTer = (D.termine||[]).filter(function(t){ return t.datum===today; });
+  var water = (D.wasser&&D.wasser[today])||0;
+  var meals = (D.mahlzeiten||[]).filter(function(m){ return m.datum===today; });
+
+  det('🤝 Übergabe erstellen', fmtD(today));
+
+  var html =
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">' +
+    dr('Datum', fmtD(today)) +
+    dr('Anfälle', tAnf.length===0 ? '✓ Keine' : '⚡ '+tAnf.length+'×') +
+    dr('Medikamente', tMed.length+'× gegeben'+(tMedSkip.length>0?' · '+tMedSkip.length+'× ausgelassen':'')) +
+    dr('Trinkmenge', water+' Gläser') +
+    dr('Mahlzeiten', meals.length ? meals.map(function(m){return m.icon+' '+m.name+'('+m.aufnahme+')';}).join(', ') : 'Keine eingetragen') +
+    dr('Termine', tTer.length ? tTer.map(function(t){return t.titel;}).join(', ') : 'Keine') +
+    '</div>' +
+
+    '<div class="fg"><label class="fl">Übergabe-Typ</label>' +
+    '<div class="cr" id="ug-typ">' +
+    '<div class="ct active" onclick="selChip(this,\'ugtyp\')">👨‍👩‍👧 Elternteil</div>' +
+    '<div class="ct" onclick="selChip(this,\'ugtyp\')">🏥 Betreuer</div>' +
+    '<div class="ct" onclick="selChip(this,\'ugtyp\')">🩺 Arzt</div>' +
+    '<div class="ct" onclick="selChip(this,\'ugtyp\')">🔄 Schicht</div>' +
+    '</div></div>' +
+
+    '<div class="fg"><label class="fl">Übergabe an</label>' +
+    '<input class="fi" id="ug-an" placeholder="Name der Person..."></div>' +
+
+    '<div class="fg"><label class="fl">Stimmung & Befinden</label>' +
+    '<div class="cr" id="ug-mood">' +
+    '<div class="ct active" onclick="selChip(this,\'ugm\')">😊 Gut</div>' +
+    '<div class="ct" onclick="selChip(this,\'ugm\')">😐 Mittel</div>' +
+    '<div class="ct" onclick="selChip(this,\'ugm\')">😢 Schwierig</div>' +
+    '<div class="ct" onclick="selChip(this,\'ugm\')">😴 Müde</div>' +
+    '</div></div>' +
+
+    '<div style="margin-bottom:12px;">' +
+    '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-s);margin-bottom:8px;">Checkliste</div>' +
+    buildCheckItem('chk-med', 'Medikamente übergeben', tMed.length>0) +
+    buildCheckItem('chk-anf', 'Anfallsstatus besprochen', true) +
+    buildCheckItem('chk-mahl', 'Mahlzeiten dokumentiert', meals.length>0) +
+    buildCheckItem('chk-wasser', 'Trinkmenge dokumentiert', water>0) +
+    buildCheckItem('chk-hygiene', 'Hygiene & Pflege erledigt', false) +
+    buildCheckItem('chk-lage', 'Lagerung & Hilfsmittel geprüft', false) +
+    '</div>' +
+
+    '<div class="fg"><label class="fl">Notizen & Besonderheiten</label>' +
+    '<textarea class="fta" id="ug-n" placeholder="Was ist heute passiert? Was ist wichtig für die nächste Person?"></textarea></div>' +
+
+    '<button class="btn btn-p" onclick="saveUebergabeKombiniert()" style="margin-bottom:80px;">✓ Übergabe speichern & Sync</button>';
+
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'more';
+  showScreen('detail');
+}
+
+function buildCheckItem(id, label, done){
+  return '<div class="check-item'+(done?' done':'')+'" id="'+id+'" onclick="toggleCheck(\''+id+'\')">' +
+    '<div class="check-box">'+(done?'✓':'')+'</div>' +
+    '<div class="check-label">'+label+'</div>' +
+    '</div>';
+}
+
+function saveUebergabeKombiniert(){
+  var mood = ''; 
+  document.querySelectorAll('#ug-mood .ct.active').forEach(function(c2){mood=c2.textContent;});
+  var typ = '';
+  document.querySelectorAll('#ug-typ .ct.active').forEach(function(c2){typ=c2.textContent;});
+  var n = document.getElementById('ug-n');
+  var an = document.getElementById('ug-an');
+  var entry = {
+    id: uid(), ts: Date.now(),
+    notiz: n ? n.value.trim() : '',
+    mood: mood,
+    typ: typ,
+    an: an ? an.value.trim() : '',
+    datum: toDay(),
+    von: U.name,
+    _typ: 'uebergabe'
+  };
+  D.tagebuch.push(entry);
+  saveD();
+  showToast('✓ Übergabe gespeichert');
+  syncIfCfg();
+  goBack();
+}
+
+// ============================================================
+// ÜBERGABE HISTORY - show all past handovers
+// ============================================================
+function showUebergabeHistory(){
+  det('📋 Übergabe-Verlauf', 'Alle Übergaben & Schichten');
+  var entries = (D.tagebuch||[])
+    .filter(function(t){ return t._typ==='uebergabe' || t._typ==='schicht'; })
+    .slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+
+  var html = '';
+  if(!entries.length){
+    html = '<div class="empty"><div class="ei">🤝</div><p>Noch keine Übergaben dokumentiert</p></div>';
+  } else {
+    entries.forEach(function(e){
+      html += '<div class="card" style="padding:12px 15px;margin-bottom:10px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
+        '<div style="font-size:14px;font-weight:800;">'+(e.typ||'Übergabe')+'</div>' +
+        '<div style="font-size:11px;color:var(--text-s);">'+fmtDT(new Date(e.ts))+'</div>' +
+        '</div>' +
+        '<div style="font-size:13px;color:var(--text-m);margin-bottom:6px;">' +
+        'Von: <strong>'+(e.von||'–')+'</strong>' +
+        (e.an?' → An: <strong>'+esc(e.an)+'</strong>':'') +
+        (e.mood?' · '+e.mood:'') +
+        '</div>' +
+        (e.notiz?'<div style="font-size:13px;color:var(--text-m);background:var(--blush-p);border-radius:8px;padding:8px 10px;">'+esc(e.notiz)+'</div>':'') +
+        '</div>';
+    });
+  }
+  html += '<button class="btn btn-p" onclick="openUebergabeKombiniert()" style="margin-top:4px;margin-bottom:80px;">＋ Neue Übergabe</button>';
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'more';
+  showScreen('detail');
+}
+
+// ============================================================
+// TODOS / OFFENE THEMEN
+// ============================================================
+function openTodos(){
+  det('📌 Offene Themen & To-dos', 'Klärungsbedarf & Aufgaben');
+  var todos = (D.todos||[]).slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+  
+  var html = '';
+  
+  // Add new todo inline
+  html += '<div class="card" style="padding:14px 15px;margin-bottom:14px;">' +
+    '<div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-s);margin-bottom:10px;">Neues To-do</div>' +
+    '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
+    '<input class="fi" id="todo-text" placeholder="Was muss geklärt/erledigt werden?" style="flex:1;">' +
+    '</div>' +
+    '<div class="cr" id="todo-prio">' +
+    '<div class="ct active" onclick="selChip(this,\'todop\')">🔴 Dringend</div>' +
+    '<div class="ct" onclick="selChip(this,\'todop\')">🟡 Normal</div>' +
+    '<div class="ct" onclick="selChip(this,\'todop\')">🟢 Irgendwann</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;">' +
+    '<select class="fs" id="todo-kat" style="flex:1;">' +
+    '<option>Arzt/Therapie</option><option>Behörde/Antrag</option><option>Hilfsmittel</option>' +
+    '<option>Pflege</option><option>Organisation</option><option>Sonstiges</option>' +
+    '</select>' +
+    '<button onclick="saveTodo()" style="padding:0 16px;background:var(--rose);color:white;border:none;border-radius:var(--rsm);font-weight:800;font-size:14px;cursor:pointer;">＋</button>' +
+    '</div>' +
+    '</div>';
+
+  if(!todos.length){
+    html += '<div class="empty"><div class="ei">✅</div><p>Keine offenen Themen — alles erledigt!</p></div>';
+  } else {
+    // Group by status
+    var open = todos.filter(function(t){ return !t.done; });
+    var done = todos.filter(function(t){ return t.done; });
+    
+    if(open.length){
+      html += '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-s);margin-bottom:8px;">Offen ('+open.length+')</div>';
+      open.forEach(function(t){
+        var prioColor = t.prio&&t.prio.includes('Dringend')?'var(--red)':t.prio&&t.prio.includes('Normal')?'var(--gold)':'var(--sage)';
+        html += '<div class="card" style="padding:12px 15px;margin-bottom:8px;border-left:4px solid '+prioColor+';">' +
+          '<div style="display:flex;align-items:flex-start;gap:10px;">' +
+          '<button onclick="toggleTodo(\''+t.id+'\')" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;cursor:pointer;font-size:14px;margin-top:1px;"></button>' +
+          '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:700;">'+esc(t.text)+'</div>' +
+          '<div style="font-size:11px;color:var(--text-s);margin-top:3px;">'+(t.kat||'')+(t.prio?' · '+t.prio:'')+(t.von?' · '+esc(t.von):'')+'</div>' +
+          '</div>' +
+          '<button onclick="deleteTodo(\''+t.id+'\')" style="background:none;border:none;color:var(--text-s);font-size:18px;cursor:pointer;padding:0 4px;">×</button>' +
+          '</div></div>';
+      });
+    }
+    
+    if(done.length){
+      html += '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-s);margin:14px 0 8px;">Erledigt ('+done.length+')</div>';
+      done.slice(0,5).forEach(function(t){
+        html += '<div style="padding:10px 14px;background:var(--sage-p);border-radius:var(--rsm);margin-bottom:6px;display:flex;align-items:center;gap:10px;">' +
+          '<span style="color:var(--sage);font-size:16px;">✓</span>' +
+          '<span style="font-size:13px;color:var(--text-m);text-decoration:line-through;">'+esc(t.text)+'</span>' +
+          '<button onclick="deleteTodo(\''+t.id+'\')" style="background:none;border:none;color:var(--text-s);font-size:16px;cursor:pointer;margin-left:auto;">×</button>' +
+          '</div>';
+      });
+    }
+  }
+  
+  html += '<div style="height:80px;"></div>';
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'more';
+  showScreen('detail');
+}
+
+function saveTodo(){
+  var text = document.getElementById('todo-text');
+  if(!text || !text.value.trim()){ showToast('Bitte To-do eingeben'); return; }
+  var prio = '';
+  document.querySelectorAll('#todo-prio .ct.active').forEach(function(c2){ prio=c2.textContent; });
+  var kat = document.getElementById('todo-kat');
+  if(!D.todos) D.todos = [];
+  D.todos.push({
+    id: uid(), ts: Date.now(),
+    text: text.value.trim(),
+    prio: prio,
+    kat: kat ? kat.value : '',
+    von: U.name,
+    done: false
+  });
+  saveD();
+  text.value = '';
+  showToast('✓ To-do gespeichert');
+  syncIfCfg();
+  openTodos(); // refresh view
+}
+
+function toggleTodo(id){
+  var t = (D.todos||[]).find(function(x){ return x.id===id; });
+  if(!t) return;
+  t.done = !t.done;
+  t.doneAt = t.done ? Date.now() : null;
+  saveD();
+  haptic();
+  openTodos();
+}
+
+function deleteTodo(id){
+  if(!confirm('Eintrag löschen?')) return;
+  D.todos = (D.todos||[]).filter(function(x){ return x.id!==id; });
+  saveD();
+  openTodos();
+}
+
+// ============================================================
+// HELPER ALIASES
+// ============================================================
+function openUebergabe(){ openUebergabeKombiniert(); }
+function openSchicht(){ openUebergabeKombiniert(); }
+function open_mo_arzt(){ openMo('mo-arzt'); }
+function openArzt(){ openMo('mo-arzt'); }
+function openAddAnfall(){ openMo('mo-add-anfall'); }
+function saveUG(){ saveUebergabeKombiniert(); }
+
 
 window.addEventListener('DOMContentLoaded',init);
 </script>
