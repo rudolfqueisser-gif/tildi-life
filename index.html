@@ -1776,7 +1776,7 @@ function openArztExport(){
     dr('Letzter Anfall',anf.length?fmtD(anf[0].zeit.split("T")[0]):'–')+
     '</div>'+
     '<div class="st">Inhalt auswählen & exportieren</div>'+
-    '<button class="btn btn-p" onclick="openMo('mo-arzt')" style="margin-bottom:10px;">📄 Inhalte wählen & PDF erstellen</button>'+
+    '<button class="btn btn-p" onclick="openArzt()" style="margin-bottom:10px;">PDF erstellen</button>'+
     '<button class="btn btn-t" onclick="window.print()">🖨️ Seite direkt drucken</button>'+
     '<div style="height:80px;"></div>';
   document.getElementById('det-body').innerHTML=html;
@@ -2086,7 +2086,7 @@ function showAnfaelleHeute(){
   if(!tAnf.length){html='<div class="empty"><div class="ei">🌱</div><p>Heute keine Anfälle dokumentiert</p></div>';}
   else{
     html=tAnf.map(a=>
-      '<div class="card" style="padding:4px 15px;margin-bottom:12px;cursor:pointer;" onclick="showAnfallDetail(''+a.id+'')">'+
+      '<div class="card" style="padding:4px 15px;margin-bottom:12px;cursor:pointer;" onclick=\"showAnfallDetail(&apos;"+a.id+"&apos;)\">'+
       dr('Zeit',fmtT(new Date(a.zeit)))+
       dr('Typ',a.typ||'Schnelldokumentation')+
       (a.dauer?dr('Dauer',a.dauer+' Min.'):'')+
@@ -2096,7 +2096,7 @@ function showAnfaelleHeute(){
       '</div>'
     ).join('');
   }
-  html+='<button class="btn btn-s" onclick="openMo('mo-add-anfall')" style="margin-bottom:80px;">＋ Weiteren Anfall dokumentieren</button>';
+  html+='<button class="btn btn-s" onclick="openAddAnfall()" style="margin-bottom:80px;">+ Weiteren Anfall dokumentieren</button>';
   document.getElementById('det-body').innerHTML=html;
   _prev='home';showScreen('detail');
 }
@@ -2161,6 +2161,10 @@ function scFn(icon,num,label,type,action,trend){
     '<div class="sc-right"><div class="si-num">'+num+'</div><div class="si-lab">'+label+'</div>'+(trend?'<div class="si-trend">'+trend+'</div>':'')+'</div>' +
     '</div>';
 }
+
+
+function openArzt(){openMo('mo-arzt');}
+function openAddAnfall(){openMo('mo-add-anfall');}
 
 window.addEventListener('DOMContentLoaded',init);
 </script>
