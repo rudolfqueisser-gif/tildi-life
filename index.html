@@ -959,6 +959,7 @@ function launch(){
   showScreen('home');
   renderAll();
   updateSyncUI();
+  initIDB();
   checkBackupReminder();
   buildWaterCups();
   updateOfflineBanner();
@@ -1011,9 +1012,10 @@ function handlePhoto(e){
   var file=e.target.files[0];if(!file)return;
   var r=new FileReader();
   r.onload=function(ev){
-    var d=ev.target.result;
-    if(_photoTarget==='kind')U.kindPhoto=d;else U.photo=d;
-    saveU();applyPhotos();
+    compressImage(ev.target.result, function(compressed){
+      if(_photoTarget==='kind')U.kindPhoto=compressed;else U.photo=compressed;
+      saveU();applyPhotos();
+    });
   };
   r.readAsDataURL(file);e.target.value='';
 }
@@ -1461,43 +1463,15 @@ function renderDokList(){
   dl.innerHTML='<div>'+docs.slice(0,10).map(function(d){
     return '<div class="li" onclick="showDokDetail(\'"+d.id+"\')">' +
       '<div class="li-ic teal" style="overflow:hidden;">' +
-      (d.photo ? '<img src="'+d.photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="">' : '📄') +
+      (d.hasPhoto ? '📷' : '📄') +
       '</div>' +
       '<div class="li-b"><div class="li-t">'+esc(d.name)+'</div>' +
-      '<div class="li-s">'+(d.typ||'')+(d.datum?' · '+fmtD(d.datum):'')+(d.photo?' · 📷 Foto':'')+'</div></div>' +
+      '<div class="li-s">'+(d.typ||'')+(d.datum?' · '+fmtD(d.datum):'')+(d.hasPhoto?' · 📷 Foto':'')+'</div></div>' +
       '<div class="li-r">›</div></div>';
   }).join('')+'</div>';
 }
 
-function showDokDetail(id){
-  var d=(D.dokumente||[]).find(function(x){return x.id===id;});
-  if(!d) return;
-  det('📄 '+esc(d.name), (d.typ||'')+(d.datum?' · '+fmtD(d.datum):''));
-  var html =
-    (d.photo ?
-      '<div style="margin-bottom:14px;cursor:pointer;" onclick="viewCurrentEntryPhoto()">'+
-      '<img src="'+d.photo+'" alt="Dokument" style="width:100%;max-height:220px;object-fit:contain;border-radius:var(--r);box-shadow:var(--sh-s);">'+
-      '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--rose-d);font-weight:700;">Tippen zum Vergrößern & Teilen</div>'+
-      '</div>' : '') +
-    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
-    dr('Bezeichnung', d.name)+
-    dr('Typ', d.typ||'–')+
-    dr('Datum', d.datum?fmtD(d.datum):'–')+
-    dr('Notiz', d.notiz||'–')+
-    dr('Eingetragen von', d.by||'–')+
-    '</div>';
-  if(d.photo){
-    html += '<button class="btn btn-p" onclick="shareCurrentEntryPhoto()" style="margin-bottom:10px;">📤 Dokument teilen / weiterleiten</button>';
-  }
-  html += '<button class="btn btn-d" onclick="deleteCurrentEntry()" style="margin-bottom:80px;">Dokument löschen</button>';
-  _currentEntryPhoto = d.photo||null;
-  _currentEntryTitle = d.name||'';
-  _currentEntryId = d.id||'';
-  _currentEntryType = 'dok';
-  document.getElementById('det-body').innerHTML = html;
-  _prev = 'admin';
-  showScreen('detail');
-}
+
 
 function deleteDok(id){
   if(!confirm('Dokument löschen?')) return;
@@ -1569,14 +1543,16 @@ function saveHM(){
   D.hilfsmittel.push(h);saveD();resetAndClose('mo-add-hm');renderAdmin();showToast('✓ Gespeichert');syncIfCfg();
 }
 function saveDok(){
-  var d={id:uid(),ts:Date.now(),name:q('dk-n'),datum:q('dk-d'),typ:q('dk-t'),notiz:q('dk-no'),photo:_docPhotos['dok']||null,by:U.name};
+  var id = uid();
+  var d={id:id,ts:Date.now(),name:q('dk-n'),datum:q('dk-d'),typ:q('dk-t'),notiz:q('dk-no'),hasPhoto:!!_docPhotos['dok'],by:U.name};
   if(!d.name){showToast('Bezeichnung ist Pflicht');return;}
   D.dokumente.push(d);
   saveD();
+  if(_docPhotos['dok']) savePhotoIDB(id, _docPhotos['dok']);
   closeMoId('mo-add-dok');
   clearDocPhoto('dok');
   renderAdmin();
-  showToast('✓ Dokument vermerkt');
+  showToast('Dokument vermerkt');
   syncIfCfg();
 }
 
@@ -2171,7 +2147,7 @@ function renderRezeptList(){
   rl.innerHTML='<div>'+rezepte.map(function(r){
     return '<div class="li" onclick="showRezeptDetail(this.dataset.id)" data-id="'+r.id+'">' +
       '<div class="li-ic teal" style="overflow:hidden;">' +
-      (r.photo ? '<img src="'+r.photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="">' : '📋') +
+      (r.hasPhoto ? '📷' : '📋') +
       '</div>' +
       '<div class="li-b">' +
       '<div class="li-t">'+esc(r.name)+(r.typ?' <span class="badge teal">'+esc(r.typ)+'</span>':'')+'</div>' +
@@ -2182,37 +2158,7 @@ function renderRezeptList(){
   }).join('')+'</div>';
 }
 
-function showRezeptDetail(id){
-  var r=(D.rezepte||[]).find(function(x){return x.id===id;});
-  if(!r) return;
-  det('📋 '+esc(r.name), (r.typ||'')+(r.datum?' · '+fmtD(r.datum):''));
-  var html =
-    (r.photo ?
-      '<div style="margin-bottom:14px;cursor:pointer;" onclick="viewCurrentEntryPhoto()">'+
-      '<img src="'+r.photo+'" alt="Rezept" style="width:100%;max-height:220px;object-fit:contain;border-radius:var(--r);box-shadow:var(--sh-s);">'+
-      '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--rose-d);font-weight:700;">Tippen zum Vergrößern & Teilen</div>'+
-      '</div>' : '') +
-    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
-    dr('Bezeichnung', r.name)+
-    dr('Typ', r.typ||'–')+
-    dr('Ausgestellt', r.datum?fmtD(r.datum):'–')+
-    dr('Gültig bis', r.ablauf?fmtD(r.ablauf):'–')+
-    dr('Notiz', r.notiz||'–')+
-    dr('Eingetragen von', r.by||'–')+
-    '</div>';
 
-  if(r.photo){
-    html += '<button class="btn btn-p" onclick="shareCurrentEntryPhoto()" style="margin-bottom:10px;">📤 Rezept teilen / weiterleiten</button>';
-  }
-  html += '<button class="btn btn-d" onclick="deleteCurrentEntry()" style="margin-bottom:80px;">Rezept löschen</button>';
-  _currentEntryPhoto = r.photo||null;
-  _currentEntryTitle = r.name||'';
-  _currentEntryId = r.id||'';
-  _currentEntryType = 'rezept';
-  document.getElementById('det-body').innerHTML = html;
-  _prev = 'admin';
-  showScreen('detail');
-}
 
 function deleteRezept(id){
   if(!confirm('Rezept löschen?')) return;
@@ -2221,15 +2167,17 @@ function deleteRezept(id){
 }
 
 function saveRezept(){
-  var r={id:uid(),ts:Date.now(),name:q('rz-n'),typ:q('rz-t'),datum:q('rz-d'),ablauf:q('rz-abl'),notiz:q('rz-no'),photo:_docPhotos['rezept']||null,by:U.name};
+  var id = uid();
+  var r={id:id,ts:Date.now(),name:q('rz-n'),typ:q('rz-t'),datum:q('rz-d'),ablauf:q('rz-abl'),notiz:q('rz-no'),hasPhoto:!!_docPhotos['rezept'],by:U.name};
   if(!r.name){showToast('Bezeichnung ist Pflicht');return;}
   if(!D.rezepte)D.rezepte=[];
   D.rezepte.push(r);
   saveD();
+  if(_docPhotos['rezept']) savePhotoIDB(id, _docPhotos['rezept']);
   closeMoId('mo-add-rezept');
   clearDocPhoto('rezept');
   renderAdmin();
-  showToast('✓ Rezept gespeichert');
+  showToast('Rezept gespeichert');
   syncIfCfg();
 }
 
@@ -2633,9 +2581,10 @@ function handleDocPhoto(e){
   if(!file) return;
   var reader = new FileReader();
   reader.onload = function(ev){
-    var dataUrl = ev.target.result;
-    _docPhotos[_docPhotoTarget] = dataUrl;
-    updateDocPhotoPreview(_docPhotoTarget, dataUrl);
+    compressImage(ev.target.result, function(compressed){
+      _docPhotos[_docPhotoTarget] = compressed;
+      updateDocPhotoPreview(_docPhotoTarget, compressed);
+    });
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -2793,9 +2742,148 @@ async function shareCurrentEntryPhoto(){
 var _currentEntryId = '';
 var _currentEntryType = '';
 
+
+
+
+// ============================================================
+// INDEXEDDB PHOTO STORAGE (unlimited size, no localStorage quota)
+// ============================================================
+var _idb = null;
+
+function initIDB(){
+  return new Promise(function(resolve){
+    try {
+      var req = indexedDB.open('tildi_photos', 1);
+      req.onupgradeneeded = function(e){
+        e.target.result.createObjectStore('photos', {keyPath:'id'});
+      };
+      req.onsuccess = function(e){
+        _idb = e.target.result;
+        resolve(_idb);
+      };
+      req.onerror = function(){ resolve(null); };
+    } catch(e){ resolve(null); }
+  });
+}
+
+function savePhotoIDB(id, dataUrl){
+  if(!_idb){ initIDB().then(function(db){ if(db) savePhotoIDB(id,dataUrl); }); return; }
+  try {
+    var tx = _idb.transaction('photos','readwrite');
+    tx.objectStore('photos').put({id:id, data:dataUrl});
+  } catch(e){ console.error('IDB save error:', e); }
+}
+
+function loadPhotoIDB(id){
+  return new Promise(function(resolve){
+    if(!_idb){ resolve(null); return; }
+    try {
+      var tx = _idb.transaction('photos','readonly');
+      var req = tx.objectStore('photos').get(id);
+      req.onsuccess = function(e){ resolve(e.target.result ? e.target.result.data : null); };
+      req.onerror = function(){ resolve(null); };
+    } catch(e){ resolve(null); }
+  });
+}
+
+function deletePhotoIDB(id){
+  if(!_idb) return;
+  try {
+    var tx = _idb.transaction('photos','readwrite');
+    tx.objectStore('photos').delete(id);
+  } catch(e){}
+}
+
+// ============================================================
+// UPDATED DETAIL VIEWS - load photo from IDB async
+// ============================================================
+function showRezeptDetail(id){
+  var r=(D.rezepte||[]).find(function(x){return x.id===id;});
+  if(!r) return;
+  _currentEntryId = r.id||'';
+  _currentEntryType = 'rezept';
+  _currentEntryTitle = r.name||'';
+  _currentEntryPhoto = null;
+
+  det('📋 '+esc(r.name), (r.typ||'')+(r.datum?' · '+fmtD(r.datum):''));
+
+  var html =
+    '<div id="entry-photo-wrap" style="margin-bottom:14px;display:none;cursor:pointer;" onclick="viewCurrentEntryPhoto()">'+
+    '<img id="entry-photo-img" src="" alt="Rezept" style="width:100%;max-height:220px;object-fit:contain;border-radius:var(--r);box-shadow:var(--sh-s);">'+
+    '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--rose-d);font-weight:700;">Tippen zum Vergrößern & Teilen</div>'+
+    '</div>'+
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
+    dr('Bezeichnung',r.name)+dr('Typ',r.typ||'–')+dr('Ausgestellt',r.datum?fmtD(r.datum):'–')+
+    dr('Gültig bis',r.ablauf?fmtD(r.ablauf):'–')+dr('Notiz',r.notiz||'–')+dr('Eingetragen von',r.by||'–')+
+    '</div>'+
+    '<div id="entry-share-btn"></div>'+
+    '<button class="btn btn-d" onclick="deleteCurrentEntry()" style="margin-bottom:80px;">Rezept löschen</button>';
+
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'admin';
+  showScreen('detail');
+
+  if(r.hasPhoto){
+    loadPhotoIDB(r.id).then(function(dataUrl){
+      if(!dataUrl) return;
+      _currentEntryPhoto = dataUrl;
+      var wrap = document.getElementById('entry-photo-wrap');
+      var img = document.getElementById('entry-photo-img');
+      var btn = document.getElementById('entry-share-btn');
+      if(wrap){ wrap.style.display='block'; }
+      if(img){ img.src = dataUrl; }
+      if(btn){ btn.innerHTML='<button class="btn btn-p" onclick="shareCurrentEntryPhoto()" style="margin-bottom:10px;">📤 Rezept teilen / weiterleiten</button>'; }
+    });
+  }
+}
+
+function showDokDetail(id){
+  var d=(D.dokumente||[]).find(function(x){return x.id===id;});
+  if(!d) return;
+  _currentEntryId = d.id||'';
+  _currentEntryType = 'dok';
+  _currentEntryTitle = d.name||'';
+  _currentEntryPhoto = null;
+
+  det('📄 '+esc(d.name), (d.typ||'')+(d.datum?' · '+fmtD(d.datum):''));
+
+  var html =
+    '<div id="entry-photo-wrap" style="margin-bottom:14px;display:none;cursor:pointer;" onclick="viewCurrentEntryPhoto()">'+
+    '<img id="entry-photo-img" src="" alt="Dokument" style="width:100%;max-height:220px;object-fit:contain;border-radius:var(--r);box-shadow:var(--sh-s);">'+
+    '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--rose-d);font-weight:700;">Tippen zum Vergrößern & Teilen</div>'+
+    '</div>'+
+    '<div class="card" style="padding:4px 15px;margin-bottom:14px;">'+
+    dr('Bezeichnung',d.name)+dr('Typ',d.typ||'–')+dr('Datum',d.datum?fmtD(d.datum):'–')+
+    dr('Notiz',d.notiz||'–')+dr('Eingetragen von',d.by||'–')+
+    '</div>'+
+    '<div id="entry-share-btn"></div>'+
+    '<button class="btn btn-d" onclick="deleteCurrentEntry()" style="margin-bottom:80px;">Dokument löschen</button>';
+
+  document.getElementById('det-body').innerHTML = html;
+  _prev = 'admin';
+  showScreen('detail');
+
+  if(d.hasPhoto){
+    loadPhotoIDB(d.id).then(function(dataUrl){
+      if(!dataUrl) return;
+      _currentEntryPhoto = dataUrl;
+      var wrap = document.getElementById('entry-photo-wrap');
+      var img = document.getElementById('entry-photo-img');
+      var btn = document.getElementById('entry-share-btn');
+      if(wrap){ wrap.style.display='block'; }
+      if(img){ img.src = dataUrl; }
+      if(btn){ btn.innerHTML='<button class="btn btn-p" onclick="shareCurrentEntryPhoto()" style="margin-bottom:10px;">📤 Dokument teilen / weiterleiten</button>'; }
+    });
+  }
+}
+
+// ============================================================
+// UPDATE deleteCurrentEntry to also delete from IDB
+// ============================================================
 function deleteCurrentEntry(){
   var msg = _currentEntryType==='rezept' ? 'Rezept' : 'Dokument';
   if(!confirm(msg+' löschen?')) return;
+  deletePhotoIDB(_currentEntryId);
   if(_currentEntryType==='rezept'){
     D.rezepte=(D.rezepte||[]).filter(function(x){return x.id!==_currentEntryId;});
   } else {
@@ -2803,6 +2891,29 @@ function deleteCurrentEntry(){
   }
   saveD(); goBack(); renderAdmin(); showToast('Gelöscht'); syncIfCfg();
 }
+
+
+
+// ============================================================
+// IMAGE COMPRESSION (reduces file size before IndexedDB storage)
+// ============================================================
+function compressImage(dataUrl, callback){
+  var img = new Image();
+  img.onload = function(){
+    var MAX = 1200;
+    var w = img.width, h = img.height;
+    if(w > MAX){ h = Math.round(h * MAX / w); w = MAX; }
+    if(h > MAX){ w = Math.round(w * MAX / h); h = MAX; }
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.72));
+  };
+  img.onerror = function(){ callback(dataUrl); }; // fallback: use original
+  img.src = dataUrl;
+}
+
 
 window.addEventListener('DOMContentLoaded',init);
 </script>
