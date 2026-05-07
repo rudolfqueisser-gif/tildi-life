@@ -1188,7 +1188,7 @@ function renderDash(){
   var today=toDay();
   var tTer=(D.termine||[]).filter(t=>t.datum===today);
   var tAnf=(D.anfaelle||[]).filter(a=>a.zeit&&a.zeit.startsWith(today));
-  var meds=(D.medikamente||[]).length;
+  var meds=activeItems('medikamente').length;
   var hmPend=(D.hilfsmittel||[]).filter(h=>['beantragt','geplant','widerspruch'].includes(h.status)).length;
   // Anfalls-Trend
   var last7=anfaellePerWeek(2);
@@ -1246,7 +1246,7 @@ function renderHealth(){
 }
 
 function renderCompliance(){
-  var meds=D.medikamente||[];
+  var meds=activeItems('medikamente');
   var cw=document.getElementById('compliance-wrap');
   var cl=document.getElementById('compliance-list');
   if(!meds.length){if(cw)cw.style.display='none';return;}
@@ -1330,7 +1330,7 @@ function renderAnfallChart(){
 
 function renderMedList(){
   var ml=document.getElementById('med-list');
-  var meds=D.medikamente||[];
+  var meds=activeItems('medikamente');
   if(!meds.length){ml.innerHTML='<div class="empty"><div class="ei">💊</div><p>Noch keine Medikamente eingetragen</p></div>';return;}
   var today=toDay(),tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+7);
   ml.innerHTML=meds.map(function(m){
@@ -1364,15 +1364,26 @@ function renderAnfallList(){
 function renderMealList(){
   var ml=document.getElementById('meal-list');
   var today=toDay();
-  var meals=(D.mahlzeiten||[]).filter(m=>m.datum===today).sort((a,b)=>a.ts-b.ts);
-  if(!meals.length){ml.innerHTML='<div style="padding:16px;text-align:center;color:var(--text-s);font-size:13px;">Heute noch keine Mahlzeiten eingetragen</div>';return;}
-  ml.innerHTML='<div>'+meals.map(m=>
-    '<div class="meal-row">' +
-    '<div class="meal-icon">'+m.icon+'</div>' +
-    '<div style="flex:1;"><div class="meal-name">'+esc(m.name)+'</div><div class="meal-note">'+esc(m.amount||'')+(m.schluck&&m.schluck!=='nein'?' · Schluck: '+m.schluck:'')+'</div></div>' +
-    '<span class="badge '+(m.aufnahme==='vollständig'?'sage':m.aufnahme==='verweigert'||m.aufnahme==='erbrochen'?'red':'gold')+'">'+m.aufnahme+'</span>' +
-    '</div>'
-  ).join('')+'</div>';
+  var d3=new Date();d3.setDate(d3.getDate()-2);
+  var d3s=d3.getFullYear()+'-'+p2(d3.getMonth()+1)+'-'+p2(d3.getDate());
+  var meals=activeItems('mahlzeiten').filter(function(m){return(m.datum||'')>=d3s;}).sort(function(a,b){return(b.ts||0)-(a.ts||0);});
+  if(!meals.length){ml.innerHTML='<div style="padding:16px;text-align:center;color:var(--text-s);font-size:13px;">Keine Mahlzeiten der letzten 3 Tage</div>';return;}
+  var lastDate='';
+  ml.innerHTML='<div>'+meals.map(function(m){
+    var hdr='';
+    if(m.datum!==lastDate){
+      lastDate=m.datum;
+      var lbl=m.datum===today?'Heute':fmtD(m.datum);
+      hdr='<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-s);padding:8px 14px 4px;background:var(--cream);">'+lbl+(m.by?' - '+esc(m.by):'')+'</div>';
+    }
+    return hdr+
+      '<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);">'+
+      '<div style="font-size:22px;width:32px;text-align:center;flex-shrink:0;">'+m.icon+'</div>'+
+      '<div style="flex:1;"><div style="font-size:14px;font-weight:700;">'+esc(m.name)+'</div>'+
+      '<div style="font-size:12px;color:var(--text-s);">'+esc(m.amount||'')+(m.schluck&&m.schluck!=='nein'?' - Schluck: '+m.schluck:'')+'</div></div>'+
+      '<span class="badge '+(m.aufnahme==='vollständig'?'sage':m.aufnahme==='verweigert'||m.aufnahme==='erbrochen'?'red':'gold')+'">'+m.aufnahme+'</span>'+
+      '</div>';
+  }).join('')+'</div>';
 }
 
 function renderTbList(){
@@ -1428,7 +1439,7 @@ function renderTerminList(){
 
 function renderContactList(){
   var cl=document.getElementById('contact-list');
-  var contacts=D.kontakte||[];
+  var contacts=activeItems('kontakte');
   if(!contacts.length){cl.innerHTML='<div class="empty" style="background:white;border-radius:var(--r);box-shadow:var(--sh-s);"><div class="ei">📞</div><p>Noch keine Kontakte</p></div>';return;}
   cl.innerHTML=contacts.map(function(c){
     var icons={'Hausarzt':'🏥','Facharzt (Neuropädiater)':'🧠','Therapeut':'🤸','Krankenhaus':'🏨','Krankenkasse':'📋','Pflegedienst':'🤝','Notfallkontakt':'🆘'};
@@ -1447,7 +1458,7 @@ function renderContactList(){
 
 function renderHMList(){
   var hl=document.getElementById('hm-list');
-  var hm=D.hilfsmittel||[];
+  var hm=activeItems('hilfsmittel');
   if(!hm.length){hl.innerHTML='<div class="empty"><div class="ei">♿</div><p>Keine Hilfsmittel</p></div>';return;}
   var sc={genehmigt:'teal',erhalten:'sage',abgelehnt:'red',widerspruch:'red'};
   hl.innerHTML='<div>'+hm.map(h=>'<div class="li" onclick="showHMDetail(\''+h.id+'\')" role="button" aria-label="'+esc(h.name)+'">' +
@@ -1458,7 +1469,7 @@ function renderHMList(){
 
 function renderDokList(){
   var dl=document.getElementById('dok-list');
-  var docs=D.dokumente||[];
+  var docs=activeItems('dokumente');
   if(!docs.length){dl.innerHTML='<div class="empty"><div class="ei">📄</div><p>Keine Dokumente</p></div>';return;}
   dl.innerHTML='<div>'+docs.slice(0,10).map(function(d){
     return '<div class="li" onclick="showDokDetail(\'"+d.id+"\')">' +
@@ -1584,11 +1595,7 @@ function saveTerminEdit(id){
   Object.assign(D.termine[idx],{titel:q('nt-t'),datum:q('nt-d'),uhrzeit:q('nt-u'),ort:q('nt-o'),kat:q('nt-k'),notiz:q('nt-no'),ts:Date.now()});
   saveD();resetAndClose('mo-add-termin');renderAdmin();showToast('✓ Termin aktualisiert');syncIfCfg();goBack();
 }
-function delTermin(id){
-  if(!confirm("Termin löschen?"))return;
-  D.termine=(D.termine||[]).filter(x=>x.id!==id);
-  saveD();goBack();renderAdmin();showToast('Gelöscht');syncIfCfg();renderNavDots();
-}
+function delTermin(id){if(!confirm('Termin loeschen?'))return;softDelete('termine',id);saveD();syncIfCfg();goBack();renderAdmin();showToast('Geloescht');renderNavDots();}
 
 function showAnfallDetail(id){
   var a=(D.anfaelle||[]).find(x=>x.id===id);if(!a)return;
@@ -1615,11 +1622,7 @@ function saveAnfallEdit(id){
   Object.assign(D.anfaelle[idx],{zeit:q('na-z'),dauer:q('na-d'),typ:q('na-t'),intensitaet:q('na-int'),trigger:q('na-trig'),buccolam:q('na-b'),notiz:q('na-no'),ts:Date.now()});
   saveD();resetAndClose('mo-add-anfall');renderHealth();showToast('✓ Aktualisiert');syncIfCfg();goBack();
 }
-function delAnfall(id){
-  if(!confirm("Diesen Eintrag löschen?"))return;
-  D.anfaelle=(D.anfaelle||[]).filter(x=>x.id!==id);
-  saveD();goBack();renderAll();showToast('Gelöscht');syncIfCfg();
-}
+function delAnfall(id){if(!confirm('Eintrag loeschen?'))return;softDelete('anfaelle',id);saveD();syncIfCfg();goBack();renderHealth();showToast('Geloescht');}
 
 function showMedDetail(id){
   var m=(D.medikamente||[]).find(x=>x.id===id);if(!m)return;
@@ -1647,11 +1650,7 @@ function saveMedEdit(id){
   Object.assign(D.medikamente[idx],{name:q('nm-n'),dosis:q('nm-d'),freq:q('nm-f'),hinweis:q('nm-h'),exp:q('nm-exp'),ts:Date.now()});
   saveD();resetAndClose('mo-add-med');renderHealth();showToast('✓ Aktualisiert');syncIfCfg();goBack();
 }
-function delMed(id){
-  if(!confirm("Medikament löschen?"))return;
-  D.medikamente=(D.medikamente||[]).filter(x=>x.id!==id);
-  saveD();goBack();renderHealth();showToast('Gelöscht');syncIfCfg();
-}
+function delMed(id){if(!confirm('Medikament loeschen?'))return;softDelete('medikamente',id);saveD();syncIfCfg();goBack();renderHealth();showToast('Geloescht');}
 
 function showContactDetail(id){
   var c=(D.kontakte||[]).find(x=>x.id===id);if(!c)return;
@@ -1676,11 +1675,7 @@ function saveContactEdit(id){
   Object.assign(D.kontakte[idx],{name:q('co-n'),rolle:q('co-r'),tel:q('co-tel'),adresse:q('co-adr'),notiz:q('co-no'),ts:Date.now()});
   saveD();resetAndClose('mo-add-contact');renderAdmin();showToast('✓ Aktualisiert');syncIfCfg();goBack();
 }
-function delContact(id){
-  if(!confirm("Kontakt löschen?"))return;
-  D.kontakte=(D.kontakte||[]).filter(x=>x.id!==id);
-  saveD();goBack();renderAdmin();showToast('Gelöscht');syncIfCfg();
-}
+function delContact(id){if(!confirm('Kontakt loeschen?'))return;softDelete('kontakte',id);saveD();syncIfCfg();goBack();renderAdmin();showToast('Geloescht');}
 
 function showHMDetail(id){
   var h=(D.hilfsmittel||[]).find(x=>x.id===id);if(!h)return;
@@ -1704,17 +1699,13 @@ function saveHMEdit(id){
   Object.assign(D.hilfsmittel[idx],{name:q('hm-n'),status:q('hm-s'),datum:q('hm-d'),notiz:q('hm-no'),ts:Date.now()});
   saveD();resetAndClose('mo-add-hm');renderAdmin();showToast('✓ Aktualisiert');syncIfCfg();goBack();
 }
-function delHM(id){
-  if(!confirm("Eintrag löschen?"))return;
-  D.hilfsmittel=(D.hilfsmittel||[]).filter(x=>x.id!==id);
-  saveD();goBack();renderAdmin();showToast('Gelöscht');syncIfCfg();
-}
+function delHM(id){if(!confirm('Eintrag loeschen?'))return;softDelete('hilfsmittel',id);saveD();syncIfCfg();goBack();renderAdmin();showToast('Geloescht');}
 
 // ============================================================
 // NOTFALLBLATT
 // ============================================================
 function openNotfallblatt(){
-  var meds=D.medikamente||[];
+  var meds=activeItems('medikamente');
   var notfallKontakte=(D.kontakte||[]).filter(c=>c.rolle==='Notfallkontakt'||c.rolle==='Hausarzt'||c.rolle==='Facharzt (Neuropädiater)').slice(0,4);
   det('🆘 Notfallblatt','Für Rettungskräfte · Bitte ausdrucken');
   document.getElementById('det-body').innerHTML=
@@ -1835,7 +1826,7 @@ function saveUG(){
 // ============================================================
 function openArztExport(){
   det('🩺 Arztbericht',(U.kindName||'Kind')+' · '+fmtD(toDay()));
-  var meds=D.medikamente||[];
+  var meds=activeItems('medikamente');
   var anf=(D.anfaelle||[]).slice().sort((a,b)=>new Date(b.zeit)-new Date(a.zeit));
   var last30=anf.filter(a=>{var d=new Date(a.zeit);var c=new Date();c.setDate(c.getDate()-30);return d>=c;}).length;
   var contacts=(D.kontakte||[]);
@@ -1884,7 +1875,7 @@ async function generatePDF(){
   addRow('Kind',U.kindName||'–');addRow('Diagnose',U.kindDiagnose||'–');addRow('Erstellt am',fmtD(toDay()));addRow('Erstellt von',U.name||'–');y+=4;
   if(incMed){
     addH2('💊 Medikamentenliste');
-    var meds=D.medikamente||[];
+    var meds=activeItems('medikamente');
     if(!meds.length){addLine('Keine Medikamente eingetragen');}
     else{
       meds.forEach(function(m){
@@ -2142,7 +2133,7 @@ function nutzerwechsel(){
 // ============================================================
 function renderRezeptList(){
   var rl=document.getElementById('rezept-list');if(!rl)return;
-  var rezepte=(D.rezepte||[]).slice().sort(function(a,b){return(b.ts||0)-(a.ts||0);});
+  var rezepte=activeItems('rezepte').slice().sort(function(a,b){return(b.ts||0)-(a.ts||0);});
   if(!rezepte.length){rl.innerHTML='<div class="empty"><div class="ei">📋</div><p>Keine Rezepte</p></div>';return;}
   rl.innerHTML='<div>'+rezepte.map(function(r){
     return '<div class="li" onclick="showRezeptDetail(this.dataset.id)" data-id="'+r.id+'">' +
@@ -2232,7 +2223,7 @@ async function generateNotfallblattPDF(){
     y+=30;
     doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(45,27,37);
     doc.text('AKTUELLE MEDIKAMENTE',ml,y);y+=7;
-    var meds=D.medikamente||[];
+    var meds=activeItems('medikamente');
     if(!meds.length){doc.setFont('helvetica','normal');doc.text('Keine',ml,y);y+=6;}
     else{meds.forEach(function(m){
       doc.setFillColor(245,208,224);doc.rect(ml,y-4,mr-ml,9,'F');
@@ -2880,17 +2871,7 @@ function showDokDetail(id){
 // ============================================================
 // UPDATE deleteCurrentEntry to also delete from IDB
 // ============================================================
-function deleteCurrentEntry(){
-  var msg = _currentEntryType==='rezept' ? 'Rezept' : 'Dokument';
-  if(!confirm(msg+' löschen?')) return;
-  deletePhotoIDB(_currentEntryId);
-  if(_currentEntryType==='rezept'){
-    D.rezepte=(D.rezepte||[]).filter(function(x){return x.id!==_currentEntryId;});
-  } else {
-    D.dokumente=(D.dokumente||[]).filter(function(x){return x.id!==_currentEntryId;});
-  }
-  saveD(); goBack(); renderAdmin(); showToast('Gelöscht'); syncIfCfg();
-}
+function deleteCurrentEntry(){var msg=_currentEntryType==='rezept'?'Rezept':'Dokument';if(!confirm(msg+' loeschen?'))return;deletePhotoIDB(_currentEntryId);softDelete(_currentEntryType==='rezept'?'rezepte':'dokumente',_currentEntryId);saveD();syncIfCfg();goBack();renderAdmin();showToast('Geloescht');}
 
 
 
@@ -2914,6 +2895,19 @@ function compressImage(dataUrl, callback){
   img.src = dataUrl;
 }
 
+
+
+// SOFT DELETE - items marked _del:true are hidden but kept for sync
+function softDelete(listName,id){
+  var list=D[listName]||[];
+  for(var i=0;i<list.length;i++){
+    if(list[i].id===id){list[i]._del=true;list[i].ts=Date.now();return true;}
+  }
+  return false;
+}
+function activeItems(listName){
+  return (D[listName]||[]).filter(function(x){return !x._del;});
+}
 
 window.addEventListener('DOMContentLoaded',init);
 </script>
