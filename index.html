@@ -1259,7 +1259,7 @@ async function sbCreateChild(){
   var diag=(document.getElementById('cloud-new-diag')||{}).value;
   if(!name||!name.trim()){showToast('Bitte Namen eingeben');return;}
   try{
-    var {data,error}=await sb.from('children').insert({name:name.trim(),diagnose:(diag||'').trim()}).select().single();
+    var {data,error}=await sb.from('children').insert({name:name.trim(),diagnose:(diag||'').trim(),created_by:_sbUser.id}).select().single();
     if(error)throw error;
     await sbLoadChildren();
     await sbSelectChild(data.id);
