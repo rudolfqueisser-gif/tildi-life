@@ -366,8 +366,8 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
       </div>
     </div>
     <div class="fg"><label class="fl">Dein Name</label><input class="fi" id="ob-name" placeholder="z. B. Rudolf" autocomplete="given-name" aria-label="Dein Name"></div>
-    <div class="fg"><label class="fl">Name des Kindes</label><input class="fi" id="ob-kname" placeholder="z. B. Matilda" value="Matilda" aria-label="Name des Kindes"></div>
-    <div class="fg"><label class="fl">Diagnose</label><input class="fi" id="ob-kdiag" placeholder="z. B. Rett-Syndrom" value="Rett-Syndrom" aria-label="Diagnose"></div>
+    <div class="fg"><label class="fl">Name des Kindes</label><input class="fi" id="ob-kname" placeholder="Name eingeben" aria-label="Name des Kindes"></div>
+    <div class="fg"><label class="fl">Diagnose</label><input class="fi" id="ob-kdiag" placeholder="Diagnose eingeben" aria-label="Diagnose"></div>
     <div class="fg">
       <label class="fl">Foto des Kindes</label>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -937,7 +937,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 // STATE
 // ============================================================
 var D={termine:[],medikamente:[],anfaelle:[],tagebuch:[],hilfsmittel:[],dokumente:[],medlog:[],kontakte:[],mahlzeiten:[],wasser:{},todos:[],rezepte:[]};
-var U={name:'',role:'elternteil',photo:'',kindName:'Matilda',kindDiagnose:'Rett-Syndrom',kindPhoto:''};
+var U={name:'',role:'elternteil',photo:'',kindName:'',kindDiagnose:'',kindPhoto:''};
 var S={method:'local',token:'',gistId:'',jbKey:'',jbId:'',childId:''};
 var _prev='home',_syncInt=null,_photoTarget='user',_obSync='none',_syncMethod2='none',_online=navigator.onLine;
 
@@ -1324,7 +1324,7 @@ function renderCloudModal(){
       '<p style="font-size:13px;color:var(--text-s);margin-bottom:10px;">Angemeldet als <strong>'+esc(_sbUser.email)+'</strong></p>'+
       (list?('<div class="lc" style="margin-bottom:16px;">'+list+'</div>'):'')+
       '<div class="ob-div">Neues Kind anlegen</div>'+
-      '<div class="fg"><label class="fl">Name</label><input class="fi" id="cloud-new-name" placeholder="z. B. Matilda"></div>'+
+      '<div class="fg"><label class="fl">Name</label><input class="fi" id="cloud-new-name" placeholder="Name eingeben"></div>'+
       '<div class="fg"><label class="fl">Diagnose (optional)</label><input class="fi" id="cloud-new-diag"></div>'+
       '<button class="btn btn-s" onclick="sbCreateChild()">＋ Kind anlegen</button>'+
       '<button class="btn btn-d" style="margin-top:10px;" onclick="sbSignOut()">Abmelden</button>';
