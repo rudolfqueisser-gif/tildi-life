@@ -1239,12 +1239,17 @@ async function sbClaimPendingInvites(){
 
 async function sbLoadChildren(){
   if(!_sbUser)return;
-  var {data,error}=await sb.from('memberships')
-    .select('child_id,role,status,children(id,name,diagnose)')
+  var {data:mems,error}=await sb.from('memberships')
+    .select('child_id,role,status')
     .eq('user_id',_sbUser.id).eq('status','active');
-  if(error){showToast('Konnte Kinder nicht laden: '+error.message,true);return;}
-  _sbChildren=(data||[]).filter(function(m){return m.children;}).map(function(m){
-    return {id:m.children.id,name:m.children.name,diagnose:m.children.diagnose,role:m.role};
+  if(error){showToast('Konnte Zugehörigkeiten nicht laden: '+error.message,true);return;}
+  var ids=(mems||[]).map(function(m){return m.child_id;});
+  if(!ids.length){_sbChildren=[];return;}
+  var {data:children,error:err2}=await sb.from('children').select('id,name,diagnose').in('id',ids);
+  if(err2){showToast('Konnte Kinder nicht laden: '+err2.message,true);return;}
+  var roleById={};(mems||[]).forEach(function(m){roleById[m.child_id]=m.role;});
+  _sbChildren=(children||[]).map(function(c){
+    return {id:c.id,name:c.name,diagnose:c.diagnose,role:roleById[c.id]};
   });
   if(!S.childId&&_sbChildren.length===1)await sbSelectChild(_sbChildren[0].id);
 }
