@@ -1,5 +1,7 @@
 # Supabase-Setup für Tildi Life
 
+Status: Schema wurde erfolgreich im Projekt ausgeführt (Tabellen + RLS aktiv).
+
 ## 1. Schema anlegen
 Im Supabase-Dashboard: **SQL Editor → New query**, Inhalt von `schema.sql` einfügen, **Run**.
 Das Skript ist gefahrlos mehrfach ausführbar (idempotent).
