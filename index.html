@@ -1215,6 +1215,10 @@ async function sbOnAuthChange(session){
   _sbUser=session?session.user:null;
   updateSyncUI();
   if(_sbUser&&!wasLoggedIn){
+    if(U.sbEmail&&U.name&&U.sbEmail!==_sbUser.email){
+      showToast('Dieses Gerät war zuletzt als "'+U.name+'" eingerichtet, jetzt angemeldet als '+_sbUser.email+' – bei Bedarf in Einstellungen "Nutzer wechseln".',true);
+    }
+    U.sbEmail=_sbUser.email;saveU();
     await sbClaimPendingInvites();
     await sbLoadChildren();
     renderCloudModal();
