@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <title>Tildi Life</title>
 <style>
 :root{
@@ -531,6 +532,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 
     <div class="st" style="margin-top:20px;">Konto & Daten</div>
     <div class="lc">
+      <div class="li" onclick="openCloud()"><div class="li-ic rose">👨‍👩‍👧</div><div class="li-b"><div class="li-t">Familien-Zugang (Cloud)</div><div class="li-s" id="cloud-label-more">Nicht angemeldet</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openSyncSettings()"><div class="li-ic rose">🔄</div><div class="li-b"><div class="li-t">Sync verwalten</div><div class="li-s" id="sync-label-more">Nicht eingerichtet</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openMo('mo-settings')"><div class="li-ic soft">⚙️</div><div class="li-b"><div class="li-t">Einstellungen</div><div class="li-s">Profil, Kind, Foto</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="doExport()"><div class="li-ic gold">📤</div><div class="li-b"><div class="li-t">Backup exportieren</div><div class="li-s" id="last-backup-label">Noch kein Backup</div></div><div class="li-r">›</div></div>
@@ -833,6 +835,15 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
   </div>
 </div>
 
+<!-- FAMILIEN-ZUGANG (SUPABASE) -->
+<div class="mo" id="mo-cloud" onclick="closeMoEv(event,this)">
+  <div class="mo-box">
+    <div class="mo-handle"></div>
+    <div class="mo-title">Familien-Zugang</div>
+    <div class="mo-body" id="cloud-body">–</div>
+  </div>
+</div>
+
 <!-- EINSTELLUNGEN -->
 <div class="mo" id="mo-settings" onclick="closeMoEv(event,this)">
   <div class="mo-box">
@@ -927,7 +938,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 // ============================================================
 var D={termine:[],medikamente:[],anfaelle:[],tagebuch:[],hilfsmittel:[],dokumente:[],medlog:[],kontakte:[],mahlzeiten:[],wasser:{},todos:[],rezepte:[]};
 var U={name:'',role:'elternteil',photo:'',kindName:'Matilda',kindDiagnose:'Rett-Syndrom',kindPhoto:''};
-var S={method:'local',token:'',gistId:'',jbKey:'',jbId:''};
+var S={method:'local',token:'',gistId:'',jbKey:'',jbId:'',childId:''};
 var _prev='home',_syncInt=null,_photoTarget='user',_obSync='none',_syncMethod2='none',_online=navigator.onLine;
 
 // ============================================================
@@ -943,6 +954,7 @@ function init(){
   window.addEventListener('offline',function(){_online=false;updateOfflineBanner();});
 
   prefillDates();
+  sbInit();
   if(!U.name){showScreen('ob');return;}
   launch();
 }
@@ -1056,6 +1068,7 @@ async function doSync(){
   try{
     if(S.method==='gist')return await syncGist();
     if(S.method==='jsonbin')return await syncJB();
+    if(S.method==='supabase')return await syncSupabase();
   }catch(e){setSyncUI('err','Sync-Fehler');showToast('Sync: '+e.message,true);return false;}
 }
 
@@ -1112,9 +1125,11 @@ function setSyncUI(state,text){
   txt.textContent=text;
 }
 function updateSyncUI(){
-  var m={local:'Nur lokal (kein Sync)',gist:'GitHub Gist'+(S.gistId?' · '+S.gistId.slice(0,10)+'…':''),jsonbin:'JSONBin'+(S.jbId?' · '+S.jbId.slice(0,10)+'…':'')};
+  var m={local:'Nur lokal (kein Sync)',gist:'GitHub Gist'+(S.gistId?' · '+S.gistId.slice(0,10)+'…':''),jsonbin:'JSONBin'+(S.jbId?' · '+S.jbId.slice(0,10)+'…':''),supabase:'Familien-Cloud (Supabase)'};
   var lbl=document.getElementById('sync-label-more');if(lbl)lbl.textContent=m[S.method]||'–';
   setSyncUI(S.method==='local'?'err':'ok',S.method==='local'?'Kein Sync':'Bereit');
+  var cl=document.getElementById('cloud-label-more');
+  if(cl)cl.textContent=_sbUser?('Angemeldet als '+_sbUser.email+(S.childId?' · verbunden':' · kein Kind gewählt')):'Nicht angemeldet';
 }
 function showSyncId(id){
   var d=document.getElementById('sync-id-display'),v=document.getElementById('sync-id-val');
@@ -1153,7 +1168,245 @@ async function saveSyncSettings(){
   var ok=await doSync();
   if(ok!==false){updateSyncUI();if(S.gistId||S.jbId)showSyncId(S.gistId||S.jbId);}
 }
-function clearSync(){S={method:'local',token:'',gistId:'',jbKey:'',jbId:''};saveS();updateSyncUI();if(_syncInt)clearInterval(_syncInt);showToast('Sync deaktiviert');closeMoId('mo-sync');}
+function clearSync(){S={method:'local',token:'',gistId:'',jbKey:'',jbId:'',childId:''};saveS();updateSyncUI();if(_syncInt)clearInterval(_syncInt);showToast('Sync deaktiviert');closeMoId('mo-sync');}
+
+// ============================================================
+// FAMILIEN-ZUGANG (SUPABASE: ECHTES MEHRBENUTZER-LOGIN)
+// ============================================================
+var SUPABASE_URL='https://lloafmzrqeuuzdhorcuw.supabase.co';
+var SUPABASE_ANON_KEY='sb_publishable_bB5Co9sIfOC9YfGg3B-a3Q_nK68Gqi6';
+var sb=(typeof supabase!=='undefined')?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+
+var _sbUser=null;        // aktuelle Supabase-Session (auth.users Zeile)
+var _sbChildren=[];      // [{id,name,diagnose,role,status}] – für diesen Nutzer zugängliche Kinder
+var _sbMembers=[];       // Mitglieder des aktuell gewählten Kindes (für Einladen-Übersicht)
+var _sbLinkSent=false;
+
+// Mapping: lokaler D-Key <-> Supabase-Tabelle/Spalten. Alles was hier nicht steht,
+// heißt in der DB genauso wie im lokalen Objekt.
+var REMOTE_TABLES={
+  termine:    {table:'termine',           del:true,  author:'by', map:{}},
+  medikamente:{table:'medikamente',       del:true,  author:'by', map:{}},
+  medlog:     {table:'medikamenten_log',  del:false, author:'by', map:{medId:'med_id'}},
+  anfaelle:   {table:'anfaelle',          del:true,  author:'by', map:{trigger:'ausloeser'}},
+  tagebuch:   {table:'tagebuch',          del:true,  author:'von',map:{_typ:'entry_typ'}},
+  kontakte:   {table:'kontakte',          del:true,  author:'by', map:{}},
+  hilfsmittel:{table:'hilfsmittel',       del:true,  author:'by', map:{}},
+  dokumente:  {table:'dokumente',         del:true,  author:'by', map:{hasPhoto:'has_photo'}},
+  rezepte:    {table:'rezepte',           del:true,  author:'by', map:{hasPhoto:'has_photo'}},
+  mahlzeiten: {table:'mahlzeiten',        del:true,  author:'by', map:{}},
+  todos:      {table:'todos',             del:false, author:'von',map:{}}
+};
+
+function sbInit(){
+  if(!sb)return;
+  sb.auth.getSession().then(function(r){ sbOnAuthChange(r.data.session); });
+  sb.auth.onAuthStateChange(function(_evt,session){ sbOnAuthChange(session); });
+}
+
+async function sbOnAuthChange(session){
+  var wasLoggedIn=!!_sbUser;
+  _sbUser=session?session.user:null;
+  updateSyncUI();
+  if(_sbUser&&!wasLoggedIn){
+    await sbClaimPendingInvites();
+    await sbLoadChildren();
+    renderCloudModal();
+  }
+  if(!_sbUser){_sbChildren=[];renderCloudModal();}
+}
+
+async function sbSendMagicLink(){
+  var email=(document.getElementById('cloud-email')||{}).value;
+  if(!email||!email.trim()){showToast('Bitte E-Mail eingeben');return;}
+  email=email.trim();
+  try{
+    var {error}=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:window.location.href}});
+    if(error)throw error;
+    _sbLinkSent=true;renderCloudModal();
+  }catch(e){showToast('Fehler: '+e.message,true);}
+}
+
+async function sbClaimPendingInvites(){
+  if(!_sbUser||!_sbUser.email)return;
+  try{
+    await sb.from('memberships')
+      .update({user_id:_sbUser.id,status:'active'})
+      .eq('status','pending')
+      .ilike('invited_email',_sbUser.email);
+  }catch(e){/* keine offene Einladung – ignorieren */}
+}
+
+async function sbLoadChildren(){
+  if(!_sbUser)return;
+  var {data,error}=await sb.from('memberships')
+    .select('child_id,role,status,children(id,name,diagnose)')
+    .eq('user_id',_sbUser.id).eq('status','active');
+  if(error){showToast('Konnte Kinder nicht laden: '+error.message,true);return;}
+  _sbChildren=(data||[]).filter(function(m){return m.children;}).map(function(m){
+    return {id:m.children.id,name:m.children.name,diagnose:m.children.diagnose,role:m.role};
+  });
+  if(!S.childId&&_sbChildren.length===1)await sbSelectChild(_sbChildren[0].id);
+}
+
+async function sbCreateChild(){
+  var name=(document.getElementById('cloud-new-name')||{}).value;
+  var diag=(document.getElementById('cloud-new-diag')||{}).value;
+  if(!name||!name.trim()){showToast('Bitte Namen eingeben');return;}
+  try{
+    var {data,error}=await sb.from('children').insert({name:name.trim(),diagnose:(diag||'').trim()}).select().single();
+    if(error)throw error;
+    await sbLoadChildren();
+    await sbSelectChild(data.id);
+  }catch(e){showToast('Fehler: '+e.message,true);}
+}
+
+async function sbSelectChild(childId){
+  S.childId=childId;S.method='supabase';saveS();
+  var child=_sbChildren.find(function(c){return c.id===childId;});
+  if(child){U.kindName=child.name;U.kindDiagnose=child.diagnose||U.kindDiagnose;saveU();}
+  updateSyncUI();renderCloudModal();
+  closeMoId('mo-cloud');
+  await doSync();
+  applyPhotos();renderAll();
+  if(_syncInt)clearInterval(_syncInt);
+  _syncInt=setInterval(doSync,30000);
+}
+
+async function sbLoadMembers(){
+  if(!S.childId)return;
+  var {data}=await sb.from('memberships').select('user_id,invited_email,role,status').eq('child_id',S.childId);
+  _sbMembers=data||[];
+}
+
+async function sbInviteMember(){
+  var email=(document.getElementById('cloud-invite-email')||{}).value;
+  var role=(document.getElementById('cloud-invite-role')||{}).value;
+  if(!email||!email.trim()){showToast('Bitte E-Mail eingeben');return;}
+  try{
+    var {error}=await sb.from('memberships').insert({
+      child_id:S.childId,invited_email:email.trim(),role:role,status:'pending'
+    });
+    if(error)throw error;
+    showToast('✓ Einladung gespeichert');
+    document.getElementById('cloud-invite-email').value='';
+    await sbLoadMembers();renderCloudModal();
+  }catch(e){showToast('Fehler: '+e.message,true);}
+}
+
+async function sbSignOut(){
+  await sb.auth.signOut();
+  S.method='local';S.childId='';saveS();
+  _sbUser=null;_sbChildren=[];_sbMembers=[];
+  if(_syncInt)clearInterval(_syncInt);
+  updateSyncUI();renderCloudModal();showToast('Abgemeldet');
+}
+
+function openCloud(){renderCloudModal();openMo('mo-cloud');if(S.childId)sbLoadMembers().then(renderCloudModal);}
+
+function renderCloudModal(){
+  var el=document.getElementById('cloud-body');if(!el)return;
+  if(!sb){el.innerHTML='<p style="color:var(--text-s);font-size:13px;">Cloud-Funktion nicht verfügbar (Supabase-Bibliothek konnte nicht geladen werden – Internetverbindung prüfen).</p>';return;}
+  if(!_sbUser){
+    el.innerHTML=
+      '<p style="font-size:13px;color:var(--text-s);margin-bottom:14px;">Melde dich per E-Mail an, um Daten geräteübergreifend zu teilen – z. B. mit Betreuer:innen oder dem Arzt.</p>'+
+      (_sbLinkSent
+        ? '<div class="sbox"><h4>✓ Link verschickt</h4><p style="font-size:12px;color:var(--text-m);">Öffne die E-Mail und tippe auf den Anmelde-Link – diese Seite öffnet sich dann automatisch angemeldet.</p></div>'
+        : '<div class="fg"><label class="fl">E-Mail-Adresse</label><input class="fi" id="cloud-email" type="email" placeholder="du@beispiel.de" aria-label="E-Mail für Anmeldung"></div>'+
+          '<button class="btn btn-p" onclick="sbSendMagicLink()">✉️ Anmelde-Link senden</button>');
+    return;
+  }
+  if(!S.childId){
+    var list=_sbChildren.map(function(c){
+      return '<div class="li" onclick="sbSelectChild(\''+c.id+'\')"><div class="li-ic rose">👧</div><div class="li-b"><div class="li-t">'+esc(c.name)+'</div><div class="li-s">'+esc(c.diagnose||'')+' · '+esc(c.role)+'</div></div><div class="li-r">›</div></div>';
+    }).join('');
+    el.innerHTML=
+      '<p style="font-size:13px;color:var(--text-s);margin-bottom:10px;">Angemeldet als <strong>'+esc(_sbUser.email)+'</strong></p>'+
+      (list?('<div class="lc" style="margin-bottom:16px;">'+list+'</div>'):'')+
+      '<div class="ob-div">Neues Kind anlegen</div>'+
+      '<div class="fg"><label class="fl">Name</label><input class="fi" id="cloud-new-name" placeholder="z. B. Matilda"></div>'+
+      '<div class="fg"><label class="fl">Diagnose (optional)</label><input class="fi" id="cloud-new-diag"></div>'+
+      '<button class="btn btn-s" onclick="sbCreateChild()">＋ Kind anlegen</button>'+
+      '<button class="btn btn-d" style="margin-top:10px;" onclick="sbSignOut()">Abmelden</button>';
+    return;
+  }
+  var membersHtml=_sbMembers.map(function(m){
+    var label=m.status==='pending'?(m.invited_email+' · Einladung offen'):((m.invited_email||m.user_id)+'');
+    return '<div class="li"><div class="li-ic soft">'+(m.status==='pending'?'⏳':'✓')+'</div><div class="li-b"><div class="li-t">'+esc(label)+'</div><div class="li-s">'+esc(m.role)+'</div></div></div>';
+  }).join('');
+  el.innerHTML=
+    '<p style="font-size:13px;color:var(--text-s);margin-bottom:10px;">Angemeldet als <strong>'+esc(_sbUser.email)+'</strong> · verbunden mit <strong>'+esc(U.kindName||'')+'</strong></p>'+
+    '<div class="st" style="margin:0 0 8px;">Mitglieder</div>'+
+    '<div class="lc" style="margin-bottom:16px;">'+(membersHtml||'<div class="li"><div class="li-b"><div class="li-s">Noch keine weiteren Mitglieder</div></div></div>')+'</div>'+
+    '<div class="ob-div">Person einladen</div>'+
+    '<div class="fg"><label class="fl">E-Mail-Adresse</label><input class="fi" id="cloud-invite-email" type="email" placeholder="betreuer@beispiel.de"></div>'+
+    '<div class="fg"><label class="fl">Rolle</label>'+
+    '<select class="fs" id="cloud-invite-role">'+
+      '<option value="elternteil">Elternteil</option>'+
+      '<option value="betreuer_einrichtung">Betreuer (Einrichtung)</option>'+
+      '<option value="betreuer_privat" selected>Betreuer (Privat)</option>'+
+      '<option value="arzt">Arzt / Therapeut</option>'+
+    '</select></div>'+
+    '<button class="btn btn-s" onclick="sbInviteMember()">✉️ Einladen</button>'+
+    '<button class="btn btn-d" style="margin-top:10px;" onclick="sbSignOut()">Abmelden</button>';
+}
+
+function dbRowToLocal(key,row){
+  var cfg=REMOTE_TABLES[key];
+  var out={id:row.id,ts:row.ts||0};
+  for(var col in row){
+    if(col==='id'||col==='ts'||col==='child_id'||col==='created_by'||col==='created_at'||col==='updated_at')continue;
+    if(col==='by_name'){out[cfg.author]=row.by_name;continue;}
+    if(col==='deleted'){out._del=row.deleted;continue;}
+    var jsField=col;
+    for(var k in cfg.map){if(cfg.map[k]===col){jsField=k;break;}}
+    out[jsField]=row[col];
+  }
+  return out;
+}
+
+function localToDbRow(key,item){
+  var cfg=REMOTE_TABLES[key];
+  var row={id:item.id,ts:item.ts||0,child_id:S.childId,by_name:item[cfg.author]||null};
+  if(cfg.del)row.deleted=!!item._del;
+  for(var field in item){
+    if(field==='id'||field==='ts'||field===cfg.author||field==='_del')continue;
+    var col=cfg.map[field]||field;
+    row[col]=item[field];
+  }
+  return row;
+}
+
+async function syncSupabase(){
+  if(!S.childId)throw new Error('Kein Kind ausgewählt');
+  var remoteD={};
+  for(var key in REMOTE_TABLES){
+    var cfg=REMOTE_TABLES[key];
+    var {data,error}=await sb.from(cfg.table).select('*').eq('child_id',S.childId);
+    if(error)throw error;
+    remoteD[key]=(data||[]).map(function(row){return dbRowToLocal(key,row);});
+  }
+  var {data:wRows}=await sb.from('wasser').select('*').eq('child_id',S.childId);
+  var remoteWasser={};(wRows||[]).forEach(function(r){remoteWasser[r.datum]=r.count;});
+  remoteD.wasser=remoteWasser;
+
+  D=merge(D,remoteD);saveD();
+
+  for(key in REMOTE_TABLES){
+    var rows=(D[key]||[]).map(function(item){return localToDbRow(key,item);});
+    if(rows.length){
+      var {error:upErr}=await sb.from(REMOTE_TABLES[key].table).upsert(rows,{onConflict:'id'});
+      if(upErr)throw upErr;
+    }
+  }
+  var wKeys=Object.keys(D.wasser||{});
+  if(wKeys.length){
+    var wUp=wKeys.map(function(d){return {child_id:S.childId,datum:d,count:D.wasser[d]};});
+    await sb.from('wasser').upsert(wUp,{onConflict:'child_id,datum'});
+  }
+
+  setSyncUI('ok','Synced · '+fmtT(new Date()));renderAll();return true;
+}
 
 // ============================================================
 // SAVE / LOAD

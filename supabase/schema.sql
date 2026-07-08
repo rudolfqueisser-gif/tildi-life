@@ -1,6 +1,12 @@
 -- Tildi Life – Supabase Schema (Mehrbenutzer, RLS-abgesichert)
 -- Ausführen im Supabase Dashboard: SQL Editor -> New query -> einfügen -> Run
 -- Sicher erneut ausführbar (idempotent) dank IF NOT EXISTS / CREATE OR REPLACE.
+--
+-- Wichtig: die Fachdaten-Tabellen (termine, medikamente, ...) nutzen `id text`
+-- statt `uuid`, weil der bestehende Client seine IDs selbst erzeugt (uid() in
+-- index.html, z.B. "xlm3k2j9abcde") statt echte UUIDs zu verwenden. `ts`
+-- (Millisekunden-Timestamp) wird 1:1 aus dem Client übernommen, damit die
+-- bestehende Merge-Logik (neuester ts gewinnt) unverändert weiterfunktioniert.
 
 create extension if not exists pgcrypto;
 
@@ -99,12 +105,14 @@ create policy memberships_delete on public.memberships for delete
 
 -- ============================================================
 -- GEMEINSAM GENUTZTE PFLEGE-DATEN
--- Alle Tabellen folgen demselben Muster: child_id + Fachfelder
--- + created_by/by_name (Anzeigename) + soft delete (deleted)
+-- Alle Tabellen folgen demselben Muster: id (client-generiert) + ts
+-- + child_id + Fachfelder + created_by/by_name (Anzeigename)
+-- + optional soft delete (deleted)
 -- ============================================================
 
 create table if not exists public.termine (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   titel text not null,
   datum date,
@@ -121,7 +129,8 @@ create table if not exists public.termine (
 );
 
 create table if not exists public.medikamente (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   name text not null,
   dosis text,
@@ -136,9 +145,10 @@ create table if not exists public.medikamente (
 );
 
 create table if not exists public.medikamenten_log (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
-  med_id uuid references public.medikamente(id) on delete set null,
+  med_id text references public.medikamente(id) on delete set null,
   action text not null,
   datum date,
   created_by uuid references auth.users(id) default auth.uid(),
@@ -147,9 +157,10 @@ create table if not exists public.medikamenten_log (
 );
 
 create table if not exists public.anfaelle (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
-  zeit timestamptz,
+  zeit text,
   dauer text,
   intensitaet text,
   typ text,
@@ -164,13 +175,16 @@ create table if not exists public.anfaelle (
 );
 
 create table if not exists public.tagebuch (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   mood text,
   aktivitaeten text,
   notiz text,
   an text,
   typ text,
+  entry_typ text,
+  datum date,
   created_by uuid references auth.users(id) default auth.uid(),
   by_name text,
   deleted boolean not null default false,
@@ -179,7 +193,8 @@ create table if not exists public.tagebuch (
 );
 
 create table if not exists public.kontakte (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   name text not null,
   rolle text,
@@ -194,7 +209,8 @@ create table if not exists public.kontakte (
 );
 
 create table if not exists public.hilfsmittel (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   name text not null,
   status text,
@@ -208,7 +224,8 @@ create table if not exists public.hilfsmittel (
 );
 
 create table if not exists public.dokumente (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   name text not null,
   datum date,
@@ -223,7 +240,8 @@ create table if not exists public.dokumente (
 );
 
 create table if not exists public.rezepte (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   name text not null,
   typ text,
@@ -239,7 +257,8 @@ create table if not exists public.rezepte (
 );
 
 create table if not exists public.mahlzeiten (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   datum date,
   icon text,
@@ -264,12 +283,13 @@ create table if not exists public.wasser (
 );
 
 create table if not exists public.todos (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
+  ts bigint not null default 0,
   child_id uuid not null references public.children(id) on delete cascade,
   text text not null,
   prio text,
   kat text,
-  von text,
+  by_name text,
   done boolean not null default false,
   created_by uuid references auth.users(id) default auth.uid(),
   created_at timestamptz not null default now(),
