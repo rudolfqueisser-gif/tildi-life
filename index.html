@@ -1259,8 +1259,20 @@ async function sbCreateChild(){
   var diag=(document.getElementById('cloud-new-diag')||{}).value;
   if(!name||!name.trim()){showToast('Bitte Namen eingeben');return;}
   try{
-    var {data,error}=await sb.from('children').insert({name:name.trim(),diagnose:(diag||'').trim(),created_by:_sbUser.id}).select().single();
-    if(error)throw error;
+    var {data:sessData,error:sessErr}=await sb.auth.getSession();
+    var session=sessData&&sessData.session;
+    if(sessErr||!session){
+      showToast('Diagnose: keine gültige Session ('+(sessErr?sessErr.message:'null')+') – bitte abmelden & neu anmelden',true);
+      return;
+    }
+    var expIn=session.expires_at?(session.expires_at - Math.floor(Date.now()/1000)):'?';
+    var {data,error}=await sb.from('children')
+      .insert({name:name.trim(),diagnose:(diag||'').trim(),created_by:session.user.id})
+      .select().single();
+    if(error){
+      showToast('Fehler: '+error.message+' | uid='+session.user.id.slice(0,8)+'… | token gültig noch '+expIn+'s',true);
+      return;
+    }
     await sbLoadChildren();
     await sbSelectChild(data.id);
   }catch(e){showToast('Fehler: '+e.message,true);}
@@ -2352,7 +2364,7 @@ function showToast(msg,isErr,isOk){
   var t=document.getElementById('toast');
   t.textContent=msg;
   t.className='toast show'+(isErr?' err':isOk==='ok'?' ok':'');
-  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},3200);
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},isErr?10000:3200);
 }
 
 // ============================================================
