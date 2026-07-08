@@ -137,12 +137,14 @@ create table if not exists public.medikamente (
   freq text,
   hinweis text,
   exp text,
+  notfallmed boolean not null default false,
   created_by uuid references auth.users(id) default auth.uid(),
   by_name text,
   deleted boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.medikamente add column if not exists notfallmed boolean not null default false;
 
 create table if not exists public.medikamenten_log (
   id text primary key,
