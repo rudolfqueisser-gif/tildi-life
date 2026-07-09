@@ -1328,7 +1328,10 @@ async function sbInviteMember(){
     showToast('✓ Einladung gespeichert');
     document.getElementById('cloud-invite-email').value='';
     await sbLoadMembers();renderCloudModal();
-  }catch(e){showToast('Fehler: '+e.message,true);}
+  }catch(e){
+    var msg=/row-level security/i.test(e.message)?'Nur Elternteile können Personen einladen.':e.message;
+    showToast('Fehler: '+msg,true);
+  }
 }
 
 async function sbSignOut(){
@@ -1361,8 +1364,8 @@ function renderCloudModal(){
       '<p style="font-size:13px;color:var(--text-s);margin-bottom:10px;">Angemeldet als <strong>'+esc(_sbUser.email)+'</strong></p>'+
       (list?('<div class="lc" style="margin-bottom:16px;">'+list+'</div>'):'')+
       '<div class="ob-div">Neues Kind anlegen</div>'+
-      '<div class="fg"><label class="fl">Name</label><input class="fi" id="cloud-new-name" placeholder="Name eingeben"></div>'+
-      '<div class="fg"><label class="fl">Diagnose (optional)</label><input class="fi" id="cloud-new-diag"></div>'+
+      '<div class="fg"><label class="fl">Name</label><input class="fi" id="cloud-new-name" placeholder="Name eingeben" value="'+esc(U.kindName||'')+'"></div>'+
+      '<div class="fg"><label class="fl">Diagnose (optional)</label><input class="fi" id="cloud-new-diag" value="'+esc(U.kindDiagnose||'')+'"></div>'+
       '<button class="btn btn-s" onclick="sbCreateChild()">＋ Kind anlegen</button>'+
       '<button class="btn btn-d" style="margin-top:10px;" onclick="sbSignOut()">Abmelden</button>';
     return;
@@ -1371,20 +1374,23 @@ function renderCloudModal(){
     var label=m.status==='pending'?(m.invited_email+' · Einladung offen'):((m.invited_email||m.user_id)+'');
     return '<div class="li"><div class="li-ic soft">'+(m.status==='pending'?'⏳':'✓')+'</div><div class="li-b"><div class="li-t">'+esc(label)+'</div><div class="li-s">'+esc(m.role)+'</div></div></div>';
   }).join('');
+  var isAdmin=U.role==='elternteil';
   el.innerHTML=
     '<p style="font-size:13px;color:var(--text-s);margin-bottom:10px;">Angemeldet als <strong>'+esc(_sbUser.email)+'</strong> · verbunden mit <strong>'+esc(U.kindName||'')+'</strong></p>'+
     '<div class="st" style="margin:0 0 8px;">Mitglieder</div>'+
     '<div class="lc" style="margin-bottom:16px;">'+(membersHtml||'<div class="li"><div class="li-b"><div class="li-s">Noch keine weiteren Mitglieder</div></div></div>')+'</div>'+
-    '<div class="ob-div">Person einladen</div>'+
-    '<div class="fg"><label class="fl">E-Mail-Adresse</label><input class="fi" id="cloud-invite-email" type="email" placeholder="betreuer@beispiel.de"></div>'+
-    '<div class="fg"><label class="fl">Rolle</label>'+
-    '<select class="fs" id="cloud-invite-role">'+
-      '<option value="elternteil">Elternteil</option>'+
-      '<option value="betreuer_einrichtung">Betreuer (Einrichtung)</option>'+
-      '<option value="betreuer_privat" selected>Betreuer (Privat)</option>'+
-      '<option value="arzt">Arzt / Therapeut</option>'+
-    '</select></div>'+
-    '<button class="btn btn-s" onclick="sbInviteMember()">✉️ Einladen</button>'+
+    (isAdmin
+      ? '<div class="ob-div">Person einladen</div>'+
+        '<div class="fg"><label class="fl">E-Mail-Adresse</label><input class="fi" id="cloud-invite-email" type="email" placeholder="betreuer@beispiel.de"></div>'+
+        '<div class="fg"><label class="fl">Rolle</label>'+
+        '<select class="fs" id="cloud-invite-role">'+
+          '<option value="elternteil">Elternteil</option>'+
+          '<option value="betreuer_einrichtung">Betreuer (Einrichtung)</option>'+
+          '<option value="betreuer_privat" selected>Betreuer (Privat)</option>'+
+          '<option value="arzt">Arzt / Therapeut</option>'+
+        '</select></div>'+
+        '<button class="btn btn-s" onclick="sbInviteMember()">✉️ Einladen</button>'
+      : '<p style="font-size:12px;color:var(--text-s);margin-bottom:16px;">Nur Elternteile können weitere Personen einladen.</p>')+
     '<button class="btn btn-d" style="margin-top:10px;" onclick="sbSignOut()">Abmelden</button>';
 }
 
