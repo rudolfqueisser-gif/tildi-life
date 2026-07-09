@@ -8,9 +8,14 @@
 <meta name="apple-mobile-web-app-title" content="Tildi Life">
 <meta name="theme-color" content="#C47F9E">
 <meta name="description" content="Tildi Life – Pflege & Betreuungsbegleiter">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <title>Tildi Life</title>
 <style>
 :root{
@@ -148,7 +153,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 .fab:active{transform:scale(.88);}
 
 /* MODAL */
-.mo{position:fixed;inset:0;background:rgba(45,27,37,.55);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.mo{position:fixed;inset:0;background:rgba(45,27,37,.55);z-index:600;display:none;align-items:flex-end;justify-content:center;}
 .mo.active{display:flex;animation:fadeIn .2s;}
 .mo-box{background:white;border-radius:28px 28px 0 0;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,20px);animation:slideUp .3s cubic-bezier(.34,1.3,.64,1);}
 .mo-handle{width:38px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;}
@@ -343,6 +348,10 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
   <div class="ob-card">
     <h2>Willkommen</h2>
     <p>Richte die App einmalig ein. Sync kann jederzeit später aktiviert werden.</p>
+    <div class="smb-row" style="margin-bottom:14px;">
+      <button class="smb active" id="ob-mode-local" onclick="selObMode('local')" aria-label="Nur für mich">📱 Nur für mich</button>
+      <button class="smb" id="ob-mode-cloud" onclick="selObMode('cloud')" aria-label="Mit anderen teilen">☁️ Mit anderen teilen</button>
+    </div>
     <div class="fg">
       <label class="fl">Deine Rolle</label>
       <div class="role-grid">
@@ -361,35 +370,42 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
       </div>
     </div>
     <div class="fg"><label class="fl">Dein Name</label><input class="fi" id="ob-name" placeholder="z. B. Rudolf" autocomplete="given-name" aria-label="Dein Name"></div>
-    <div class="fg"><label class="fl">Name des Kindes</label><input class="fi" id="ob-kname" placeholder="z. B. Matilda" value="Matilda" aria-label="Name des Kindes"></div>
-    <div class="fg"><label class="fl">Diagnose</label><input class="fi" id="ob-kdiag" placeholder="z. B. Rett-Syndrom" value="Rett-Syndrom" aria-label="Diagnose"></div>
-    <div class="fg">
-      <label class="fl">Foto des Kindes</label>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div onclick="triggerPhoto('kind')" style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid var(--blush);background:var(--blush-p);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;" role="button" aria-label="Kind-Foto hochladen">
-          <img id="ob-kph" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;"><span id="ob-kem">👧</span>
+    <div id="ob-local-fields">
+      <div class="fg"><label class="fl">Name des Kindes</label><input class="fi" id="ob-kname" placeholder="Name eingeben" aria-label="Name des Kindes"></div>
+      <div class="fg"><label class="fl">Diagnose</label><input class="fi" id="ob-kdiag" placeholder="Diagnose eingeben" aria-label="Diagnose"></div>
+      <div class="fg">
+        <label class="fl">Foto des Kindes</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div onclick="triggerPhoto('kind')" style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid var(--blush);background:var(--blush-p);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;" role="button" aria-label="Kind-Foto hochladen">
+            <img id="ob-kph" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;"><span id="ob-kem">👧</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-s);">Tippen für Foto</div>
         </div>
-        <div style="font-size:13px;color:var(--text-s);">Tippen für Foto</div>
+      </div>
+      <div class="ob-div">Sync einrichten (optional)</div>
+      <div class="sbox">
+        <h4>🔄 Manueller Sync</h4>
+        <p style="font-size:11px;color:var(--text-m);margin:-4px 0 10px;">Tipp: Um die Daten mit mehreren Personen (z. B. Betreuer:innen, Arzt) zu teilen, nutze später den <strong>Familien-Zugang (Cloud)</strong> unter „Mehr" — mit E-Mail-Login statt manuellem Token. Die Optionen hier sind ein einfacherer, manueller Sync ohne Login.</p>
+        <div class="smb-row">
+          <button class="smb active" onclick="selSync('none',this)" aria-label="Später">Später</button>
+          <button class="smb" onclick="selSync('gist',this)" aria-label="GitHub Gist">GitHub Gist</button>
+          <button class="smb" onclick="selSync('jsonbin',this)" aria-label="JSONBin">JSONBin</button>
+        </div>
+        <div class="sf" id="sf-gist">
+          <div class="fg" style="margin:0;"><label class="fl">GitHub Token</label><input class="fi" id="ob-gt" type="password" placeholder="ghp_..." aria-label="GitHub Token"></div>
+          <div class="fg" style="margin:0;"><label class="fl">Gist-ID (leer = neu)</label><input class="fi" id="ob-gi" placeholder="Automatisch" aria-label="Gist ID"></div>
+        </div>
+        <div class="sf" id="sf-jb">
+          <div class="fg" style="margin:0;"><label class="fl">JSONBin API Key</label><input class="fi" id="ob-jk" type="password" placeholder="$2b$10$..." aria-label="JSONBin API Key"></div>
+          <div class="fg" style="margin:0;"><label class="fl">Bin-ID (leer = neu)</label><input class="fi" id="ob-ji" placeholder="Automatisch" aria-label="Bin ID"></div>
+        </div>
       </div>
     </div>
-    <div class="ob-div">Sync einrichten (optional)</div>
-    <div class="sbox">
-      <h4>🔄 Echtzeit-Sync</h4>
-      <div class="smb-row">
-        <button class="smb active" onclick="selSync('none',this)" aria-label="Später">Später</button>
-        <button class="smb" onclick="selSync('gist',this)" aria-label="GitHub Gist">GitHub Gist</button>
-        <button class="smb" onclick="selSync('jsonbin',this)" aria-label="JSONBin">JSONBin</button>
-      </div>
-      <div class="sf" id="sf-gist">
-        <div class="fg" style="margin:0;"><label class="fl">GitHub Token</label><input class="fi" id="ob-gt" type="password" placeholder="ghp_..." aria-label="GitHub Token"></div>
-        <div class="fg" style="margin:0;"><label class="fl">Gist-ID (leer = neu)</label><input class="fi" id="ob-gi" placeholder="Automatisch" aria-label="Gist ID"></div>
-      </div>
-      <div class="sf" id="sf-jb">
-        <div class="fg" style="margin:0;"><label class="fl">JSONBin API Key</label><input class="fi" id="ob-jk" type="password" placeholder="$2b$10$..." aria-label="JSONBin API Key"></div>
-        <div class="fg" style="margin:0;"><label class="fl">Bin-ID (leer = neu)</label><input class="fi" id="ob-ji" placeholder="Automatisch" aria-label="Bin ID"></div>
-      </div>
+    <div class="sbox" id="ob-cloud-note" style="display:none;">
+      <h4>☁️ Weiter geht's mit der Anmeldung</h4>
+      <p style="font-size:12px;color:var(--text-m);">Name des Kindes, Diagnose und ggf. weitere Familienmitglieder richtest du im nächsten Schritt per E-Mail-Login ein — nur einmal, nicht doppelt.</p>
     </div>
-    <button class="btn btn-p" onclick="finishOb()" aria-label="App starten">✨ Starten</button>
+    <button class="btn btn-p" id="ob-finish-btn" onclick="finishOb()" aria-label="App starten">✨ Starten</button>
   </div>
 </div>
 
@@ -439,7 +455,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 
     <div class="st">Medikamente</div>
     <div class="lc" id="med-list"></div>
-    <button class="btn btn-s" style="margin-top:10px;" onclick="openMo('mo-add-med')" aria-label="Medikament hinzufügen">＋ Medikament hinzufügen</button>
+    <button class="btn btn-s" style="margin-top:10px;" onclick="openNewMed()" aria-label="Medikament hinzufügen">＋ Medikament hinzufügen</button>
 
     <!-- Anfallsstatistik -->
     <div class="st" style="margin-top:20px;">Anfallsstatistik</div>
@@ -447,10 +463,12 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
       <div class="chart-title">Anfälle letzte 8 Wochen</div>
       <div class="bar-chart" id="anfall-chart"></div>
       <div style="display:flex;justify-content:space-between;margin-top:6px;" id="anfall-chart-labels"></div>
+      <div id="anfall-chart-note" style="display:none;text-align:center;font-size:11px;color:var(--text-s);margin-top:8px;">Noch keine Anfälle dokumentiert – die Grafik füllt sich mit der Zeit.</div>
     </div>
     <div class="chart-wrap">
       <div class="chart-title">Tageszeit-Muster (Uhrzeit)</div>
       <div id="anfall-time-pattern"></div>
+      <div id="anfall-tp-note" style="display:none;text-align:center;font-size:11px;color:var(--text-s);margin-top:8px;">Noch keine Daten zur Tageszeit erfasst.</div>
     </div>
 
     <div class="st">Anfallstagebuch</div>
@@ -527,7 +545,8 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 
     <div class="st" style="margin-top:20px;">Konto & Daten</div>
     <div class="lc">
-      <div class="li" onclick="openSyncSettings()"><div class="li-ic rose">🔄</div><div class="li-b"><div class="li-t">Sync verwalten</div><div class="li-s" id="sync-label-more">Nicht eingerichtet</div></div><div class="li-r">›</div></div>
+      <div class="li" onclick="openCloud()"><div class="li-ic rose">👨‍👩‍👧</div><div class="li-b"><div class="li-t">Familien-Zugang (Cloud)</div><div class="li-s">Empfohlen: Mehrbenutzer-Login per E-Mail · <span id="cloud-label-more">Nicht angemeldet</span></div></div><div class="li-r">›</div></div>
+      <div class="li" onclick="openSyncSettings()"><div class="li-ic soft">🔄</div><div class="li-b"><div class="li-t">Manueller Sync (GitHub/JSONBin)</div><div class="li-s">Alternative ohne Login, nur für eigene Geräte · <span id="sync-label-more">Nicht eingerichtet</span></div></div><div class="li-r">›</div></div>
       <div class="li" onclick="openMo('mo-settings')"><div class="li-ic soft">⚙️</div><div class="li-b"><div class="li-t">Einstellungen</div><div class="li-s">Profil, Kind, Foto</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="doExport()"><div class="li-ic gold">📤</div><div class="li-b"><div class="li-t">Backup exportieren</div><div class="li-s" id="last-backup-label">Noch kein Backup</div></div><div class="li-r">›</div></div>
       <div class="li" onclick="doImport()"><div class="li-ic teal">📥</div><div class="li-b"><div class="li-t">Backup importieren</div><div class="li-s">JSON-Datei laden</div></div><div class="li-r">›</div></div>
@@ -535,7 +554,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 
     <div style="text-align:center;padding:24px 0;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--rose);font-style:italic;margin-bottom:4px;">Tildi Life</div>
-      <div style="font-size:12px;color:var(--text-s);">Version 12 · Made with ♥</div>
+      <div style="font-size:12px;color:var(--text-s);">Version 13 · Made with ♥</div>
     </div>
   </div>
 </div>
@@ -628,6 +647,9 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
       </div>
       <div class="fg"><label class="fl">Hinweis</label><input class="fi" id="nm-h" placeholder="z. B. mit Essen" aria-label="Hinweis"></div>
       <div class="fg"><label class="fl">Vorrat läuft aus am</label><input class="fi" id="nm-exp" type="date" aria-label="Verfallsdatum"></div>
+      <div class="fg"><label class="fl">Notfallmedikament</label>
+        <div class="cr"><div class="ct" id="nm-notfall" onclick="selChipMulti(this)">⚠️ Ja – wird bei Anfall/Notfall eingesetzt</div></div>
+      </div>
       <button class="btn btn-p" id="btn-save-med" onclick="saveMed()">✓ Speichern</button>
       <button class="btn btn-g" onclick="resetAndClose('mo-add-med')">Abbrechen</button>
     </div>
@@ -829,6 +851,15 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
   </div>
 </div>
 
+<!-- FAMILIEN-ZUGANG (SUPABASE) -->
+<div class="mo" id="mo-cloud" onclick="closeMoEv(event,this)">
+  <div class="mo-box">
+    <div class="mo-handle"></div>
+    <div class="mo-title">Familien-Zugang</div>
+    <div class="mo-body" id="cloud-body">–</div>
+  </div>
+</div>
+
 <!-- EINSTELLUNGEN -->
 <div class="mo" id="mo-settings" onclick="closeMoEv(event,this)">
   <div class="mo-box">
@@ -922,8 +953,8 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);m
 // STATE
 // ============================================================
 var D={termine:[],medikamente:[],anfaelle:[],tagebuch:[],hilfsmittel:[],dokumente:[],medlog:[],kontakte:[],mahlzeiten:[],wasser:{},todos:[],rezepte:[]};
-var U={name:'',role:'elternteil',photo:'',kindName:'Matilda',kindDiagnose:'Rett-Syndrom',kindPhoto:''};
-var S={method:'local',token:'',gistId:'',jbKey:'',jbId:''};
+var U={name:'',role:'elternteil',photo:'',kindName:'',kindDiagnose:'',kindPhoto:''};
+var S={method:'local',token:'',gistId:'',jbKey:'',jbId:'',childId:''};
 var _prev='home',_syncInt=null,_photoTarget='user',_obSync='none',_syncMethod2='none',_online=navigator.onLine;
 
 // ============================================================
@@ -939,6 +970,7 @@ function init(){
   window.addEventListener('offline',function(){_online=false;updateOfflineBanner();});
 
   prefillDates();
+  sbInit();
   if(!U.name){showScreen('ob');return;}
   launch();
 }
@@ -986,10 +1018,21 @@ function selRole(el){
 }
 function selSync(m,btn){
   _obSync=m;
-  document.querySelectorAll('#screen-ob .smb').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#ob-local-fields .smb').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('sf-gist').classList.toggle('vis',m==='gist');
   document.getElementById('sf-jb').classList.toggle('vis',m==='jsonbin');
+}
+var _obMode='local';
+function selObMode(mode){
+  _obMode=mode;
+  document.getElementById('ob-mode-local').classList.toggle('active',mode==='local');
+  document.getElementById('ob-mode-cloud').classList.toggle('active',mode==='cloud');
+  document.getElementById('ob-local-fields').style.display=mode==='local'?'block':'none';
+  document.getElementById('ob-cloud-note').style.display=mode==='cloud'?'block':'none';
+  var btn=document.getElementById('ob-finish-btn');
+  if(mode==='cloud'){btn.textContent='☁️ Weiter zur Anmeldung';btn.onclick=finishObCloud;}
+  else{btn.textContent='✨ Starten';btn.onclick=finishOb;}
 }
 function finishOb(){
   var name=document.getElementById('ob-name').value.trim();
@@ -1002,6 +1045,12 @@ function finishOb(){
   if(_obSync==='gist'){var t=document.getElementById('ob-gt').value.trim();if(t){S.method='gist';S.token=t;S.gistId=document.getElementById('ob-gi').value.trim();saveS();}}
   else if(_obSync==='jsonbin'){var k=document.getElementById('ob-jk').value.trim();if(k){S.method='jsonbin';S.jbKey=k;S.jbId=document.getElementById('ob-ji').value.trim();saveS();}}
   launch();
+}
+function finishObCloud(){
+  var name=document.getElementById('ob-name').value.trim();
+  if(!name){showToast('Bitte gib deinen Namen ein');return;}
+  U.name=name;U.role=_obRole;saveU();
+  renderCloudModal();openMo('mo-cloud');
 }
 
 // ============================================================
@@ -1052,6 +1101,7 @@ async function doSync(){
   try{
     if(S.method==='gist')return await syncGist();
     if(S.method==='jsonbin')return await syncJB();
+    if(S.method==='supabase')return await syncSupabase();
   }catch(e){setSyncUI('err','Sync-Fehler');showToast('Sync: '+e.message,true);return false;}
 }
 
@@ -1108,9 +1158,11 @@ function setSyncUI(state,text){
   txt.textContent=text;
 }
 function updateSyncUI(){
-  var m={local:'Nur lokal (kein Sync)',gist:'GitHub Gist'+(S.gistId?' · '+S.gistId.slice(0,10)+'…':''),jsonbin:'JSONBin'+(S.jbId?' · '+S.jbId.slice(0,10)+'…':'')};
+  var m={local:'Nur lokal (kein Sync)',gist:'GitHub Gist'+(S.gistId?' · '+S.gistId.slice(0,10)+'…':''),jsonbin:'JSONBin'+(S.jbId?' · '+S.jbId.slice(0,10)+'…':''),supabase:'Familien-Cloud (Supabase)'};
   var lbl=document.getElementById('sync-label-more');if(lbl)lbl.textContent=m[S.method]||'–';
   setSyncUI(S.method==='local'?'err':'ok',S.method==='local'?'Kein Sync':'Bereit');
+  var cl=document.getElementById('cloud-label-more');
+  if(cl)cl.textContent=_sbUser?('Angemeldet als '+_sbUser.email+(S.childId?' · verbunden':' · kein Kind gewählt')):'Nicht angemeldet';
 }
 function showSyncId(id){
   var d=document.getElementById('sync-id-display'),v=document.getElementById('sync-id-val');
@@ -1149,7 +1201,284 @@ async function saveSyncSettings(){
   var ok=await doSync();
   if(ok!==false){updateSyncUI();if(S.gistId||S.jbId)showSyncId(S.gistId||S.jbId);}
 }
-function clearSync(){S={method:'local',token:'',gistId:'',jbKey:'',jbId:''};saveS();updateSyncUI();if(_syncInt)clearInterval(_syncInt);showToast('Sync deaktiviert');closeMoId('mo-sync');}
+function clearSync(){S={method:'local',token:'',gistId:'',jbKey:'',jbId:'',childId:''};saveS();updateSyncUI();if(_syncInt)clearInterval(_syncInt);showToast('Sync deaktiviert');closeMoId('mo-sync');}
+
+// ============================================================
+// FAMILIEN-ZUGANG (SUPABASE: ECHTES MEHRBENUTZER-LOGIN)
+// ============================================================
+var SUPABASE_URL='https://lloafmzrqeuuzdhorcuw.supabase.co';
+var SUPABASE_ANON_KEY='sb_publishable_bB5Co9sIfOC9YfGg3B-a3Q_nK68Gqi6';
+var sb=(typeof supabase!=='undefined')?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+
+var _sbUser=null;        // aktuelle Supabase-Session (auth.users Zeile)
+var _sbChildren=[];      // [{id,name,diagnose,role,status}] – für diesen Nutzer zugängliche Kinder
+var _sbMembers=[];       // Mitglieder des aktuell gewählten Kindes (für Einladen-Übersicht)
+var _sbLinkSent=false;
+
+// Mapping: lokaler D-Key <-> Supabase-Tabelle/Spalten. Alles was hier nicht steht,
+// heißt in der DB genauso wie im lokalen Objekt.
+var REMOTE_TABLES={
+  termine:    {table:'termine',           del:true,  author:'by', map:{}},
+  medikamente:{table:'medikamente',       del:true,  author:'by', map:{}},
+  medlog:     {table:'medikamenten_log',  del:false, author:'by', map:{medId:'med_id'}},
+  anfaelle:   {table:'anfaelle',          del:true,  author:'by', map:{trigger:'ausloeser'}},
+  tagebuch:   {table:'tagebuch',          del:true,  author:'von',map:{_typ:'entry_typ'}},
+  kontakte:   {table:'kontakte',          del:true,  author:'by', map:{}},
+  hilfsmittel:{table:'hilfsmittel',       del:true,  author:'by', map:{}},
+  dokumente:  {table:'dokumente',         del:true,  author:'by', map:{hasPhoto:'has_photo'}},
+  rezepte:    {table:'rezepte',           del:true,  author:'by', map:{hasPhoto:'has_photo'}},
+  mahlzeiten: {table:'mahlzeiten',        del:true,  author:'by', map:{}},
+  todos:      {table:'todos',             del:false, author:'von',map:{}}
+};
+
+function sbInit(){
+  if(!sb)return;
+  sb.auth.getSession().then(function(r){ sbOnAuthChange(r.data.session); });
+  sb.auth.onAuthStateChange(function(_evt,session){ sbOnAuthChange(session); });
+}
+
+async function sbOnAuthChange(session){
+  var wasLoggedIn=!!_sbUser;
+  _sbUser=session?session.user:null;
+  updateSyncUI();
+  if(_sbUser&&!wasLoggedIn){
+    if(U.sbEmail&&U.name&&U.sbEmail!==_sbUser.email){
+      showToast('Dieses Gerät war zuletzt als "'+U.name+'" eingerichtet, jetzt angemeldet als '+_sbUser.email+' – bei Bedarf in Einstellungen "Nutzer wechseln".',true);
+    }
+    U.sbEmail=_sbUser.email;saveU();
+    await sbClaimPendingInvites();
+    await sbLoadChildren();
+    renderCloudModal();
+  }
+  if(!_sbUser){_sbChildren=[];renderCloudModal();}
+}
+
+async function sbSendMagicLink(){
+  var email=(document.getElementById('cloud-email')||{}).value;
+  if(!email||!email.trim()){showToast('Bitte E-Mail eingeben');return;}
+  email=email.trim();
+  try{
+    var {error}=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:window.location.href}});
+    if(error)throw error;
+    _sbLinkSent=true;renderCloudModal();
+  }catch(e){showToast('Fehler: '+e.message,true);}
+}
+
+async function sbClaimPendingInvites(){
+  if(!_sbUser||!_sbUser.email)return;
+  try{
+    await sb.from('memberships')
+      .update({user_id:_sbUser.id,status:'active'})
+      .eq('status','pending')
+      .ilike('invited_email',_sbUser.email);
+  }catch(e){/* keine offene Einladung – ignorieren */}
+}
+
+async function sbLoadChildren(){
+  if(!_sbUser)return;
+  var {data:mems,error}=await sb.from('memberships')
+    .select('child_id,role,status')
+    .eq('user_id',_sbUser.id).eq('status','active');
+  if(error){showToast('Konnte Zugehörigkeiten nicht laden: '+error.message,true);return;}
+  var ids=(mems||[]).map(function(m){return m.child_id;});
+  if(!ids.length){_sbChildren=[];return;}
+  var {data:children,error:err2}=await sb.from('children').select('id,name,diagnose').in('id',ids);
+  if(err2){showToast('Konnte Kinder nicht laden: '+err2.message,true);return;}
+  var roleById={};(mems||[]).forEach(function(m){roleById[m.child_id]=m.role;});
+  _sbChildren=(children||[]).map(function(c){
+    return {id:c.id,name:c.name,diagnose:c.diagnose,role:roleById[c.id]};
+  });
+  if(!S.childId&&_sbChildren.length===1)await sbSelectChild(_sbChildren[0].id);
+}
+
+async function sbCreateChild(){
+  var name=(document.getElementById('cloud-new-name')||{}).value;
+  var diag=(document.getElementById('cloud-new-diag')||{}).value;
+  if(!name||!name.trim()){showToast('Bitte Namen eingeben');return;}
+  try{
+    var {data:sessData,error:sessErr}=await sb.auth.getSession();
+    var session=sessData&&sessData.session;
+    if(sessErr||!session){
+      showToast('Diagnose: keine gültige Session ('+(sessErr?sessErr.message:'null')+') – bitte abmelden & neu anmelden',true);
+      return;
+    }
+    // Kein .select() nach dem Insert: eine RLS-blockierte Rückfrage der neuen
+    // Zeile zeigt denselben "violates row-level security policy"-Fehler wie ein
+    // blockiertes Insert, auch wenn das Insert selbst erfolgreich war.
+    var {error}=await sb.from('children')
+      .insert({name:name.trim(),diagnose:(diag||'').trim(),created_by:session.user.id});
+    if(error){
+      var whoami='?';
+      try{var r=await sb.rpc('debug_whoami');whoami=r.data||('err:'+(r.error&&r.error.message));}catch(e2){whoami='rpc-fehler:'+e2.message;}
+      showToast('Fehler: '+error.message+' | uid='+session.user.id.slice(0,8)+'… | auth.uid()='+whoami,true);
+      return;
+    }
+    await sbLoadChildren();
+    var created=_sbChildren.find(function(c){return c.name===name.trim();});
+    if(created)await sbSelectChild(created.id);
+    else showToast('Kind angelegt, aber nicht in der Liste gefunden – bitte Familien-Zugang neu öffnen',true);
+  }catch(e){showToast('Fehler: '+e.message,true);}
+}
+
+async function sbSelectChild(childId){
+  S.childId=childId;S.method='supabase';saveS();
+  var child=_sbChildren.find(function(c){return c.id===childId;});
+  if(child){
+    U.kindName=child.name;U.kindDiagnose=child.diagnose||U.kindDiagnose;
+    var roleMap={elternteil:'elternteil',betreuer_einrichtung:'betreuer-e',betreuer_privat:'betreuer-p',arzt:'arzt'};
+    if(child.role&&roleMap[child.role])U.role=roleMap[child.role];
+    saveU();
+  }
+  updateSyncUI();renderCloudModal();
+  closeMoId('mo-cloud');
+  var stillOnboarding=document.getElementById('screen-ob')&&document.getElementById('screen-ob').classList.contains('active');
+  await doSync();
+  if(stillOnboarding){launch();}
+  else{applyPhotos();renderAll();}
+  if(_syncInt)clearInterval(_syncInt);
+  _syncInt=setInterval(doSync,30000);
+}
+
+async function sbLoadMembers(){
+  if(!S.childId)return;
+  var {data}=await sb.from('memberships').select('user_id,invited_email,role,status').eq('child_id',S.childId);
+  _sbMembers=data||[];
+}
+
+async function sbInviteMember(){
+  var email=(document.getElementById('cloud-invite-email')||{}).value;
+  var role=(document.getElementById('cloud-invite-role')||{}).value;
+  if(!email||!email.trim()){showToast('Bitte E-Mail eingeben');return;}
+  try{
+    var {error}=await sb.from('memberships').insert({
+      child_id:S.childId,invited_email:email.trim(),role:role,status:'pending'
+    });
+    if(error)throw error;
+    showToast('✓ Einladung gespeichert');
+    document.getElementById('cloud-invite-email').value='';
+    await sbLoadMembers();renderCloudModal();
+  }catch(e){
+    var msg=/row-level security/i.test(e.message)?'Nur Elternteile können Personen einladen.':e.message;
+    showToast('Fehler: '+msg,true);
+  }
+}
+
+async function sbSignOut(){
+  await sb.auth.signOut();
+  S.method='local';S.childId='';saveS();
+  _sbUser=null;_sbChildren=[];_sbMembers=[];
+  if(_syncInt)clearInterval(_syncInt);
+  updateSyncUI();renderCloudModal();showToast('Abgemeldet');
+}
+
+function openCloud(){renderCloudModal();openMo('mo-cloud');if(S.childId)sbLoadMembers().then(renderCloudModal);}
+
+function renderCloudModal(){
+  var el=document.getElementById('cloud-body');if(!el)return;
+  if(!sb){el.innerHTML='<p style="color:var(--text-s);font-size:13px;">Cloud-Funktion nicht verfügbar (Supabase-Bibliothek konnte nicht geladen werden – Internetverbindung prüfen).</p>';return;}
+  if(!_sbUser){
+    el.innerHTML=
+      '<p style="font-size:13px;color:var(--text-s);margin-bottom:14px;">Melde dich per E-Mail an, um Daten geräteübergreifend zu teilen – z. B. mit Betreuer:innen oder dem Arzt.</p>'+
+      (_sbLinkSent
+        ? '<div class="sbox"><h4>✓ Link verschickt</h4><p style="font-size:12px;color:var(--text-m);">Öffne die E-Mail und tippe auf den Anmelde-Link – diese Seite öffnet sich dann automatisch angemeldet.</p></div>'
+        : '<div class="fg"><label class="fl">E-Mail-Adresse</label><input class="fi" id="cloud-email" type="email" placeholder="du@beispiel.de" aria-label="E-Mail für Anmeldung"></div>'+
+          '<button class="btn btn-p" onclick="sbSendMagicLink()">✉️ Anmelde-Link senden</button>');
+    return;
+  }
+  if(!S.childId){
+    var list=_sbChildren.map(function(c){
+      return '<div class="li" onclick="sbSelectChild(\''+c.id+'\')"><div class="li-ic rose">👧</div><div class="li-b"><div class="li-t">'+esc(c.name)+'</div><div class="li-s">'+esc(c.diagnose||'')+' · '+esc(c.role)+'</div></div><div class="li-r">›</div></div>';
+    }).join('');
+    el.innerHTML=
+      '<p style="font-size:13px;color:var(--text-s);margin-bottom:10px;">Angemeldet als <strong>'+esc(_sbUser.email)+'</strong></p>'+
+      (list?('<div class="lc" style="margin-bottom:16px;">'+list+'</div>'):'')+
+      '<div class="ob-div">Neues Kind anlegen</div>'+
+      '<div class="fg"><label class="fl">Name</label><input class="fi" id="cloud-new-name" placeholder="Name eingeben" value="'+esc(U.kindName||'')+'"></div>'+
+      '<div class="fg"><label class="fl">Diagnose (optional)</label><input class="fi" id="cloud-new-diag" value="'+esc(U.kindDiagnose||'')+'"></div>'+
+      '<button class="btn btn-s" onclick="sbCreateChild()">＋ Kind anlegen</button>'+
+      '<button class="btn btn-d" style="margin-top:10px;" onclick="sbSignOut()">Abmelden</button>';
+    return;
+  }
+  var membersHtml=_sbMembers.map(function(m){
+    var label=m.status==='pending'?(m.invited_email+' · Einladung offen'):((m.invited_email||m.user_id)+'');
+    return '<div class="li"><div class="li-ic soft">'+(m.status==='pending'?'⏳':'✓')+'</div><div class="li-b"><div class="li-t">'+esc(label)+'</div><div class="li-s">'+esc(m.role)+'</div></div></div>';
+  }).join('');
+  var isAdmin=U.role==='elternteil';
+  el.innerHTML=
+    '<p style="font-size:13px;color:var(--text-s);margin-bottom:10px;">Angemeldet als <strong>'+esc(_sbUser.email)+'</strong> · verbunden mit <strong>'+esc(U.kindName||'')+'</strong></p>'+
+    '<div class="st" style="margin:0 0 8px;">Mitglieder</div>'+
+    '<div class="lc" style="margin-bottom:16px;">'+(membersHtml||'<div class="li"><div class="li-b"><div class="li-s">Noch keine weiteren Mitglieder</div></div></div>')+'</div>'+
+    (isAdmin
+      ? '<div class="ob-div">Person einladen</div>'+
+        '<div class="fg"><label class="fl">E-Mail-Adresse</label><input class="fi" id="cloud-invite-email" type="email" placeholder="betreuer@beispiel.de"></div>'+
+        '<div class="fg"><label class="fl">Rolle</label>'+
+        '<select class="fs" id="cloud-invite-role">'+
+          '<option value="elternteil">Elternteil</option>'+
+          '<option value="betreuer_einrichtung">Betreuer (Einrichtung)</option>'+
+          '<option value="betreuer_privat" selected>Betreuer (Privat)</option>'+
+          '<option value="arzt">Arzt / Therapeut</option>'+
+        '</select></div>'+
+        '<button class="btn btn-s" onclick="sbInviteMember()">✉️ Einladen</button>'
+      : '<p style="font-size:12px;color:var(--text-s);margin-bottom:16px;">Nur Elternteile können weitere Personen einladen.</p>')+
+    '<button class="btn btn-d" style="margin-top:10px;" onclick="sbSignOut()">Abmelden</button>';
+}
+
+function dbRowToLocal(key,row){
+  var cfg=REMOTE_TABLES[key];
+  var out={id:row.id,ts:row.ts||0};
+  for(var col in row){
+    if(col==='id'||col==='ts'||col==='child_id'||col==='created_by'||col==='created_at'||col==='updated_at')continue;
+    if(col==='by_name'){out[cfg.author]=row.by_name;continue;}
+    if(col==='deleted'){out._del=row.deleted;continue;}
+    var jsField=col;
+    for(var k in cfg.map){if(cfg.map[k]===col){jsField=k;break;}}
+    out[jsField]=row[col];
+  }
+  return out;
+}
+
+function localToDbRow(key,item){
+  var cfg=REMOTE_TABLES[key];
+  var row={id:item.id,ts:item.ts||0,child_id:S.childId,by_name:item[cfg.author]||null};
+  if(cfg.del)row.deleted=!!item._del;
+  for(var field in item){
+    if(field==='id'||field==='ts'||field===cfg.author||field==='_del')continue;
+    var col=cfg.map[field]||field;
+    row[col]=item[field];
+  }
+  return row;
+}
+
+async function syncSupabase(){
+  if(!S.childId)throw new Error('Kein Kind ausgewählt');
+  var remoteD={};
+  for(var key in REMOTE_TABLES){
+    var cfg=REMOTE_TABLES[key];
+    var {data,error}=await sb.from(cfg.table).select('*').eq('child_id',S.childId);
+    if(error)throw error;
+    remoteD[key]=(data||[]).map(function(row){return dbRowToLocal(key,row);});
+  }
+  var {data:wRows}=await sb.from('wasser').select('*').eq('child_id',S.childId);
+  var remoteWasser={};(wRows||[]).forEach(function(r){remoteWasser[r.datum]=r.count;});
+  remoteD.wasser=remoteWasser;
+
+  D=merge(D,remoteD);saveD();
+
+  for(key in REMOTE_TABLES){
+    var rows=(D[key]||[]).map(function(item){return localToDbRow(key,item);});
+    if(rows.length){
+      var {error:upErr}=await sb.from(REMOTE_TABLES[key].table).upsert(rows,{onConflict:'id'});
+      if(upErr)throw upErr;
+    }
+  }
+  var wKeys=Object.keys(D.wasser||{});
+  if(wKeys.length){
+    var wUp=wKeys.map(function(d){return {child_id:S.childId,datum:d,count:D.wasser[d]};});
+    await sb.from('wasser').upsert(wUp,{onConflict:'child_id,datum'});
+  }
+
+  setSyncUI('ok','Synced · '+fmtT(new Date()));renderAll();return true;
+}
 
 // ============================================================
 // SAVE / LOAD
@@ -1290,6 +1619,8 @@ function renderAnfallChart(){
   var labels=document.getElementById('anfall-chart-labels');
   if(!chart)return;
   var data=anfaellePerWeek(8);
+  var chartNote=document.getElementById('anfall-chart-note');
+  if(chartNote)chartNote.style.display=data.reduce(function(a,b){return a+b;},0)===0?'block':'none';
   var max=Math.max(...data,1);
   var now=new Date();
   var html='',lhtml='';
@@ -1315,6 +1646,8 @@ function renderAnfallChart(){
       var h=new Date(a.zeit).getHours();
       if(h<6)counts[0]++;else if(h<10)counts[1]++;else if(h<12)counts[2]++;else if(h<16)counts[3]++;else if(h<20)counts[4]++;else counts[5]++;
     });
+    var tpNote=document.getElementById('anfall-tp-note');
+    if(tpNote)tpNote.style.display=counts.reduce(function(a,b){return a+b;},0)===0?'block':'none';
     var mx=Math.max(...counts,1);
     tp.innerHTML='<div style="display:flex;gap:4px;align-items:flex-end;height:60px;">' +
       slots.map(function(s,i){
@@ -1498,17 +1831,25 @@ function saveTermin(){
   if(!t.titel||!t.datum){showToast('Titel und Datum sind Pflicht');return;}
   D.termine.push(t);saveD();resetAndClose('mo-add-termin');renderAdmin();showToast('✓ Termin gespeichert');haptic();syncIfCfg();renderNavDots();
 }
+function isChipActive(id){var el=document.getElementById(id);return !!(el&&el.classList.contains('active'));}
+function setChipActive(id,active){var el=document.getElementById(id);if(el)el.classList.toggle('active',!!active);}
+function openNewMed(){
+  q2('nm-n','');q2('nm-d','');q2('nm-f','morgens');q2('nm-h','');q2('nm-exp','');
+  setChipActive('nm-notfall',false);
+  setModalEdit('mo-add-med','mo-med-title','btn-save-med','Medikament',saveMed,true);
+  openMo('mo-add-med');
+}
 function saveMed(){
-  var m={id:uid(),ts:Date.now(),name:q('nm-n'),dosis:q('nm-d'),freq:q('nm-f'),hinweis:q('nm-h'),exp:q('nm-exp'),by:U.name};
+  var m={id:uid(),ts:Date.now(),name:q('nm-n'),dosis:q('nm-d'),freq:q('nm-f'),hinweis:q('nm-h'),exp:q('nm-exp'),notfallmed:isChipActive('nm-notfall'),by:U.name};
   if(!m.name){showToast('Name ist Pflicht');return;}
   D.medikamente.push(m);saveD();resetAndClose('mo-add-med');renderHealth();showToast('✓ Medikament gespeichert');haptic();syncIfCfg();
 }
 function logMed(id,action){
-  // Confirm Buccolam give
+  // Extra Bestätigung bei Notfallmedikamenten
   if(action==='taken'){
     var m=(D.medikamente||[]).find(x=>x.id===id);
-    if(m&&m.name&&m.name.toLowerCase().includes('buccolam')){
-      if(!confirm("Buccolam wirklich als gegeben markieren?"))return;
+    if(m&&m.notfallmed){
+      if(!confirm(esc(m.name)+' wirklich als gegeben markieren?'))return;
     }
   }
   D.medlog.push({id:uid(),ts:Date.now(),medId:id,action:action,datum:toDay(),by:U.name});
@@ -1642,12 +1983,13 @@ function showMedDetail(id){
 function editMed(id){
   var m=(D.medikamente||[]).find(x=>x.id===id);if(!m)return;
   q2('nm-n',m.name);q2('nm-d',m.dosis||'');q2('nm-f',m.freq||'morgens');q2('nm-h',m.hinweis||'');q2('nm-exp',m.exp||'');
+  setChipActive('nm-notfall',!!m.notfallmed);
   setModalEdit('mo-add-med','mo-med-title','btn-save-med','✏️ Medikament bearbeiten',function(){saveMedEdit(id);});
   openMo('mo-add-med');
 }
 function saveMedEdit(id){
   var idx=(D.medikamente||[]).findIndex(x=>x.id===id);if(idx===-1)return;
-  Object.assign(D.medikamente[idx],{name:q('nm-n'),dosis:q('nm-d'),freq:q('nm-f'),hinweis:q('nm-h'),exp:q('nm-exp'),ts:Date.now()});
+  Object.assign(D.medikamente[idx],{name:q('nm-n'),dosis:q('nm-d'),freq:q('nm-f'),hinweis:q('nm-h'),exp:q('nm-exp'),notfallmed:isChipActive('nm-notfall'),ts:Date.now()});
   saveD();resetAndClose('mo-add-med');renderHealth();showToast('✓ Aktualisiert');syncIfCfg();goBack();
 }
 function delMed(id){if(!confirm('Medikament loeschen?'))return;softDelete('medikamente',id);saveD();syncIfCfg();goBack();renderHealth();showToast('Geloescht');}
@@ -1704,6 +2046,20 @@ function delHM(id){if(!confirm('Eintrag loeschen?'))return;softDelete('hilfsmitt
 // ============================================================
 // NOTFALLBLATT
 // ============================================================
+function getNotfallMeds(){
+  return activeItems('medikamente').filter(function(m){return m.notfallmed;});
+}
+function notfallBoxHtml(){
+  var meds=getNotfallMeds();
+  if(!meds.length){
+    return '<div style="font-size:13px;font-weight:700;color:var(--red);">Kein Notfallmedikament hinterlegt</div>'+
+      '<div style="font-size:12px;color:var(--text-m);margin-top:4px;">Bei anhaltendem Anfall (&gt; 5 Minuten): Ruhe bewahren, Kind sichern, Zeit stoppen, 112 anrufen.</div>';
+  }
+  return meds.map(function(m){
+    return '<div style="font-size:13px;font-weight:700;color:var(--red);">Notfallmedikament: '+esc(m.name)+(m.dosis?' '+esc(m.dosis):'')+'</div>'+
+      '<div style="font-size:12px;color:var(--text-m);margin-top:4px;">'+(m.hinweis?esc(m.hinweis)+'.':'Siehe Anweisung des Arztes/der Ärztin.')+' Bei anhaltendem Anfall (&gt; 5 Minuten) zusätzlich 112 anrufen.</div>';
+  }).join('<div style="height:8px;"></div>');
+}
 function openNotfallblatt(){
   var meds=activeItems('medikamente');
   var notfallKontakte=(D.kontakte||[]).filter(c=>c.rolle==='Notfallkontakt'||c.rolle==='Hausarzt'||c.rolle==='Facharzt (Neuropädiater)').slice(0,4);
@@ -1720,8 +2076,7 @@ function openNotfallblatt(){
     '</div>' +
     '<div class="nf-section"><h4>⚠️ Bei Anfall — Wichtig!</h4>' +
     '<div style="background:var(--red-p);border-radius:8px;padding:10px 12px;">' +
-    '<div style="font-size:13px;font-weight:700;color:var(--red);">Notfallmedikament: Buccolam Midazolam</div>' +
-    '<div style="font-size:12px;color:var(--text-m);margin-top:4px;">Bei Anfall > 5 Minuten buccal applizieren. Sofort 112 anrufen.</div>' +
+    notfallBoxHtml() +
     '</div></div>' +
     '<div class="nf-section"><h4>Aktuelle Medikamente</h4>' +
     (meds.length?meds.map(m=>'<div class="nf-med"><div class="nf-med-name">'+esc(m.name)+'</div><div class="nf-med-detail">'+esc(m.dosis||'')+(m.freq?' · '+esc(m.freq):'')+(m.hinweis?' · '+esc(m.hinweis):'')+'</div></div>').join(''):'<div class="nf-item">Keine Medikamente eingetragen</div>') +
@@ -1739,9 +2094,13 @@ function openNotfallblatt(){
 }
 
 function shareNotfallblatt(){
+  var notfallMeds=getNotfallMeds();
+  var notfallText=notfallMeds.length
+    ? notfallMeds.map(function(m){return m.name+(m.dosis?' '+m.dosis:'')+(m.hinweis?' – '+m.hinweis:'');}).join('; ')+'. Bei anhaltendem Anfall (>5 Min.) zusätzlich 112!'
+    : 'Kein Notfallmedikament hinterlegt. Bei anhaltendem Anfall (>5 Min.): Ruhe bewahren, 112 anrufen.';
   var text='NOTFALLBLATT – '+( U.kindName||'Kind')+'\nDiagnose: '+(U.kindDiagnose||'–')+'\n\nMedikamente:\n'+
     (D.medikamente||[]).map(m=>m.name+' '+( m.dosis||'')+' '+( m.freq||'')).join('\n')+
-    '\n\nBei Anfall: Buccolam Midazolam buccal. Sofort 112!\n\nEltern: '+(U.name||'–');
+    '\n\nBei Anfall: '+notfallText+'\n\nEltern: '+(U.name||'–');
   if(navigator.share){navigator.share({title:'Notfallblatt '+( U.kindName||'Kind'),text:text}).catch(function(){});}
   else{navigator.clipboard.writeText(text).then(function(){showToast('✓ In Zwischenablage kopiert');});}
 }
@@ -2090,7 +2449,7 @@ function showToast(msg,isErr,isOk){
   var t=document.getElementById('toast');
   t.textContent=msg;
   t.className='toast show'+(isErr?' err':isOk==='ok'?' ok':'');
-  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},3200);
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},isErr?10000:3200);
 }
 
 // ============================================================
@@ -2213,13 +2572,20 @@ async function generateNotfallblattPDF(){
     doc.text((U.kindName||'–')+' · '+(U.kindDiagnose||'–'),ml,y);y+=10;
     doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('ERZIEHUNGSBERECHTIGTE',ml,y);y+=6;
     doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(U.name||'–',ml,y);y+=12;
+    var notfallMedsPdf=getNotfallMeds();
     doc.setFillColor(253,236,234);doc.rect(ml,y,mr-ml,22,'F');
     doc.setDrawColor(192,57,43);doc.setLineWidth(0.5);doc.rect(ml,y,mr-ml,22,'S');
     doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(192,57,43);
     doc.text('BEI ANFALL — SOFORTMASSNAHMEN',ml+3,y+7);
     doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(80,30,30);
-    doc.text('Anfall >5 Min: Buccolam Midazolam buccal applizieren. Sofort 112 anrufen!',ml+3,y+14);
-    doc.text('Kind auf die Seite legen. Ruhe bewahren. Zeit stoppen.',ml+3,y+20);
+    if(notfallMedsPdf.length){
+      var medLine=notfallMedsPdf.map(function(m){return m.name+(m.dosis?' '+m.dosis:'');}).join(', ');
+      doc.text((medLine+(notfallMedsPdf[0].hinweis?' – '+notfallMedsPdf[0].hinweis:'')).substr(0,90),ml+3,y+14);
+      doc.text('Bei anhaltendem Anfall (>5 Min.) zusätzlich 112 anrufen.',ml+3,y+20);
+    }else{
+      doc.text('Kein Notfallmedikament hinterlegt.',ml+3,y+14);
+      doc.text('Bei anhaltendem Anfall (>5 Min.): Ruhe bewahren, 112 anrufen.',ml+3,y+20);
+    }
     y+=30;
     doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(45,27,37);
     doc.text('AKTUELLE MEDIKAMENTE',ml,y);y+=7;
@@ -2910,6 +3276,11 @@ function activeItems(listName){
 }
 
 window.addEventListener('DOMContentLoaded',init);
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
 </script>
 </body>
 </html>
